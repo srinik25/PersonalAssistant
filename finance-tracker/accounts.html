@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounts | Finance Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f3f8; color: #1e2430; min-height: 100vh; display: flex; flex-direction: column; }
+        nav { max-width: 1100px; margin: 0 auto; width: 100%; display: flex; gap: 28px; align-items: center; padding: 16px 24px; }
+        nav .site-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; font-weight: 700; color: #1e2430; text-decoration: none; margin-right: auto; }
+        nav a { color: #6a7a8e; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1e2430; }
+
+        .hero { background: linear-gradient(135deg, #1e2d4a 0%, #2a4a7a 40%, #1e2d4a 100%); color: white; padding: 44px 40px 38px; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 70%, rgba(122,176,212,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(163,200,232,0.08) 0%, transparent 50%); animation: shimmer 15s ease-in-out infinite alternate; }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; }
+        .hero h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 8px; }
+        .hero .subtitle { font-size: 1rem; opacity: 0.7; }
+
+        .page-wrap { max-width: 900px; margin: -20px auto 0; padding: 0 24px 60px; position: relative; z-index: 2; flex: 1; }
+
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 24px 0 16px; }
+        .top-bar h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.3rem; font-weight: 700; }
+
+        .btn { font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700; padding: 10px 24px; border: none; border-radius: 50px; cursor: pointer; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary { background: #1e2d4a; color: #a3c8e8; }
+        .btn-primary:hover { background: #2a4a7a; box-shadow: 0 6px 20px rgba(30,45,74,0.25); }
+        .btn-secondary { background: white; color: #1e2d4a; border: 2px solid #d0d8e4; padding: 8px 20px; }
+        .btn-secondary:hover { border-color: #4a7aaa; }
+        .btn-small { font-size: 0.78rem; padding: 6px 14px; }
+
+        /* ADD FORM */
+        .add-form { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); display: none; }
+        .add-form.visible { display: block; animation: fadeInUp 0.3s ease forwards; }
+        .add-form .form-row { margin-bottom: 14px; }
+        .add-form label { display: block; font-size: 0.75rem; font-weight: 700; color: #6a7a8e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .add-form input, .add-form select { font-family: 'Inter', sans-serif; font-size: 0.9rem; padding: 10px 14px; border: 1px solid #d0d8e4; border-radius: 12px; background: #f8f9fc; color: #1e2430; width: 100%; transition: border-color 0.2s; }
+        .add-form select { width: auto; border-radius: 50px; cursor: pointer; }
+        .add-form input:focus, .add-form select:focus { outline: none; border-color: #4a7aaa; box-shadow: 0 0 0 3px rgba(74,122,170,0.12); background: white; }
+        .form-inline { display: flex; gap: 12px; align-items: flex-end; }
+        .form-inline .form-row { flex: 1; margin-bottom: 0; }
+
+        /* ACCOUNT CARDS */
+        .accounts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .acct-card {
+            background: white; border-radius: 16px; overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+            cursor: pointer; opacity: 0; animation: fadeInUp 0.5s ease forwards;
+        }
+        .acct-card:hover { transform: translateY(-6px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+        .acct-card-header {
+            background: linear-gradient(135deg, #2a4a7a, #3a6a9a);
+            padding: 20px; color: white; display: flex; align-items: center; gap: 12px;
+        }
+        .acct-icon { font-size: 1.6rem; }
+        .acct-card-header h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1rem; font-weight: 700; }
+        .acct-type-badge { font-size: 0.7rem; opacity: 0.8; margin-top: 2px; }
+        .acct-card-body { padding: 16px 20px; }
+        .acct-total { font-family: 'Playfair Display', Georgia, serif; font-size: 1.4rem; font-weight: 800; color: #1e2d4a; margin-bottom: 6px; }
+        .acct-meta { font-size: 0.8rem; color: #6a7a8e; margin-bottom: 10px; }
+        .acct-actions { display: flex; gap: 8px; }
+        .acct-action-btn {
+            font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600;
+            padding: 6px 14px; border-radius: 50px; border: 1px solid #d0d8e4;
+            background: white; color: #3e5068; cursor: pointer; transition: all 0.2s;
+        }
+        .acct-action-btn:hover { border-color: #4a7aaa; color: #4a7aaa; }
+        .acct-action-btn.delete:hover { border-color: #c0392b; color: #c0392b; }
+
+        .no-accounts { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #6a7a8e; }
+        .no-accounts h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; margin-bottom: 8px; color: #3e5068; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .footer { background: #1e2d4a; color: rgba(255,255,255,0.6); text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7; }
+        .footer strong { color: #a3c8e8; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(122,176,212,0.4); margin: 12px auto; }
+
+        @media (max-width: 768px) { .hero { padding: 32px 24px 28px; } .hero h1 { font-size: 1.8rem; } .accounts-grid { grid-template-columns: 1fr; } .form-inline { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="site-title">Finance Tracker</a>
+        <a href="index.html">Dashboard</a>
+        <a href="accounts.html" class="active">Accounts</a>
+        <a href="analysis.html">Analysis</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Your Accounts</h1>
+            <p class="subtitle">Add, edit, and manage your investment accounts.</p>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <div class="top-bar">
+            <h2 id="acct-count"></h2>
+            <button class="btn btn-primary" onclick="toggleAddForm()">+ Add Account</button>
+        </div>
+
+        <div class="add-form" id="add-form">
+            <div class="form-inline">
+                <div class="form-row">
+                    <label>Account Name</label>
+                    <input type="text" id="new-name" placeholder="e.g. Fidelity Brokerage">
+                </div>
+                <div class="form-row" style="flex:0 0 auto;">
+                    <label>Account Type</label>
+                    <select id="new-type">
+                        <option value="brokerage">Brokerage</option>
+                        <option value="ira">IRA</option>
+                        <option value="roth_ira">Roth IRA</option>
+                        <option value="401k">401(k)</option>
+                        <option value="529">529 Plan</option>
+                        <option value="annuity">Annuity</option>
+                        <option value="cd">CD</option>
+                        <option value="crypto">Crypto</option>
+                        <option value="mma">Money Market</option>
+                        <option value="savings">Savings</option>
+                        <option value="checking">Checking</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-top:14px;">
+                <button class="btn btn-primary btn-small" onclick="createAccount()">Create Account</button>
+                <button class="btn btn-secondary btn-small" onclick="toggleAddForm()" style="margin-left:8px;">Cancel</button>
+            </div>
+        </div>
+
+        <div class="accounts-grid" id="accounts-grid"></div>
+    </div>
+
+    <footer class="footer">
+        <strong>Finance Tracker</strong>
+        <div class="footer-divider"></div>
+        AI-powered portfolio analysis — for educational purposes only.
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    var db = firebase.firestore();
+    </script>
+    <script src="js/auth.js?v=1"></script>
+    <script src="js/app.js?v=1"></script>
+    <script>
+    requireAuth(function(user) { loadAccountsList(); });
+
+    function toggleAddForm() {
+        document.getElementById('add-form').classList.toggle('visible');
+    }
+
+    function createAccount() {
+        var name = document.getElementById('new-name').value.trim();
+        var type = document.getElementById('new-type').value;
+        if (!name) { alert('Please enter an account name.'); return; }
+
+        saveAccount({ name: name, type: type, funds: [], notes: '' }).then(function(id) {
+            document.getElementById('new-name').value = '';
+            toggleAddForm();
+            loadAccountsList();
+        });
+    }
+
+    function loadAccountsList() {
+        loadAccounts().then(function(accounts) {
+            var grid = document.getElementById('accounts-grid');
+            document.getElementById('acct-count').textContent = accounts.length + ' Account' + (accounts.length !== 1 ? 's' : '');
+
+            if (accounts.length === 0) {
+                grid.innerHTML = '<div class="no-accounts"><h3>No Accounts Yet</h3><p>Add your first account to get started.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = accounts.map(function(acct, i) {
+                var total = sumFunds(acct.funds);
+                var fundCount = acct.funds ? acct.funds.length : 0;
+                var updated = acct.updatedAt ? new Date(acct.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                return '<div class="acct-card" style="animation-delay:' + (i * 0.08) + 's">' +
+                    '<div class="acct-card-header" onclick="location.href=\'account.html?id=' + acct.id + '\'">' +
+                        '<span class="acct-icon">' + getAccountTypeIcon(acct.type) + '</span>' +
+                        '<div><h3>' + esc(acct.name) + '</h3><div class="acct-type-badge">' + getAccountTypeLabel(acct.type) + '</div></div>' +
+                    '</div>' +
+                    '<div class="acct-card-body">' +
+                        '<div class="acct-total">' + formatCurrency(total) + '</div>' +
+                        '<div class="acct-meta">' + fundCount + ' holding' + (fundCount !== 1 ? 's' : '') + (updated ? ' &middot; Updated ' + updated : '') + '</div>' +
+                        '<div class="acct-actions">' +
+                            '<button class="acct-action-btn" onclick="event.stopPropagation();location.href=\'account.html?id=' + acct.id + '\'">View / Edit</button>' +
+                            '<button class="acct-action-btn delete" onclick="event.stopPropagation();removeAccount(\'' + acct.id + '\')">Delete</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        });
+    }
+
+    function removeAccount(id) {
+        if (!confirm('Delete this account and all its holdings? This cannot be undone.')) return;
+        deleteAccount(id).then(function() { loadAccountsList(); });
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Plans | Meal Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f4f7f4; color: #1e2a1e; min-height: 100vh;
+        }
+        nav {
+            max-width: 1100px; margin: 0 auto;
+            display: flex; gap: 28px; align-items: center; padding: 16px 24px;
+        }
+        nav .site-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.15rem; font-weight: 700;
+            color: #1e2a1e; text-decoration: none; margin-right: auto;
+        }
+        nav a { color: #7a8a7a; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1e2a1e; }
+
+        .hero {
+            background: linear-gradient(135deg, #2d4a3e 0%, #3a6b56 40%, #2d4a3e 100%);
+            color: white; padding: 44px 40px 38px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(144,200,144,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(180,220,160,0.08) 0%, transparent 50%);
+            animation: shimmer 15s ease-in-out infinite alternate;
+        }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; }
+        .hero h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 8px; }
+        .hero .subtitle { font-size: 1rem; opacity: 0.7; }
+
+        .page-wrap {
+            max-width: 900px; margin: -20px auto 0;
+            padding: 0 24px 60px; position: relative; z-index: 2;
+        }
+
+        .plans-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+            padding-top: 28px;
+        }
+        .plan-card {
+            background: white; border-radius: 16px; overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+            cursor: pointer;
+            opacity: 0; animation: fadeInUp 0.5s ease forwards;
+        }
+        .plan-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        .plan-card-header {
+            background: linear-gradient(135deg, #3a6b56, #4a8a6a);
+            padding: 20px; color: white;
+        }
+        .plan-card-header h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1rem; font-weight: 700; margin-bottom: 4px;
+        }
+        .plan-card-header .plan-dates { font-size: 0.8rem; opacity: 0.8; }
+        .plan-card-body { padding: 16px 20px; }
+        .plan-summary { font-size: 0.84rem; color: #4a5e4a; line-height: 1.5; margin-bottom: 10px; }
+        .plan-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+        .plan-badge {
+            font-size: 0.65rem; font-weight: 600; padding: 3px 10px;
+            border-radius: 50px; background: rgba(74,138,74,0.12); color: #3a6b3a;
+            text-transform: uppercase; letter-spacing: 0.03em;
+        }
+        .plan-actions { display: flex; gap: 8px; }
+        .plan-action-btn {
+            font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600;
+            padding: 6px 14px; border-radius: 50px; border: 1px solid #d4ddd4;
+            background: white; color: #4a5e4a; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .plan-action-btn:hover { border-color: #4a8a4a; color: #4a8a4a; }
+        .plan-action-btn.delete:hover { border-color: #c0392b; color: #c0392b; }
+
+        .no-plans {
+            grid-column: 1 / -1; text-align: center;
+            padding: 60px 20px; color: #7a8a7a;
+        }
+        .no-plans h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.2rem; margin-bottom: 8px; color: #4a5e4a;
+        }
+        .no-plans p { font-size: 0.9rem; margin-bottom: 20px; }
+        .no-plans a {
+            display: inline-block; padding: 12px 28px;
+            background: #2d4a3e; color: #a3d49a;
+            border-radius: 50px; font-size: 0.88rem; font-weight: 700;
+            text-decoration: none; transition: all 0.25s;
+        }
+        .no-plans a:hover { background: #3a6b56; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .footer {
+            background: #2d4a3e; color: rgba(255,255,255,0.6);
+            text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7;
+        }
+        .footer strong { color: #a3d49a; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(140,192,132,0.4); margin: 12px auto; }
+
+        @media (max-width: 768px) {
+            .hero { padding: 32px 24px 28px; }
+            .hero h1 { font-size: 1.8rem; }
+            .plans-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="site-title">Meal Planner</a>
+        <a href="index.html">Home</a>
+        <a href="plan.html">New Plan</a>
+        <a href="plans.html" class="active">Saved Plans</a>
+        <a href="samples.html">Samples</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Saved Plans</h1>
+            <p class="subtitle">All your meal plans in one place.</p>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <div class="plans-grid" id="plans-grid"></div>
+    </div>
+
+    <footer class="footer">
+        <strong>Meal Planner</strong>
+        <div class="footer-divider"></div>
+        AI-powered weekly meal planning with nutrition insights.
+        <div style="margin-top:8px;"><a href="contact.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Contact Us</a> &nbsp;&middot;&nbsp; <a href="terms.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Terms</a> &nbsp;&middot;&nbsp; <a href="donate.html" style="color:#a3d49a;text-decoration:none;font-size:0.82rem;font-weight:500;">Support this project</a></div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    var db = firebase.firestore();
+    </script>
+    <script src="js/auth.js?v=1"></script>
+    <script>
+    function esc(str) {
+        var el = document.createElement('span');
+        el.textContent = str || '';
+        return el.innerHTML;
+    }
+
+    // Wait for auth before loading
+    requireAuth(function(user) {
+        loadPlans();
+    });
+
+    function loadPlans() {
+        db.collection('meal_plans').where('userId', '==', currentUser.uid).orderBy('createdAt', 'desc').get().then(function(snap) {
+            var container = document.getElementById('plans-grid');
+            var plans = [];
+            snap.forEach(function(doc) { plans.push(Object.assign({ id: doc.id }, doc.data())); });
+
+            if (plans.length === 0) {
+                container.innerHTML = '<div class="no-plans">' +
+                    '<h3>No Plans Yet</h3>' +
+                    '<p>Create your first weekly meal plan.</p>' +
+                    '<a href="plan.html">Start Planning</a>' +
+                '</div>';
+                return;
+            }
+
+            container.innerHTML = plans.map(function(plan, i) {
+                var mealCount = 0;
+                if (plan.days) plan.days.forEach(function(d) {
+                    if (d.breakfast) mealCount++;
+                    if (d.lunch) mealCount++;
+                    if (d.dinner) mealCount++;
+                });
+                var dayCount = plan.days ? plan.days.length : 0;
+                var dateStr = plan.startDate || 'No date';
+                return '<div class="plan-card" style="animation-delay:' + (i * 0.08) + 's">' +
+                    '<div class="plan-card-header" onclick="location.href=\'plan.html?id=' + plan.id + '\'">' +
+                        '<h3>' + esc(plan.name || 'Week of ' + dateStr) + '</h3>' +
+                        '<div class="plan-dates">Starting ' + esc(dateStr) + '</div>' +
+                    '</div>' +
+                    '<div class="plan-card-body">' +
+                        '<div class="plan-summary">' + dayCount + ' days, ' + mealCount + ' meals planned</div>' +
+                        '<div class="plan-meta">' +
+                            '<span class="plan-badge">' + (plan.dayMode === '5' ? 'Weekdays' : '7 Days') + '</span>' +
+                            '<span class="plan-badge">' + (plan.mealMode === 'all' ? 'All Meals' : 'L + D') + '</span>' +
+                            (plan.status === 'complete' ? '<span class="plan-badge">Complete</span>' : '<span class="plan-badge">Draft</span>') +
+                        '</div>' +
+                        '<div class="plan-actions">' +
+                            '<button class="plan-action-btn" onclick="location.href=\'plan.html?id=' + plan.id + '\'">View / Edit</button>' +
+                            '<button class="plan-action-btn delete" onclick="deletePlan(event, \'' + plan.id + '\')">Delete</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        });
+    }
+
+    function deletePlan(e, id) {
+        e.stopPropagation();
+        if (!confirm('Delete this meal plan?')) return;
+        db.collection('meal_plans').doc(id).delete().then(function() {
+            loadPlans();
+        });
+    }
+
+    loadPlans();
+    </script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | Meal Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f4f7f4; color: #1e2a1e; min-height: 100vh;
+        }
+        nav {
+            max-width: 1100px; margin: 0 auto;
+            display: flex; gap: 28px; align-items: center; padding: 16px 24px;
+        }
+        nav .site-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.15rem; font-weight: 700;
+            color: #1e2a1e; text-decoration: none; margin-right: auto;
+        }
+        nav a { color: #7a8a7a; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1e2a1e; }
+
+        .hero {
+            background: linear-gradient(135deg, #2d4a3e 0%, #3a6b56 40%, #2d4a3e 100%);
+            color: white; padding: 44px 40px 38px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(144,200,144,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(180,220,160,0.08) 0%, transparent 50%);
+            animation: shimmer 15s ease-in-out infinite alternate;
+        }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; }
+        .hero h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 8px; }
+        .hero .subtitle { font-size: 1rem; opacity: 0.7; }
+
+        .page-wrap {
+            max-width: 700px; margin: -20px auto 0;
+            padding: 0 24px 60px; position: relative; z-index: 2;
+        }
+        .card {
+            background: white; border-radius: 16px;
+            padding: 28px; margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.04);
+            opacity: 0; animation: fadeInUp 0.5s ease forwards;
+        }
+        .card-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.2rem; font-weight: 700; margin-bottom: 16px;
+            padding-bottom: 10px; border-bottom: 1px solid #d4ddd4;
+        }
+        .card-subtitle {
+            font-size: 0.85rem; color: #7a8a7a; margin-bottom: 20px; line-height: 1.5;
+        }
+
+        .form-row { margin-bottom: 18px; }
+        .form-row label {
+            display: block; font-size: 0.75rem; font-weight: 700;
+            color: #7a8a7a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+        }
+        .form-row input, .form-row select, .form-row textarea {
+            font-family: 'Inter', sans-serif; font-size: 0.9rem;
+            padding: 10px 14px; border: 1px solid #d4ddd4;
+            border-radius: 12px; background: #fafcfa; color: #1e2a1e;
+            width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+            outline: none; border-color: #4a8a4a;
+            box-shadow: 0 0 0 3px rgba(74,138,74,0.12); background: white;
+        }
+        .form-row textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+        .form-row select { cursor: pointer; border-radius: 50px; }
+        .form-row .hint { font-size: 0.78rem; color: #7a8a7a; margin-top: 4px; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip {
+            padding: 6px 14px; border: 1px solid #d4ddd4;
+            border-radius: 50px; font-size: 0.82rem; font-weight: 500;
+            color: #4a5e4a; cursor: pointer; transition: all 0.2s;
+            user-select: none;
+        }
+        .chip:hover { border-color: #4a8a4a; }
+        .chip.selected { background: #2d4a3e; color: #a3d49a; border-color: #2d4a3e; }
+
+        .btn {
+            font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700;
+            padding: 12px 28px; border: none; border-radius: 50px; cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary { background: #2d4a3e; color: #a3d49a; }
+        .btn-primary:hover { background: #3a6b56; box-shadow: 0 6px 20px rgba(45,74,62,0.25); }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
+        .status-msg { font-size: 0.85rem; margin-top: 12px; min-height: 20px; }
+        .status-msg .success { color: #2d6a4f; }
+        .status-msg .error { color: #c0392b; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #d4ddd4; border-top-color: #4a8a4a; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+        .footer {
+            background: #2d4a3e; color: rgba(255,255,255,0.6);
+            text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7;
+        }
+        .footer strong { color: #a3d49a; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(140,192,132,0.4); margin: 12px auto; }
+
+        @media (max-width: 640px) {
+            .hero { padding: 32px 24px 28px; }
+            .hero h1 { font-size: 1.8rem; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="site-title">Meal Planner</a>
+        <a href="index.html">Home</a>
+        <a href="plan.html">New Plan</a>
+        <a href="plans.html">Saved Plans</a>
+        <a href="samples.html">Samples</a>
+        <a href="profile.html" class="active">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Your Profile</h1>
+            <p class="subtitle">Help us personalize your nutrition analysis.</p>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <div class="card">
+            <div class="card-title">About You</div>
+            <div class="card-subtitle">This info is used to tailor nutrition recommendations. All fields are optional.</div>
+
+            <div style="background:#fff8e8;border:1px solid #f0dca0;border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:0.82rem;line-height:1.6;color:#7a6520;">
+                <strong style="color:#8a7020;">Important:</strong> Please do not enter any PII or PHI in this form.
+                <span id="pii-toggle" style="color:#4a8a4a;cursor:pointer;font-weight:600;text-decoration:underline;" onclick="document.getElementById('pii-info').style.display=document.getElementById('pii-info').style.display==='none'?'block':'none'">What is PII/PHI?</span>
+                <div id="pii-info" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid #f0dca0;font-size:0.78rem;color:#6a5a20;">
+                    <strong>PII (Personally Identifiable Information)</strong> includes full legal name, Social Security number, date of birth, home address, phone number, driver's license number, financial account numbers, or any data that could uniquely identify you.<br><br>
+                    <strong>PHI (Protected Health Information)</strong> includes medical diagnoses, prescription details, lab results, health insurance IDs, treatment history, or any information about your health conditions that is linked to your identity.<br><br>
+                    First name or nickname, general age, and broad dietary preferences are fine. Avoid entering anything that could be used to identify you or your medical history.
+                </div>
+                <div style="margin-top:6px;">By using this site, you agree to our <a href="terms.html" style="color:#4a8a4a;font-weight:600;">Terms &amp; Conditions</a>.</div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-row">
+                    <label for="prof-name">Name</label>
+                    <input type="text" id="prof-name" placeholder="Your name">
+                </div>
+                <div class="form-row">
+                    <label for="prof-age">Age</label>
+                    <input type="number" id="prof-age" placeholder="e.g. 35" min="1" max="120">
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-row">
+                    <label for="prof-gender">Gender</label>
+                    <select id="prof-gender">
+                        <option value="">Prefer not to say</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="prof-activity">Activity Level</label>
+                    <select id="prof-activity">
+                        <option value="">Not specified</option>
+                        <option value="sedentary">Sedentary</option>
+                        <option value="lightly active">Lightly Active</option>
+                        <option value="moderately active">Moderately Active</option>
+                        <option value="very active">Very Active</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="animation-delay:0.1s">
+            <div class="card-title">Dietary Preferences</div>
+
+            <div class="form-row">
+                <label>Diet Type</label>
+                <div class="chip-group" id="diet-chips">
+                    <span class="chip" data-val="no restrictions">No Restrictions</span>
+                    <span class="chip" data-val="vegetarian">Vegetarian</span>
+                    <span class="chip" data-val="vegan">Vegan</span>
+                    <span class="chip" data-val="keto">Keto</span>
+                    <span class="chip" data-val="paleo">Paleo</span>
+                    <span class="chip" data-val="pescetarian">Pescetarian</span>
+                    <span class="chip" data-val="predominantly vegetarian">Predominantly Vegetarian</span>
+                    <span class="chip" data-val="mediterranean">Mediterranean</span>
+                    <span class="chip" data-val="gluten-free">Gluten-Free</span>
+                    <span class="chip" data-val="dairy-free">Dairy-Free</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label for="prof-diet-other">Other Dietary Notes</label>
+                <textarea id="prof-diet-other" placeholder="e.g. I eat chicken occasionally, no red meat, prefer whole grains, intermittent fasting 16:8..." style="min-height:60px;"></textarea>
+            </div>
+
+            <div class="form-row">
+                <label for="prof-allergies">Allergies / Intolerances</label>
+                <input type="text" id="prof-allergies" placeholder="e.g. nuts, shellfish, lactose...">
+                <div class="hint">Comma-separated</div>
+            </div>
+
+            <div class="form-row">
+                <label for="prof-dislikes">Foods You Dislike</label>
+                <input type="text" id="prof-dislikes" placeholder="e.g. olives, mushrooms, cilantro...">
+                <div class="hint">Comma-separated</div>
+            </div>
+        </div>
+
+        <div class="card" style="animation-delay:0.2s">
+            <div class="card-title">Goals &amp; Interests</div>
+
+            <div class="form-row">
+                <label>Nutrition Goals</label>
+                <div class="chip-group" id="goal-chips">
+                    <span class="chip" data-val="general health">General Health</span>
+                    <span class="chip" data-val="weight loss">Weight Loss</span>
+                    <span class="chip" data-val="muscle gain">Muscle Gain</span>
+                    <span class="chip" data-val="more energy">More Energy</span>
+                    <span class="chip" data-val="heart health">Heart Health</span>
+                    <span class="chip" data-val="gut health">Gut Health</span>
+                    <span class="chip" data-val="lower sugar">Lower Sugar</span>
+                    <span class="chip" data-val="more protein">More Protein</span>
+                    <span class="chip" data-val="more fiber">More Fiber</span>
+                    <span class="chip" data-val="anti-inflammatory">Anti-Inflammatory</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label for="prof-calories">Daily Calorie Target (optional)</label>
+                <input type="number" id="prof-calories" placeholder="e.g. 2000" min="500" max="5000">
+                <div class="hint">Leave blank to let the AI recommend based on your profile</div>
+            </div>
+
+            <div class="form-row">
+                <label for="prof-notes">Anything Else?</label>
+                <textarea id="prof-notes" placeholder="e.g. I'm training for a marathon, I prefer simple meals, I cook in batches on Sundays..."></textarea>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+        </div>
+        <div id="save-status" class="status-msg"></div>
+    </div>
+
+    <footer class="footer">
+        <strong>Meal Planner</strong>
+        <div class="footer-divider"></div>
+        AI-powered weekly meal planning with nutrition insights.
+        <div style="margin-top:8px;"><a href="contact.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Contact Us</a> &nbsp;&middot;&nbsp; <a href="terms.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Terms</a> &nbsp;&middot;&nbsp; <a href="donate.html" style="color:#a3d49a;text-decoration:none;font-size:0.82rem;font-weight:500;">Support this project</a></div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    var db = firebase.firestore();
+    </script>
+    <script src="js/auth.js?v=1"></script>
+    <script>
+    // Chip selection logic
+    document.querySelectorAll('.chip-group').forEach(function(group) {
+        group.querySelectorAll('.chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                chip.classList.toggle('selected');
+            });
+        });
+    });
+
+    function getSelectedChips(groupId) {
+        var chips = [];
+        document.getElementById(groupId).querySelectorAll('.chip.selected').forEach(function(c) {
+            chips.push(c.dataset.val);
+        });
+        return chips;
+    }
+
+    function setSelectedChips(groupId, values) {
+        if (!values || !values.length) return;
+        document.getElementById(groupId).querySelectorAll('.chip').forEach(function(c) {
+            c.classList.toggle('selected', values.indexOf(c.dataset.val) !== -1);
+        });
+    }
+
+    // Load profile on auth ready
+    requireAuth(function(user) {
+        db.collection('user_profiles').doc(user.uid).get().then(function(doc) {
+            if (!doc.exists) return;
+            var p = doc.data();
+            if (p.name) document.getElementById('prof-name').value = p.name;
+            if (p.age) document.getElementById('prof-age').value = p.age;
+            if (p.gender) document.getElementById('prof-gender').value = p.gender;
+            if (p.activityLevel) document.getElementById('prof-activity').value = p.activityLevel;
+            if (p.allergies) document.getElementById('prof-allergies').value = p.allergies;
+            if (p.dislikes) document.getElementById('prof-dislikes').value = p.dislikes;
+            if (p.dietOther) document.getElementById('prof-diet-other').value = p.dietOther;
+            if (p.calorieTarget) document.getElementById('prof-calories').value = p.calorieTarget;
+            if (p.notes) document.getElementById('prof-notes').value = p.notes;
+            setSelectedChips('diet-chips', p.dietTypes);
+            setSelectedChips('goal-chips', p.goals);
+        });
+    });
+
+    function saveProfile() {
+        if (!currentUser) { alert('Please sign in first.'); return; }
+
+        var profile = {
+            userId: currentUser.uid,
+            name: document.getElementById('prof-name').value.trim(),
+            age: document.getElementById('prof-age').value ? parseInt(document.getElementById('prof-age').value) : null,
+            gender: document.getElementById('prof-gender').value,
+            activityLevel: document.getElementById('prof-activity').value,
+            dietTypes: getSelectedChips('diet-chips'),
+            allergies: document.getElementById('prof-allergies').value.trim(),
+            dislikes: document.getElementById('prof-dislikes').value.trim(),
+            dietOther: document.getElementById('prof-diet-other').value.trim(),
+            goals: getSelectedChips('goal-chips'),
+            calorieTarget: document.getElementById('prof-calories').value ? parseInt(document.getElementById('prof-calories').value) : null,
+            notes: document.getElementById('prof-notes').value.trim(),
+            updatedAt: new Date().toISOString()
+        };
+
+        var statusEl = document.getElementById('save-status');
+        statusEl.innerHTML = '<span class="spinner"></span> Saving...';
+
+        db.collection('user_profiles').doc(currentUser.uid).set(profile, { merge: true }).then(function() {
+            statusEl.innerHTML = '<span class="success">Profile saved! Your nutrition reviews will now be personalized.</span>';
+        }).catch(function(err) {
+            statusEl.innerHTML = '<span class="error">Error: ' + err.message + '</span>';
+        });
+    }
+    </script>
+</body>
+</html>

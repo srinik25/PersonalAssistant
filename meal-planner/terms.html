@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms &amp; Conditions | Meal Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f4f7f4; color: #1e2a1e; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        nav {
+            max-width: 1100px; margin: 0 auto; width: 100%;
+            display: flex; gap: 28px; align-items: center; padding: 16px 24px;
+        }
+        nav .site-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.15rem; font-weight: 700;
+            color: #1e2a1e; text-decoration: none; margin-right: auto;
+        }
+        nav a { color: #7a8a7a; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1e2a1e; }
+
+        .hero {
+            background: linear-gradient(135deg, #2d4a3e 0%, #3a6b56 40%, #2d4a3e 100%);
+            color: white; padding: 48px 40px 42px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(144,200,144,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(180,220,160,0.08) 0%, transparent 50%);
+            animation: shimmer 15s ease-in-out infinite alternate;
+        }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; }
+        .hero h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.2rem; font-weight: 800; margin-bottom: 8px;
+        }
+        .hero .subtitle { font-size: 0.92rem; opacity: 0.7; }
+
+        .page-wrap {
+            max-width: 740px; margin: -20px auto 0;
+            padding: 0 24px 60px; position: relative; z-index: 2;
+            flex: 1;
+        }
+        .card {
+            background: white; border-radius: 16px;
+            padding: 36px; margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.04);
+            opacity: 0; animation: fadeInUp 0.5s ease forwards;
+        }
+
+        .terms-content h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.1rem; font-weight: 700; color: #2d4a3e;
+            margin-top: 28px; margin-bottom: 10px;
+            padding-bottom: 6px; border-bottom: 1px solid #e8ede8;
+        }
+        .terms-content h2:first-child { margin-top: 0; }
+        .terms-content p {
+            font-size: 0.88rem; color: #4a5e4a; line-height: 1.75;
+            margin-bottom: 12px;
+        }
+        .terms-content ul {
+            list-style: none; margin-bottom: 12px;
+        }
+        .terms-content ul li {
+            padding: 4px 0 4px 20px; font-size: 0.88rem; color: #4a5e4a;
+            position: relative; line-height: 1.6;
+        }
+        .terms-content ul li::before {
+            content: ''; position: absolute; left: 0; top: 12px;
+            width: 6px; height: 6px; border-radius: 50%; background: #8cc084;
+        }
+        .terms-content strong { color: #2d4a3e; }
+        .terms-content .effective-date {
+            font-size: 0.8rem; color: #7a8a7a; font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .footer {
+            background: #2d4a3e; color: rgba(255,255,255,0.6);
+            text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7;
+        }
+        .footer strong { color: #a3d49a; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(140,192,132,0.4); margin: 12px auto; }
+
+        @media (max-width: 640px) {
+            .hero { padding: 36px 24px 30px; }
+            .hero h1 { font-size: 1.7rem; }
+            .card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="site-title">Meal Planner</a>
+        <a href="index.html">Home</a>
+        <a href="plan.html">New Plan</a>
+        <a href="plans.html">Saved Plans</a>
+        <a href="samples.html">Samples</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Terms &amp; Conditions</h1>
+            <p class="subtitle">Please read these terms before using Meal Planner.</p>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <div class="card">
+            <div class="terms-content">
+                <p class="effective-date">Effective Date: March 26, 2026</p>
+
+                <h2>1. Acceptance of Terms</h2>
+                <p>By accessing or using Meal Planner ("the Service"), you agree to be bound by these Terms &amp; Conditions. If you do not agree, please do not use the Service.</p>
+
+                <h2>2. AI-Generated Content Disclaimer</h2>
+                <p>Meal Planner uses artificial intelligence (AI) and large language models (LLMs) to provide nutrition analysis, calorie estimates, macro breakdowns, and dietary suggestions. <strong>This content is generated by AI and is for informational purposes only.</strong></p>
+                <ul>
+                    <li>AI-generated nutrition information may contain inaccuracies, estimation errors, or incomplete data</li>
+                    <li>Calorie counts, macro breakdowns, and nutrient analyses are <strong>approximations</strong>, not precise measurements</li>
+                    <li>AI suggestions are not a substitute for professional medical or dietary advice</li>
+                    <li>We make reasonable efforts to ensure accuracy through multi-step AI validation, but we <strong>cannot guarantee</strong> the correctness of any AI-generated content</li>
+                </ul>
+                <p><strong>Always consult a qualified healthcare provider, registered dietitian, or nutritionist before making significant changes to your diet, especially if you have medical conditions, allergies, or specific health concerns.</strong></p>
+
+                <h2>3. Not Medical Advice</h2>
+                <p>The Service does not provide medical advice, diagnosis, or treatment. Nothing on this site should be construed as medical advice. Any reliance you place on information provided by the Service is strictly at your own risk.</p>
+
+                <h2>4. Personal Information &amp; Privacy</h2>
+                <p>We take your privacy seriously. However:</p>
+                <ul>
+                    <li><strong>Do not enter PII (Personally Identifiable Information)</strong> such as your full legal name, Social Security number, date of birth, home address, phone number, or financial information</li>
+                    <li><strong>Do not enter PHI (Protected Health Information)</strong> such as medical diagnoses, prescription details, lab results, health insurance IDs, or treatment history</li>
+                    <li>Profile information (first name, age, general dietary preferences) is stored in cloud databases to personalize your experience</li>
+                    <li>Meal plan data and profile information may be sent to third-party AI services (OpenAI) for nutrition analysis</li>
+                    <li>We make <strong>reasonable efforts to secure your information</strong> using industry-standard cloud infrastructure (Firebase/Google Cloud), but <strong>no system is 100% secure</strong></li>
+                </ul>
+
+                <h2>5. Data Storage &amp; Security</h2>
+                <p>Your data is stored on Firebase (Google Cloud Platform). While we employ reasonable security measures:</p>
+                <ul>
+                    <li>We cannot guarantee absolute security of data transmitted over the internet or stored electronically</li>
+                    <li>You are responsible for maintaining the confidentiality of your account credentials</li>
+                    <li>We are not liable for unauthorized access resulting from factors beyond our reasonable control</li>
+                </ul>
+
+                <h2>6. Use at Your Own Risk</h2>
+                <p>The Service is provided <strong>"as is" and "as available"</strong> without warranties of any kind, either express or implied. We do not warrant that:</p>
+                <ul>
+                    <li>The Service will be uninterrupted, error-free, or secure</li>
+                    <li>AI-generated content will be accurate, complete, or reliable</li>
+                    <li>The Service will meet your specific requirements or expectations</li>
+                </ul>
+                <p><strong>Your use of the Service is at your sole discretion and risk.</strong> We shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from your use of or inability to use the Service.</p>
+
+                <h2>7. User Responsibilities</h2>
+                <ul>
+                    <li>You agree to use the Service only for its intended purpose of meal planning</li>
+                    <li>You agree not to enter sensitive personal, medical, or financial information</li>
+                    <li>You are responsible for verifying any nutrition information with qualified professionals</li>
+                    <li>You agree not to misuse, overload, or attempt to compromise the Service</li>
+                </ul>
+
+                <h2>8. Third-Party Services</h2>
+                <p>The Service relies on third-party providers including:</p>
+                <ul>
+                    <li><strong>Google Firebase</strong> for authentication and data storage</li>
+                    <li><strong>OpenAI</strong> for AI-powered nutrition analysis</li>
+                </ul>
+                <p>These services have their own terms of service and privacy policies. We are not responsible for the practices of these third-party providers.</p>
+
+                <h2>9. Changes to Terms</h2>
+                <p>We reserve the right to update these Terms &amp; Conditions at any time. Continued use of the Service after changes are posted constitutes your acceptance of the revised terms.</p>
+
+                <h2>10. Contact</h2>
+                <p>If you have questions about these terms, please <a href="contact.html" style="color:#4a8a4a;font-weight:600;">contact us</a>.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Meal Planner</strong>
+        <div class="footer-divider"></div>
+        AI-powered weekly meal planning with nutrition insights.
+        <div style="margin-top:8px;"><a href="contact.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Contact Us</a> &nbsp;&middot;&nbsp; <a href="terms.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Terms</a> &nbsp;&middot;&nbsp; <a href="donate.html" style="color:#a3d49a;text-decoration:none;font-size:0.82rem;font-weight:500;">Support this project</a></div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Detail | Finance Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f3f8; color: #1e2430; min-height: 100vh; display: flex; flex-direction: column; }
+        nav { max-width: 1100px; margin: 0 auto; width: 100%; display: flex; gap: 28px; align-items: center; padding: 16px 24px; }
+        nav .site-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; font-weight: 700; color: #1e2430; text-decoration: none; margin-right: auto; }
+        nav a { color: #6a7a8e; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1e2430; }
+
+        .hero { background: linear-gradient(135deg, #1e2d4a 0%, #2a4a7a 40%, #1e2d4a 100%); color: white; padding: 44px 40px 38px; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 70%, rgba(122,176,212,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(163,200,232,0.08) 0%, transparent 50%); animation: shimmer 15s ease-in-out infinite alternate; }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; }
+        .hero h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 8px; }
+        .hero .subtitle { font-size: 1rem; opacity: 0.7; }
+        .hero .type-badge { display: inline-block; padding: 4px 14px; border-radius: 50px; background: rgba(255,255,255,0.15); font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
+
+        .page-wrap { max-width: 800px; margin: -20px auto 0; padding: 0 24px 60px; position: relative; z-index: 2; flex: 1; }
+
+        .card { background: white; border-radius: 16px; padding: 28px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); opacity: 0; animation: fadeInUp 0.5s ease forwards; }
+        .card-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #d0d8e4; }
+
+        .form-row { margin-bottom: 14px; }
+        .form-row label { display: block; font-size: 0.75rem; font-weight: 700; color: #6a7a8e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .form-row input, .form-row select, .form-row textarea {
+            font-family: 'Inter', sans-serif; font-size: 0.9rem; padding: 10px 14px;
+            border: 1px solid #d0d8e4; border-radius: 12px; background: #f8f9fc; color: #1e2430;
+            width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-row input:focus, .form-row select:focus, .form-row textarea:focus { outline: none; border-color: #4a7aaa; box-shadow: 0 0 0 3px rgba(74,122,170,0.12); background: white; }
+        .form-row textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+        .form-row select { width: auto; border-radius: 50px; cursor: pointer; }
+
+        .btn { font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700; padding: 10px 24px; border: none; border-radius: 50px; cursor: pointer; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary { background: #1e2d4a; color: #a3c8e8; }
+        .btn-primary:hover { background: #2a4a7a; box-shadow: 0 6px 20px rgba(30,45,74,0.25); }
+        .btn-secondary { background: white; color: #1e2d4a; border: 2px solid #d0d8e4; }
+        .btn-secondary:hover { border-color: #4a7aaa; }
+        .btn-success { background: #4a7aaa; color: white; }
+        .btn-success:hover { background: #3a6a9a; box-shadow: 0 6px 20px rgba(74,122,170,0.3); }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+        /* HOLDINGS TABLE */
+        .holdings-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .holdings-table th { text-align: left; font-size: 0.7rem; font-weight: 700; color: #6a7a8e; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 10px; border-bottom: 2px solid #d0d8e4; }
+        .holdings-table td { padding: 10px; border-bottom: 1px solid #e8ecf2; vertical-align: middle; }
+        .holdings-table tr:hover { background: #f8f9fc; }
+        .fund-name { font-weight: 600; color: #1e2d4a; }
+        .fund-amount { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; }
+        .gain { color: #27ae60; font-weight: 600; font-size: 0.82rem; }
+        .loss { color: #c0392b; font-weight: 600; font-size: 0.82rem; }
+        .holdings-total { font-family: 'Playfair Display', Georgia, serif; font-size: 1.3rem; font-weight: 800; color: #1e2d4a; padding: 12px 0; }
+        .fund-actions button {
+            font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600; padding: 4px 10px;
+            border-radius: 50px; border: 1px solid #d0d8e4; background: white; color: #6a7a8e;
+            cursor: pointer; transition: all 0.2s; margin-right: 4px;
+        }
+        .fund-actions button:hover { border-color: #4a7aaa; color: #4a7aaa; }
+        .fund-actions button.delete:hover { border-color: #c0392b; color: #c0392b; }
+
+        .add-fund-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 12px; flex-wrap: wrap; }
+        .add-fund-row input { font-family: 'Inter', sans-serif; font-size: 0.85rem; padding: 8px 12px; border: 1px solid #d0d8e4; border-radius: 10px; background: #f8f9fc; }
+        .add-fund-row input:focus { outline: none; border-color: #4a7aaa; }
+
+        /* ANALYSIS */
+        .analysis-card { background: linear-gradient(135deg, #1e2d4a, #2a4a7a); border-radius: 16px; padding: 28px; color: white; margin-top: 20px; }
+        .analysis-card h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; }
+        .analysis-text { font-size: 0.88rem; color: rgba(255,255,255,0.9); line-height: 1.7; }
+        .analysis-text strong { color: white; }
+        .analysis-date { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+        .analysis-score { display: inline-block; padding: 4px 14px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; margin-bottom: 12px; }
+        .score-good { background: rgba(39,174,96,0.3); color: #a3e8c0; }
+        .score-ok { background: rgba(241,196,15,0.3); color: #f1e078; }
+        .score-needs-work { background: rgba(192,57,43,0.3); color: #e8a3a3; }
+
+        .status-msg { font-size: 0.85rem; margin-top: 12px; min-height: 20px; }
+        .success { color: #2d6a4f; }
+        .error { color: #c0392b; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #a3c8e8; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px; }
+
+        .footer { background: #1e2d4a; color: rgba(255,255,255,0.6); text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7; }
+        .footer strong { color: #a3c8e8; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(122,176,212,0.4); margin: 12px auto; }
+
+        @media (max-width: 768px) { .hero { padding: 32px 24px 28px; } .hero h1 { font-size: 1.6rem; } .card { padding: 20px; } .add-fund-row { flex-direction: column; } .add-fund-row input { width: 100%; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="site-title">Finance Tracker</a>
+        <a href="index.html">Dashboard</a>
+        <a href="accounts.html" class="active">Accounts</a>
+        <a href="analysis.html">Analysis</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1 id="acct-title">Account</h1>
+            <p class="subtitle" id="acct-subtitle"></p>
+            <div class="type-badge" id="acct-type-badge"></div>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <!-- ACCOUNT INFO -->
+        <div class="card">
+            <div class="card-title">Account Info</div>
+            <div class="form-row">
+                <label>Account Name</label>
+                <input type="text" id="acct-name">
+            </div>
+            <div class="form-row">
+                <label>Account Type</label>
+                <select id="acct-type">
+                    <option value="brokerage">Brokerage</option>
+                    <option value="ira">IRA</option>
+                    <option value="roth_ira">Roth IRA</option>
+                    <option value="401k">401(k)</option>
+                    <option value="529">529 Plan</option>
+                    <option value="annuity">Annuity</option>
+                    <option value="cd">CD</option>
+                    <option value="crypto">Crypto</option>
+                    <option value="mma">Money Market</option>
+                    <option value="savings">Savings</option>
+                    <option value="checking">Checking</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <button class="btn btn-secondary" onclick="saveAccountInfo()">Save Info</button>
+            <span id="info-status" class="status-msg"></span>
+        </div>
+
+        <!-- HOLDINGS -->
+        <div class="card" style="animation-delay:0.1s">
+            <div class="card-title">Holdings</div>
+            <div id="holdings-container"></div>
+            <div class="add-fund-row">
+                <input type="text" id="new-fund-name" placeholder="Fund/Asset name" style="flex:2;">
+                <input type="number" id="new-fund-amount" placeholder="Current value ($)" step="0.01" style="flex:1;">
+                <input type="number" id="new-fund-basis" placeholder="Cost basis ($, optional)" step="0.01" style="flex:1;">
+                <button class="btn btn-primary" style="font-size:0.82rem;padding:8px 18px;" onclick="addNewFund()">Add</button>
+            </div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="card" style="animation-delay:0.15s">
+            <div class="card-title">Notes &amp; Plans</div>
+            <div class="form-row" style="margin-bottom:0;">
+                <textarea id="acct-notes" placeholder="Investment plans, strategy, reminders..."></textarea>
+            </div>
+            <button class="btn btn-secondary" onclick="saveNotes()" style="margin-top:12px;">Save Notes</button>
+            <span id="notes-status" class="status-msg"></span>
+        </div>
+
+        <!-- AI ANALYSIS -->
+        <div class="card" style="animation-delay:0.2s">
+            <div class="card-title">AI Analysis</div>
+            <div class="btn-row" style="margin-top:0;">
+                <button class="btn btn-success" onclick="runAnalysis()">Generate Analysis</button>
+                <a href="accounts.html" class="btn btn-secondary" style="text-decoration:none;text-align:center;">Back to Accounts</a>
+            </div>
+            <div id="analysis-result"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Finance Tracker</strong>
+        <div class="footer-divider"></div>
+        AI-powered portfolio analysis — for educational purposes only.
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    var db = firebase.firestore();
+    </script>
+    <script src="js/auth.js?v=1"></script>
+    <script src="../secrets.js"></script>
+    <script src="js/config.js?v=1"></script>
+    <script src="js/app.js?v=1"></script>
+    <script>
+    var account = null;
+    var accountId = new URLSearchParams(window.location.search).get('id');
+    var userProfile = {};
+
+    requireAuth(function(user) {
+        if (!accountId) { location.href = 'accounts.html'; return; }
+        // Load profile and account in parallel
+        Promise.all([
+            loadAccount(accountId),
+            loadProfile()
+        ]).then(function(results) {
+            account = results[0];
+            userProfile = results[1];
+            if (!account) { location.href = 'accounts.html'; return; }
+            renderAccount();
+            loadLatestAnalysis();
+        });
+    });
+
+    function renderAccount() {
+        document.getElementById('acct-title').textContent = account.name;
+        document.getElementById('acct-subtitle').textContent = formatCurrency(sumFunds(account.funds)) + ' total';
+        document.getElementById('acct-type-badge').textContent = getAccountTypeLabel(account.type);
+        document.getElementById('acct-name').value = account.name;
+        document.getElementById('acct-type').value = account.type;
+        document.getElementById('acct-notes').value = account.notes || '';
+        renderHoldings();
+    }
+
+    function renderHoldings() {
+        var container = document.getElementById('holdings-container');
+        if (!account.funds || account.funds.length === 0) {
+            container.innerHTML = '<div style="color:#6a7a8e;font-style:italic;padding:12px 0;">No holdings yet. Add your first one below.</div>';
+            return;
+        }
+
+        var total = sumFunds(account.funds);
+        var totalBasis = account.funds.reduce(function(s, f) { return s + (Number(f.costBasis) || 0); }, 0);
+        var totalGL = totalBasis > 0 ? calculateGainLoss(total, totalBasis) : null;
+
+        var rows = account.funds.map(function(f, i) {
+            var gl = calculateGainLoss(f.amount, f.costBasis);
+            var glHtml = '';
+            if (gl) {
+                var cls = gl.isGain ? 'gain' : 'loss';
+                glHtml = '<span class="' + cls + '">' + (gl.isGain ? '+' : '') + formatCurrency(gl.value) + ' (' + gl.percentage.toFixed(1) + '%)</span>';
+            }
+            return '<tr>' +
+                '<td class="fund-name">' + esc(f.name) + '</td>' +
+                '<td class="fund-amount">' + formatCurrency(f.amount) + '</td>' +
+                '<td>' + (f.costBasis ? formatCurrency(f.costBasis) : '—') + '</td>' +
+                '<td>' + (glHtml || '—') + '</td>' +
+                '<td class="fund-actions">' +
+                    '<button onclick="editFund(' + i + ')">Edit</button>' +
+                    '<button class="delete" onclick="removeFund(' + i + ')">Del</button>' +
+                '</td>' +
+            '</tr>';
+        }).join('');
+
+        container.innerHTML = '<table class="holdings-table">' +
+            '<tr><th>Name</th><th>Value</th><th>Cost Basis</th><th>Gain/Loss</th><th></th></tr>' +
+            rows +
+        '</table>' +
+        '<div class="holdings-total">Total: ' + formatCurrency(total) +
+            (totalGL ? ' <span style="font-size:0.85rem;" class="' + (totalGL.isGain ? 'gain' : 'loss') + '">(' + (totalGL.isGain ? '+' : '') + totalGL.percentage.toFixed(1) + '%)</span>' : '') +
+        '</div>';
+    }
+
+    function addNewFund() {
+        var name = document.getElementById('new-fund-name').value.trim();
+        var amount = parseFloat(document.getElementById('new-fund-amount').value);
+        var basis = parseFloat(document.getElementById('new-fund-basis').value) || null;
+        if (!name || isNaN(amount)) { alert('Enter fund name and value.'); return; }
+
+        if (!account.funds) account.funds = [];
+        account.funds.push({ name: name, amount: amount, costBasis: basis });
+        saveAccountData().then(function() {
+            document.getElementById('new-fund-name').value = '';
+            document.getElementById('new-fund-amount').value = '';
+            document.getElementById('new-fund-basis').value = '';
+            renderHoldings();
+            updateHeroTotal();
+        });
+    }
+
+    function editFund(index) {
+        var f = account.funds[index];
+        var newName = prompt('Fund name:', f.name);
+        if (newName === null) return;
+        var newAmount = prompt('Current value ($):', f.amount);
+        if (newAmount === null) return;
+        var newBasis = prompt('Cost basis ($ or leave empty):', f.costBasis || '');
+
+        account.funds[index] = {
+            name: newName.trim() || f.name,
+            amount: parseFloat(newAmount) || f.amount,
+            costBasis: newBasis ? parseFloat(newBasis) : null
+        };
+        saveAccountData().then(function() { renderHoldings(); updateHeroTotal(); });
+    }
+
+    function removeFund(index) {
+        if (!confirm('Remove ' + account.funds[index].name + '?')) return;
+        account.funds.splice(index, 1);
+        saveAccountData().then(function() { renderHoldings(); updateHeroTotal(); });
+    }
+
+    function updateHeroTotal() {
+        document.getElementById('acct-subtitle').textContent = formatCurrency(sumFunds(account.funds)) + ' total';
+    }
+
+    function saveAccountInfo() {
+        account.name = document.getElementById('acct-name').value.trim();
+        account.type = document.getElementById('acct-type').value;
+        saveAccountData().then(function() {
+            document.getElementById('info-status').innerHTML = '<span class="success">Saved!</span>';
+            document.getElementById('acct-title').textContent = account.name;
+            document.getElementById('acct-type-badge').textContent = getAccountTypeLabel(account.type);
+        });
+    }
+
+    function saveNotes() {
+        account.notes = document.getElementById('acct-notes').value.trim();
+        saveAccountData().then(function() {
+            document.getElementById('notes-status').innerHTML = '<span class="success">Notes saved!</span>';
+        });
+    }
+
+    function saveAccountData() {
+        account.updatedAt = new Date().toISOString();
+        var data = JSON.parse(JSON.stringify(account));
+        delete data.id;
+        // Also save a snapshot for trend tracking
+        var total = sumFunds(account.funds);
+        saveSnapshot(accountId, total).catch(function() {});
+        return db.collection('finance_accounts').doc(accountId).update(data);
+    }
+
+    // ========== ANALYSIS ==========
+    function loadLatestAnalysis() {
+        db.collection('finance_analyses')
+            .where('userId', '==', currentUser.uid)
+            .where('scope', '==', accountId)
+            .orderBy('generatedAt', 'desc')
+            .limit(1)
+            .get()
+            .then(function(snap) {
+                if (snap.empty) return;
+                var data = snap.docs[0].data();
+                renderAnalysis(data.analysis, data.generatedAt);
+            }).catch(function() {});
+    }
+
+    function runAnalysis() {
+        var resultEl = document.getElementById('analysis-result');
+        resultEl.innerHTML = '<div style="text-align:center;padding:20px;color:#6a7a8e;"><span class="spinner" style="border-color:#d0d8e4;border-top-color:#4a7aaa;"></span> Generating analysis...</div>';
+
+        generateAccountAnalysis(account, userProfile).then(function(analysis) {
+            var now = new Date().toISOString();
+            // Save analysis
+            db.collection('finance_analyses').add({
+                userId: currentUser.uid,
+                scope: accountId,
+                analysis: analysis,
+                generatedAt: now
+            });
+            renderAnalysis(analysis, now);
+        }).catch(function(err) {
+            resultEl.innerHTML = '<div style="color:#c0392b;padding:12px;">Error: ' + esc(err.message) + '</div>';
+        });
+    }
+
+    function renderAnalysis(text, dateStr) {
+        var resultEl = document.getElementById('analysis-result');
+        var scoreMatch = text.match(/HEALTH SCORE[:\s]*(\d+)/i) || text.match(/SCORE[:\s]*(\d+)/i);
+        var score = scoreMatch ? parseInt(scoreMatch[1]) : null;
+        var scoreBadge = '';
+        if (score !== null) {
+            var cls = score >= 7 ? 'score-good' : score >= 5 ? 'score-ok' : 'score-needs-work';
+            var label = score >= 7 ? 'Healthy' : score >= 5 ? 'Fair' : 'Needs Attention';
+            scoreBadge = '<span class="analysis-score ' + cls + '">' + score + '/10 — ' + label + '</span>';
+        }
+        var date = dateStr ? new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+
+        resultEl.innerHTML = '<div class="analysis-card">' +
+            '<h3>AI Account Analysis</h3>' +
+            (date ? '<div class="analysis-date">Generated ' + date + '</div>' : '') +
+            scoreBadge +
+            '<div class="analysis-text">' + formatAnalysisText(text) + '</div>' +
+            FINANCE_DISCLAIMER.replace('rgba(0,0,0,0.1)', 'rgba(255,255,255,0.15)').replace('#6a7a8e', 'rgba(255,255,255,0.5)') +
+        '</div>';
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | Finance Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f3f8; color: #1e2430; min-height: 100vh; display: flex; flex-direction: column; }
+        nav { max-width: 1100px; margin: 0 auto; width: 100%; display: flex; gap: 28px; align-items: center; padding: 16px 24px; }
+        nav .site-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; font-weight: 700; color: #1e2430; text-decoration: none; margin-right: auto; }
+        nav a { color: #6a7a8e; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1e2430; }
+
+        .hero { background: linear-gradient(135deg, #1e2d4a 0%, #2a4a7a 40%, #1e2d4a 100%); color: white; padding: 56px 40px 48px; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 70%, rgba(122,176,212,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(163,200,232,0.08) 0%, transparent 50%); animation: shimmer 15s ease-in-out infinite alternate; }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+        .hero h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 10px; }
+        .hero .subtitle { font-size: 1rem; opacity: 0.75; line-height: 1.6; }
+
+        .page-wrap { max-width: 640px; margin: -20px auto 0; padding: 0 24px 60px; position: relative; z-index: 2; flex: 1; }
+        .card { background: white; border-radius: 16px; padding: 32px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); opacity: 0; animation: fadeInUp 0.5s ease forwards; }
+        .card-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #d0d8e4; }
+
+        .form-row { margin-bottom: 18px; }
+        .form-row label { display: block; font-size: 0.75rem; font-weight: 700; color: #6a7a8e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .form-row input, .form-row textarea { font-family: 'Inter', sans-serif; font-size: 0.9rem; padding: 10px 14px; border: 1px solid #d0d8e4; border-radius: 12px; background: #f8f9fc; color: #1e2430; width: 100%; transition: border-color 0.2s, box-shadow 0.2s; }
+        .form-row input:focus, .form-row textarea:focus { outline: none; border-color: #4a7aaa; box-shadow: 0 0 0 3px rgba(74,122,170,0.12); background: white; }
+        .form-row textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+        .chip-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .chip {
+            padding: 8px 18px; border: 2px solid #d0d8e4; border-radius: 50px;
+            font-size: 0.85rem; font-weight: 600; color: #3e5068; cursor: pointer;
+            transition: all 0.2s; user-select: none;
+        }
+        .chip:hover { border-color: #4a7aaa; }
+        .chip.selected { background: #1e2d4a; color: #a3c8e8; border-color: #1e2d4a; }
+
+        .warning-banner {
+            background: #fff8e6; border: 1px solid #f0d060; border-radius: 12px;
+            padding: 14px 18px; margin-bottom: 20px; font-size: 0.82rem; color: #8a6d00; line-height: 1.5;
+        }
+        .warning-banner strong { color: #6d5600; }
+
+        .btn { font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700; padding: 12px 28px; border: none; border-radius: 50px; cursor: pointer; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary { background: #1e2d4a; color: #a3c8e8; }
+        .btn-primary:hover { background: #2a4a7a; box-shadow: 0 6px 20px rgba(30,45,74,0.25); }
+
+        .status-msg { font-size: 0.85rem; margin-top: 12px; min-height: 20px; }
+        .success { color: #2d6a4f; }
+        .error { color: #c0392b; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .footer { background: #1e2d4a; color: rgba(255,255,255,0.6); text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7; }
+        .footer strong { color: #a3c8e8; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(122,176,212,0.4); margin: 12px auto; }
+
+        @media (max-width: 640px) { .hero { padding: 40px 24px 36px; } .hero h1 { font-size: 1.8rem; } .card { padding: 24px; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="site-title">Finance Tracker</a>
+        <a href="index.html">Dashboard</a>
+        <a href="accounts.html">Accounts</a>
+        <a href="analysis.html">Analysis</a>
+        <a href="profile.html" class="active">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Financial Profile</h1>
+            <p class="subtitle">Your age, goals, and risk tolerance help personalize AI analysis.</p>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <div class="card">
+            <div class="card-title">About You</div>
+            <div class="warning-banner">
+                <strong>Privacy:</strong> Do not enter your full name, SSN, account numbers, or other sensitive PII. Only your age and goals are shared with AI for analysis — never your identity.
+            </div>
+            <div class="form-row">
+                <label>Age</label>
+                <input type="number" id="prof-age" min="18" max="120" placeholder="e.g. 45">
+            </div>
+            <div class="form-row">
+                <label>Target Retirement Age (optional)</label>
+                <input type="number" id="prof-retirement" min="30" max="120" placeholder="e.g. 60">
+            </div>
+        </div>
+
+        <div class="card" style="animation-delay:0.1s">
+            <div class="card-title">Financial Goals</div>
+            <div class="form-row">
+                <label>Your Goals</label>
+                <textarea id="prof-goals" placeholder="e.g. Retire by 60, kids' college fund, build emergency fund, pay off mortgage..."></textarea>
+            </div>
+            <div class="form-row">
+                <label>Risk Tolerance</label>
+                <div class="chip-group" id="risk-chips">
+                    <div class="chip" data-value="conservative" onclick="selectRisk(this)">Conservative</div>
+                    <div class="chip" data-value="moderate" onclick="selectRisk(this)">Moderate</div>
+                    <div class="chip" data-value="aggressive" onclick="selectRisk(this)">Aggressive</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Additional Notes</label>
+                <textarea id="prof-notes" placeholder="Any other financial context, constraints, or preferences..."></textarea>
+            </div>
+        </div>
+
+        <div class="card" style="animation-delay:0.2s">
+            <button class="btn btn-primary" onclick="saveProfileData()">Save Profile</button>
+            <div id="save-status" class="status-msg"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Finance Tracker</strong>
+        <div class="footer-divider"></div>
+        AI-powered portfolio analysis — for educational purposes only.
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    var db = firebase.firestore();
+    </script>
+    <script src="js/auth.js?v=1"></script>
+    <script>
+    var selectedRisk = '';
+
+    function selectRisk(el) {
+        document.querySelectorAll('#risk-chips .chip').forEach(function(c) { c.classList.remove('selected'); });
+        el.classList.add('selected');
+        selectedRisk = el.dataset.value;
+    }
+
+    requireAuth(function(user) {
+        db.collection('finance_profiles').doc(user.uid).get().then(function(doc) {
+            if (!doc.exists) return;
+            var d = doc.data();
+            if (d.age) document.getElementById('prof-age').value = d.age;
+            if (d.retirementAge) document.getElementById('prof-retirement').value = d.retirementAge;
+            if (d.goals) document.getElementById('prof-goals').value = d.goals;
+            if (d.notes) document.getElementById('prof-notes').value = d.notes;
+            if (d.riskTolerance) {
+                selectedRisk = d.riskTolerance;
+                document.querySelectorAll('#risk-chips .chip').forEach(function(c) {
+                    c.classList.toggle('selected', c.dataset.value === d.riskTolerance);
+                });
+            }
+        });
+    });
+
+    function saveProfileData() {
+        var statusEl = document.getElementById('save-status');
+        statusEl.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #d0d8e4;border-top-color:#4a7aaa;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;"></span> Saving...';
+
+        db.collection('finance_profiles').doc(currentUser.uid).set({
+            userId: currentUser.uid,
+            age: document.getElementById('prof-age').value ? parseInt(document.getElementById('prof-age').value) : null,
+            retirementAge: document.getElementById('prof-retirement').value ? parseInt(document.getElementById('prof-retirement').value) : null,
+            goals: document.getElementById('prof-goals').value.trim(),
+            riskTolerance: selectedRisk,
+            notes: document.getElementById('prof-notes').value.trim(),
+            updatedAt: new Date().toISOString()
+        }, { merge: true }).then(function() {
+            statusEl.innerHTML = '<span class="success">Profile saved!</span>';
+        }).catch(function(err) {
+            statusEl.innerHTML = '<span class="error">Error: ' + err.message + '</span>';
+        });
+    }
+    </script>
+</body>
+</html>

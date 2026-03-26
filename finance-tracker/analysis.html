@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis | Finance Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f3f8; color: #1e2430; min-height: 100vh; display: flex; flex-direction: column; }
+        nav { max-width: 1100px; margin: 0 auto; width: 100%; display: flex; gap: 28px; align-items: center; padding: 16px 24px; }
+        nav .site-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; font-weight: 700; color: #1e2430; text-decoration: none; margin-right: auto; }
+        nav a { color: #6a7a8e; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1e2430; }
+
+        .hero { background: linear-gradient(135deg, #1e2d4a 0%, #2a4a7a 40%, #1e2d4a 100%); color: white; padding: 56px 40px 48px; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 70%, rgba(122,176,212,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(163,200,232,0.08) 0%, transparent 50%); animation: shimmer 15s ease-in-out infinite alternate; }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+        .hero h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 10px; }
+        .hero .subtitle { font-size: 1rem; opacity: 0.75; line-height: 1.6; }
+
+        .page-wrap { max-width: 800px; margin: -20px auto 0; padding: 0 24px 60px; position: relative; z-index: 2; flex: 1; }
+
+        .card { background: white; border-radius: 16px; padding: 28px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); opacity: 0; animation: fadeInUp 0.5s ease forwards; }
+        .card-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #d0d8e4; }
+
+        .btn { font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700; padding: 12px 28px; border: none; border-radius: 50px; cursor: pointer; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary { background: #1e2d4a; color: #a3c8e8; }
+        .btn-primary:hover { background: #2a4a7a; box-shadow: 0 6px 20px rgba(30,45,74,0.25); }
+        .btn-success { background: #4a7aaa; color: white; }
+        .btn-success:hover { background: #3a6a9a; box-shadow: 0 6px 20px rgba(74,122,170,0.3); }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .summary-bar { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+        .summary-item { background: #f8f9fc; border-radius: 12px; padding: 14px 18px; flex: 1; min-width: 140px; }
+        .summary-label { font-size: 0.7rem; font-weight: 700; color: #6a7a8e; text-transform: uppercase; letter-spacing: 0.05em; }
+        .summary-value { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; font-weight: 800; color: #1e2d4a; margin-top: 2px; }
+
+        .analysis-card { background: linear-gradient(135deg, #1e2d4a, #2a4a7a); border-radius: 16px; padding: 28px; color: white; margin-top: 20px; }
+        .analysis-card h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; }
+        .analysis-text { font-size: 0.88rem; color: rgba(255,255,255,0.9); line-height: 1.7; }
+        .analysis-text strong { color: white; }
+        .analysis-date { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+        .analysis-score { display: inline-block; padding: 4px 14px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; margin-bottom: 12px; }
+        .score-good { background: rgba(39,174,96,0.3); color: #a3e8c0; }
+        .score-ok { background: rgba(241,196,15,0.3); color: #f1e078; }
+        .score-needs-work { background: rgba(192,57,43,0.3); color: #e8a3a3; }
+
+        .disclaimer { font-size: 0.78rem; color: rgba(255,255,255,0.5); line-height: 1.5; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.15); }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #a3c8e8; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px; }
+
+        .footer { background: #1e2d4a; color: rgba(255,255,255,0.6); text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7; }
+        .footer strong { color: #a3c8e8; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(122,176,212,0.4); margin: 12px auto; }
+
+        @media (max-width: 768px) { .hero { padding: 40px 24px 36px; } .hero h1 { font-size: 1.8rem; } .card { padding: 20px; } .summary-bar { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="site-title">Finance Tracker</a>
+        <a href="index.html">Dashboard</a>
+        <a href="accounts.html">Accounts</a>
+        <a href="analysis.html" class="active">Analysis</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Portfolio Analysis</h1>
+            <p class="subtitle">AI-powered comprehensive analysis across all your accounts.</p>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <div class="card">
+            <div class="card-title">Overall Financial Analysis</div>
+            <div id="summary-bar" class="summary-bar"></div>
+            <div class="btn-row">
+                <button class="btn btn-success" onclick="runOverallAnalysis()">Generate Full Analysis</button>
+            </div>
+            <div id="analysis-result"></div>
+        </div>
+
+        <div class="card" style="animation-delay:0.1s">
+            <div class="card-title">Privacy Note</div>
+            <p style="font-size:0.88rem;color:#3e5068;line-height:1.6;">
+                Your account names and personal identity are <strong>never</strong> sent to AI. Only account types, fund names, amounts,
+                and your age/goals are shared for analysis. All data is stored securely in your Firebase account and is only accessible to you.
+            </p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Finance Tracker</strong>
+        <div class="footer-divider"></div>
+        AI-powered portfolio analysis — for educational purposes only.
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    var db = firebase.firestore();
+    </script>
+    <script src="js/auth.js?v=1"></script>
+    <script src="../secrets.js"></script>
+    <script src="js/config.js?v=1"></script>
+    <script src="js/app.js?v=1"></script>
+    <script>
+    var allAccounts = [];
+    var userProfile = {};
+
+    requireAuth(function(user) {
+        Promise.all([loadAccounts(), loadProfile()]).then(function(results) {
+            allAccounts = results[0];
+            userProfile = results[1];
+            renderSummary();
+            loadLatestOverall();
+        });
+    });
+
+    function renderSummary() {
+        var totalValue = 0;
+        var totalHoldings = 0;
+        allAccounts.forEach(function(a) {
+            totalValue += sumFunds(a.funds);
+            totalHoldings += (a.funds ? a.funds.length : 0);
+        });
+
+        document.getElementById('summary-bar').innerHTML =
+            '<div class="summary-item"><div class="summary-label">Total Portfolio</div><div class="summary-value">' + formatCurrency(totalValue) + '</div></div>' +
+            '<div class="summary-item"><div class="summary-label">Accounts</div><div class="summary-value">' + allAccounts.length + '</div></div>' +
+            '<div class="summary-item"><div class="summary-label">Holdings</div><div class="summary-value">' + totalHoldings + '</div></div>' +
+            '<div class="summary-item"><div class="summary-label">Risk Tolerance</div><div class="summary-value">' + (userProfile.riskTolerance || 'Not set') + '</div></div>';
+    }
+
+    function loadLatestOverall() {
+        db.collection('finance_analyses')
+            .where('userId', '==', currentUser.uid)
+            .where('scope', '==', 'overall')
+            .orderBy('generatedAt', 'desc')
+            .limit(1)
+            .get()
+            .then(function(snap) {
+                if (snap.empty) return;
+                var data = snap.docs[0].data();
+                renderOverallAnalysis(data.analysis, data.generatedAt);
+            }).catch(function() {});
+    }
+
+    function runOverallAnalysis() {
+        if (allAccounts.length === 0) {
+            document.getElementById('analysis-result').innerHTML = '<div style="color:#c0392b;padding:12px;">No accounts found. <a href="accounts.html" style="color:#4a7aaa;">Add accounts first</a>.</div>';
+            return;
+        }
+
+        var resultEl = document.getElementById('analysis-result');
+        resultEl.innerHTML = '<div style="text-align:center;padding:24px;color:#6a7a8e;"><span class="spinner" style="border-color:#d0d8e4;border-top-color:#4a7aaa;"></span> Generating comprehensive portfolio analysis... This may take a moment.</div>';
+
+        // Load snapshots for trend data
+        loadSnapshots('overall', 5).then(function(snapshots) {
+            return generateOverallAnalysis(allAccounts, userProfile, snapshots);
+        }).then(function(analysis) {
+            var now = new Date().toISOString();
+            db.collection('finance_analyses').add({
+                userId: currentUser.uid,
+                scope: 'overall',
+                analysis: analysis,
+                generatedAt: now
+            });
+            renderOverallAnalysis(analysis, now);
+        }).catch(function(err) {
+            resultEl.innerHTML = '<div style="color:#c0392b;padding:12px;">Error: ' + esc(err.message) + '</div>';
+        });
+    }
+
+    function renderOverallAnalysis(text, dateStr) {
+        var resultEl = document.getElementById('analysis-result');
+        var scoreMatch = text.match(/PORTFOLIO HEALTH SCORE[:\s]*(\d+)/i) || text.match(/HEALTH SCORE[:\s]*(\d+)/i) || text.match(/SCORE[:\s]*(\d+)/i);
+        var score = scoreMatch ? parseInt(scoreMatch[1]) : null;
+        var scoreBadge = '';
+        if (score !== null) {
+            var cls = score >= 7 ? 'score-good' : score >= 5 ? 'score-ok' : 'score-needs-work';
+            var label = score >= 7 ? 'Healthy Portfolio' : score >= 5 ? 'Fair' : 'Needs Attention';
+            scoreBadge = '<span class="analysis-score ' + cls + '">' + score + '/10 — ' + label + '</span>';
+        }
+        var date = dateStr ? new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+
+        resultEl.innerHTML = '<div class="analysis-card">' +
+            '<h3>Comprehensive Portfolio Analysis</h3>' +
+            (date ? '<div class="analysis-date">Generated ' + date + '</div>' : '') +
+            scoreBadge +
+            '<div class="analysis-text">' + formatAnalysisText(text) + '</div>' +
+            '<div class="disclaimer"><strong>Disclaimer:</strong> This is AI-generated educational analysis, NOT financial advice. No personally identifiable information is sent to AI models. Consult a certified financial planner for personalized investment advice.</div>' +
+        '</div>';
+    }
+    </script>
+</body>
+</html>

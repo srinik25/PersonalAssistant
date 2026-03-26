@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Meal Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f4f7f4; color: #1e2a1e; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        nav {
+            max-width: 1100px; margin: 0 auto; width: 100%;
+            display: flex; gap: 28px; align-items: center; padding: 16px 24px;
+        }
+        nav .site-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.15rem; font-weight: 700;
+            color: #1e2a1e; text-decoration: none; margin-right: auto;
+        }
+
+        .login-wrap {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 40px 24px;
+        }
+        .login-card {
+            background: white; border-radius: 20px; padding: 40px 36px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.04);
+            width: 100%; max-width: 420px;
+            opacity: 0; animation: fadeInUp 0.5s ease forwards;
+        }
+        .login-header {
+            text-align: center; margin-bottom: 28px;
+        }
+        .login-header h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.8rem; font-weight: 800; margin-bottom: 6px;
+        }
+        .login-header p { font-size: 0.9rem; color: #7a8a7a; }
+
+        .tab-toggle {
+            display: flex; margin-bottom: 24px; border-radius: 50px;
+            background: #f4f7f4; padding: 4px;
+        }
+        .tab-toggle button {
+            flex: 1; padding: 10px; border: none; border-radius: 50px;
+            background: transparent; font-family: 'Inter', sans-serif;
+            font-size: 0.88rem; font-weight: 600; color: #7a8a7a;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .tab-toggle button.active {
+            background: #2d4a3e; color: #a3d49a;
+        }
+
+        .form-row { margin-bottom: 16px; }
+        .form-row label {
+            display: block; font-size: 0.75rem; font-weight: 700;
+            color: #7a8a7a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+        }
+        .form-row input {
+            font-family: 'Inter', sans-serif; font-size: 0.9rem;
+            padding: 12px 16px; border: 1px solid #d4ddd4;
+            border-radius: 12px; background: #fafcfa; color: #1e2a1e;
+            width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-row input:focus {
+            outline: none; border-color: #4a8a4a;
+            box-shadow: 0 0 0 3px rgba(74,138,74,0.12); background: white;
+        }
+
+        .submit-btn {
+            width: 100%; padding: 14px; border: none; border-radius: 50px;
+            background: #2d4a3e; color: #a3d49a;
+            font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700;
+            cursor: pointer; margin-top: 8px;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .submit-btn:hover {
+            background: #3a6b56; transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(45,74,62,0.25);
+        }
+        .submit-btn:disabled {
+            opacity: 0.6; cursor: not-allowed; transform: none;
+        }
+
+        .status-msg {
+            text-align: center; font-size: 0.85rem; margin-top: 14px;
+            min-height: 20px; line-height: 1.5;
+        }
+        .status-msg.error { color: #c0392b; }
+        .status-msg.success { color: #2d6a4f; }
+
+        .divider {
+            text-align: center; color: #b0b8b0; font-size: 0.8rem;
+            margin: 20px 0; position: relative;
+        }
+        .divider::before, .divider::after {
+            content: ''; position: absolute; top: 50%;
+            width: 40%; height: 1px; background: #d4ddd4;
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .guest-link {
+            display: block; text-align: center; font-size: 0.85rem;
+            color: #4a8a4a; text-decoration: none; font-weight: 500;
+        }
+        .guest-link:hover { text-decoration: underline; }
+
+        .footer {
+            background: #2d4a3e; color: rgba(255,255,255,0.6);
+            text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7;
+        }
+        .footer strong { color: #a3d49a; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(140,192,132,0.4); margin: 12px auto; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #a3d49a; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+        @media (max-width: 480px) {
+            .login-card { padding: 28px 24px; }
+            .login-header h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="site-title">Meal Planner</a>
+    </nav>
+
+    <div class="login-wrap">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>Welcome</h1>
+                <p>Sign in to save and access your meal plans.</p>
+            </div>
+
+            <div class="tab-toggle">
+                <button class="active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+                <button id="tab-register" onclick="switchTab('register')">Register</button>
+            </div>
+
+            <form id="auth-form" onsubmit="handleSubmit(event)">
+                <div class="form-row" id="name-row" style="display:none">
+                    <label for="display-name">Name</label>
+                    <input type="text" id="display-name" placeholder="Your name">
+                </div>
+                <div class="form-row">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="you@example.com" required>
+                </div>
+                <div class="form-row">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Min 6 characters" required minlength="6">
+                </div>
+                <button type="submit" class="submit-btn" id="submit-btn">Sign In</button>
+                <div id="status" class="status-msg"></div>
+            </form>
+
+            <div class="divider">or sign in without a password</div>
+
+            <form id="magic-form" onsubmit="handleMagicLink(event)">
+                <div class="form-row">
+                    <label for="magic-email">Email</label>
+                    <input type="email" id="magic-email" placeholder="you@example.com" required>
+                </div>
+                <button type="submit" class="submit-btn" id="magic-btn" style="background:#4a8a4a;color:white;">Send Sign-In Link</button>
+                <div id="magic-status" class="status-msg"></div>
+            </form>
+
+            <div class="divider" style="margin-top:24px;">or</div>
+            <a href="index.html" class="guest-link">Continue without signing in</a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Meal Planner</strong>
+        <div class="footer-divider"></div>
+        AI-powered weekly meal planning with nutrition insights.
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+
+    var auth = firebase.auth();
+    var currentMode = 'login';
+
+    // Check if returning from email link sign-in
+    if (auth.isSignInWithEmailLink(window.location.href)) {
+        var savedEmail = window.localStorage.getItem('emailForSignIn');
+        if (!savedEmail) {
+            savedEmail = window.prompt('Please enter your email to confirm sign-in:');
+        }
+        if (savedEmail) {
+            auth.signInWithEmailLink(savedEmail, window.location.href)
+                .then(function() {
+                    window.localStorage.removeItem('emailForSignIn');
+                    window.location.href = 'index.html';
+                })
+                .catch(function(err) {
+                    document.getElementById('status').innerHTML = '<span class="error">' + friendlyError(err.code) + '</span>';
+                });
+        }
+    }
+
+    // If already logged in, redirect
+    auth.onAuthStateChanged(function(user) {
+        if (user && !auth.isSignInWithEmailLink(window.location.href)) {
+            window.location.href = 'index.html';
+        }
+    });
+
+    function switchTab(mode) {
+        currentMode = mode;
+        document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+        document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+        document.getElementById('name-row').style.display = mode === 'register' ? 'block' : 'none';
+        document.getElementById('submit-btn').textContent = mode === 'login' ? 'Sign In' : 'Create Account';
+        document.getElementById('status').innerHTML = '';
+    }
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        var email = document.getElementById('email').value.trim();
+        var password = document.getElementById('password').value;
+        var statusEl = document.getElementById('status');
+        var btn = document.getElementById('submit-btn');
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> ' + (currentMode === 'login' ? 'Signing in...' : 'Creating account...');
+        statusEl.innerHTML = '';
+
+        if (currentMode === 'register') {
+            var displayName = document.getElementById('display-name').value.trim();
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(function(cred) {
+                    if (displayName) {
+                        return cred.user.updateProfile({ displayName: displayName });
+                    }
+                })
+                .then(function() {
+                    window.location.href = 'index.html';
+                })
+                .catch(function(err) {
+                    statusEl.innerHTML = '<span class="error">' + friendlyError(err.code) + '</span>';
+                    btn.disabled = false;
+                    btn.textContent = 'Create Account';
+                });
+        } else {
+            auth.signInWithEmailAndPassword(email, password)
+                .then(function() {
+                    window.location.href = 'index.html';
+                })
+                .catch(function(err) {
+                    statusEl.innerHTML = '<span class="error">' + friendlyError(err.code) + '</span>';
+                    btn.disabled = false;
+                    btn.textContent = 'Sign In';
+                });
+        }
+    }
+
+    function handleMagicLink(e) {
+        e.preventDefault();
+        var email = document.getElementById('magic-email').value.trim();
+        var statusEl = document.getElementById('magic-status');
+        var btn = document.getElementById('magic-btn');
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Sending link...';
+        statusEl.innerHTML = '';
+
+        var actionCodeSettings = {
+            url: window.location.origin + '/login.html',
+            handleCodeInApp: true
+        };
+
+        auth.sendSignInLinkToEmail(email, actionCodeSettings)
+            .then(function() {
+                window.localStorage.setItem('emailForSignIn', email);
+                statusEl.innerHTML = '<span class="success">Check your inbox! We sent a sign-in link to ' + email + '</span>';
+                btn.disabled = false;
+                btn.textContent = 'Send Sign-In Link';
+            })
+            .catch(function(err) {
+                statusEl.innerHTML = '<span class="error">' + friendlyError(err.code) + '</span>';
+                btn.disabled = false;
+                btn.textContent = 'Send Sign-In Link';
+            });
+    }
+
+    function friendlyError(code) {
+        switch(code) {
+            case 'auth/email-already-in-use': return 'This email is already registered. Try signing in.';
+            case 'auth/invalid-email': return 'Please enter a valid email address.';
+            case 'auth/weak-password': return 'Password must be at least 6 characters.';
+            case 'auth/user-not-found': return 'No account found with this email.';
+            case 'auth/wrong-password': return 'Incorrect password. Please try again.';
+            case 'auth/invalid-credential': return 'Invalid email or password. Please try again.';
+            case 'auth/too-many-requests': return 'Too many attempts. Please wait a moment.';
+            default: return 'Something went wrong. Please try again.';
+        }
+    }
+    </script>
+</body>
+</html>

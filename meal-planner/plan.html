@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Plan | Meal Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f4f7f4; color: #1e2a1e; min-height: 100vh;
+        }
+        nav {
+            max-width: 1100px; margin: 0 auto;
+            display: flex; gap: 28px; align-items: center; padding: 16px 24px;
+        }
+        nav .site-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.15rem; font-weight: 700;
+            color: #1e2a1e; text-decoration: none; margin-right: auto;
+        }
+        nav a { color: #7a8a7a; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1e2a1e; }
+
+        .hero {
+            background: linear-gradient(135deg, #2d4a3e 0%, #3a6b56 40%, #2d4a3e 100%);
+            color: white; padding: 44px 40px 38px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(144,200,144,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(180,220,160,0.08) 0%, transparent 50%);
+            animation: shimmer 15s ease-in-out infinite alternate;
+        }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; }
+        .hero h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 8px; }
+        .hero .subtitle { font-size: 1rem; opacity: 0.7; }
+
+        .page-wrap {
+            max-width: 800px; margin: -20px auto 0;
+            padding: 0 24px 60px; position: relative; z-index: 2;
+        }
+
+        /* STEPS */
+        .step { display: none; }
+        .step.active { display: block; }
+
+        .card {
+            background: white; border-radius: 16px;
+            padding: 28px; margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.04);
+            opacity: 0; animation: fadeInUp 0.5s ease forwards;
+        }
+        .card-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.2rem; font-weight: 700; margin-bottom: 16px;
+            padding-bottom: 10px; border-bottom: 1px solid #d4ddd4;
+        }
+
+        .form-row { margin-bottom: 18px; }
+        .form-row label {
+            display: block; font-size: 0.75rem; font-weight: 700;
+            color: #7a8a7a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+        }
+        .form-row input, .form-row select, .form-row textarea {
+            font-family: 'Inter', sans-serif; font-size: 0.9rem;
+            padding: 10px 14px; border: 1px solid #d4ddd4;
+            border-radius: 12px; background: #fafcfa; color: #1e2a1e;
+            width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+            outline: none; border-color: #4a8a4a;
+            box-shadow: 0 0 0 3px rgba(74,138,74,0.12); background: white;
+        }
+        .form-row textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+        .form-row select { cursor: pointer; width: auto; border-radius: 50px; }
+
+        .radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
+        .radio-option {
+            padding: 10px 20px; border: 2px solid #d4ddd4;
+            border-radius: 50px; cursor: pointer; font-size: 0.88rem;
+            font-weight: 600; color: #4a5e4a; transition: all 0.2s;
+            user-select: none;
+        }
+        .radio-option:hover { border-color: #4a8a4a; }
+        .radio-option.selected {
+            background: #2d4a3e; color: #a3d49a; border-color: #2d4a3e;
+        }
+        .radio-option input { display: none; }
+
+        .btn {
+            font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700;
+            padding: 12px 28px; border: none; border-radius: 50px; cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary {
+            background: #2d4a3e; color: #a3d49a;
+        }
+        .btn-primary:hover { background: #3a6b56; box-shadow: 0 6px 20px rgba(45,74,62,0.25); }
+        .btn-secondary {
+            background: white; color: #2d4a3e; border: 2px solid #d4ddd4;
+        }
+        .btn-secondary:hover { border-color: #4a8a4a; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .btn-success {
+            background: #4a8a4a; color: white;
+        }
+        .btn-success:hover { background: #3a7a3a; box-shadow: 0 6px 20px rgba(74,138,74,0.3); }
+        .btn-warn {
+            background: #e8a040; color: white;
+        }
+        .btn-warn:hover { background: #d08a30; }
+
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
+        /* PROGRESS */
+        .progress-bar {
+            display: flex; gap: 4px; margin-bottom: 24px; padding-top: 24px;
+        }
+        .progress-step {
+            flex: 1; height: 4px; border-radius: 2px;
+            background: #d4ddd4; transition: background 0.3s;
+        }
+        .progress-step.done { background: #4a8a4a; }
+        .progress-step.current { background: #8cc084; }
+
+        /* DAY NAV */
+        .day-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+        .day-tab {
+            padding: 8px 16px; border-radius: 50px;
+            border: 1px solid #d4ddd4; background: white; color: #7a8a7a;
+            font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .day-tab:hover { border-color: #4a8a4a; color: #4a8a4a; }
+        .day-tab.active { background: #2d4a3e; color: #a3d49a; border-color: #2d4a3e; }
+        .day-tab.filled { border-color: #4a8a4a; color: #4a8a4a; }
+        .day-tab.filled::after { content: ' \2713'; }
+
+        /* MEAL INPUT */
+        .meal-section { margin-bottom: 20px; }
+        .meal-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .meal-label {
+            font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; color: #4a8a4a;
+        }
+        .dine-out-check {
+            display: flex; align-items: center; gap: 6px; cursor: pointer;
+            font-size: 0.78rem; color: #7a8a7a;
+        }
+        .dine-out-check input[type="checkbox"] {
+            width: 16px; height: 16px; accent-color: #e8a040; cursor: pointer;
+        }
+        .dine-out-label { font-weight: 600; color: #b08030; }
+        .snack-note {
+            font-size: 0.75rem; color: #7a8a7a; margin-top: 6px;
+            font-style: italic; padding-left: 2px;
+        }
+        .dine-out-badge {
+            display: inline-block; font-size: 0.6rem; font-weight: 700;
+            padding: 2px 8px; border-radius: 50px; margin-left: 6px;
+            background: rgba(232,160,64,0.15); color: #b08030;
+            text-transform: uppercase; letter-spacing: 0.03em;
+        }
+
+        /* NUTRITION REVIEW */
+        .nutrition-card {
+            background: linear-gradient(135deg, #f0f7f0, #e8f2e8);
+            border: 1px solid #c4ddc4; border-radius: 16px;
+            padding: 24px; margin-top: 20px;
+        }
+        .nutrition-card h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.05rem; font-weight: 700; margin-bottom: 12px;
+            color: #2d4a3e;
+        }
+        .nutrition-score {
+            display: inline-block; padding: 4px 14px;
+            border-radius: 50px; font-size: 0.8rem; font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .score-good { background: #d4edda; color: #155724; }
+        .score-ok { background: #fff3cd; color: #856404; }
+        .score-needs-work { background: #f8d7da; color: #721c24; }
+        .nutrition-text { font-size: 0.88rem; color: #2d4a3e; line-height: 1.7; }
+        .nutrition-text strong { color: #1e2a1e; }
+        .nutrition-loading {
+            text-align: center; padding: 20px; color: #7a8a7a;
+            font-style: italic;
+        }
+
+        /* WEEK VIEW */
+        .week-grid { display: grid; gap: 12px; }
+        .week-day-card {
+            background: white; border-radius: 16px; padding: 20px;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            border-left: 4px solid #8cc084;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .week-day-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+        .week-day-name {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1rem; font-weight: 700; margin-bottom: 10px;
+            color: #2d4a3e;
+        }
+        .week-day-date { font-size: 0.78rem; color: #7a8a7a; margin-left: 8px; font-weight: 400; }
+        .week-meal { margin-bottom: 6px; font-size: 0.88rem; line-height: 1.5; }
+        .week-meal-type {
+            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+            color: #4a8a4a; letter-spacing: 0.05em; margin-right: 6px;
+        }
+        .week-meal-empty { color: #b0b8b0; font-style: italic; }
+        .week-edit-btn {
+            margin-top: 8px; font-size: 0.78rem; color: #4a8a4a;
+            cursor: pointer; background: none; border: none;
+            font-weight: 600; text-decoration: underline;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* OVERALL NUTRITION */
+        .overall-nutrition {
+            background: linear-gradient(135deg, #2d4a3e, #3a6b56);
+            border-radius: 16px; padding: 28px; color: white; margin-top: 20px;
+        }
+        .overall-nutrition h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;
+        }
+        .overall-nutrition .nutrition-text { color: rgba(255,255,255,0.9); }
+        .overall-nutrition .nutrition-text strong { color: white; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #d4ddd4; border-top-color: #4a8a4a; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px; }
+
+        .footer {
+            background: #2d4a3e; color: rgba(255,255,255,0.6);
+            text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7;
+        }
+        .footer strong { color: #a3d49a; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(140,192,132,0.4); margin: 12px auto; }
+
+        .status-msg { font-size: 0.85rem; margin-top: 12px; min-height: 20px; }
+        .status-msg.success { color: #2d6a4f; }
+        .status-msg.error { color: #c0392b; }
+
+        @media (max-width: 768px) {
+            .hero { padding: 32px 24px 28px; }
+            .hero h1 { font-size: 1.8rem; }
+            .page-wrap { padding: 0 16px 60px; }
+            .card { padding: 20px; }
+            .btn-row { flex-direction: column; }
+            .btn { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="site-title">Meal Planner</a>
+        <a href="index.html">Home</a>
+        <a href="plan.html" class="active">New Plan</a>
+        <a href="plans.html">Saved Plans</a>
+        <a href="samples.html">Samples</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1 id="hero-title">Create Your Meal Plan</h1>
+            <p class="subtitle" id="hero-subtitle">Set up your week, then fill in meals day by day.</p>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <div class="progress-bar" id="progress-bar"></div>
+
+        <!-- STEP 1: SETUP -->
+        <div class="step active" id="step-setup">
+            <div class="card">
+                <div class="card-title">Plan Setup</div>
+                <div class="form-row">
+                    <label>Plan Name (optional)</label>
+                    <input type="text" id="plan-name" placeholder="e.g. Healthy Week, Spring Detox...">
+                </div>
+                <div class="form-row">
+                    <label>Starting Date</label>
+                    <input type="date" id="start-date">
+                </div>
+                <div class="form-row">
+                    <label>How many days?</label>
+                    <div class="radio-group" id="day-mode">
+                        <label class="radio-option" data-value="5">
+                            <input type="radio" name="dayMode" value="5"> 5 Days (Weekdays)
+                        </label>
+                        <label class="radio-option selected" data-value="7">
+                            <input type="radio" name="dayMode" value="7" checked> 7 Days (Full Week)
+                        </label>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>Which meals?</label>
+                    <div class="radio-group" id="meal-mode">
+                        <label class="radio-option selected" data-value="all">
+                            <input type="radio" name="mealMode" value="all" checked> All 3 Meals
+                        </label>
+                        <label class="radio-option" data-value="ld">
+                            <input type="radio" name="mealMode" value="ld"> Lunch &amp; Dinner Only
+                        </label>
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="startPlanning()">Start Building Meals</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: DAY BUILDER -->
+        <div class="step" id="step-days">
+            <div class="day-tabs" id="day-tabs"></div>
+            <div class="card" id="day-card">
+                <div class="card-title" id="day-title">Monday</div>
+                <div id="meal-fields"></div>
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="saveDraft()">Save Draft</button>
+                    <button class="btn btn-success" onclick="reviewDay()">Review Nutrition</button>
+                    <button class="btn btn-primary" id="next-day-btn" onclick="nextDay()">Next Day</button>
+                </div>
+                <div id="day-status" class="status-msg"></div>
+                <div id="nutrition-result"></div>
+            </div>
+        </div>
+
+        <!-- STEP 3: WEEK REVIEW -->
+        <div class="step" id="step-review">
+            <div class="card">
+                <div class="card-title">Your Week at a Glance</div>
+                <div class="week-grid" id="week-grid"></div>
+                <div id="overall-nutrition"></div>
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="goBackToDays()">Edit Meals</button>
+                    <button class="btn btn-success" onclick="reviewFullWeek()">Full Week Nutrition Review</button>
+                    <button class="btn btn-primary" onclick="saveToFirebase()">Save Plan</button>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="downloadPDF()">Download PDF</button>
+                    <button class="btn btn-secondary" onclick="emailPlan()">Email Plan</button>
+                    <button class="btn btn-secondary" style="color:#c0392b;border-color:#e0b0b0;" onclick="deletePlan()">Delete Plan</button>
+                </div>
+                <div id="save-status" class="status-msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Meal Planner</strong>
+        <div class="footer-divider"></div>
+        AI-powered weekly meal planning with nutrition insights.
+        <div style="margin-top:8px;"><a href="contact.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Contact Us</a> &nbsp;&middot;&nbsp; <a href="terms.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Terms</a> &nbsp;&middot;&nbsp; <a href="donate.html" style="color:#a3d49a;text-decoration:none;font-size:0.82rem;font-weight:500;">Support this project</a></div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    var db = firebase.firestore();
+    </script>
+    <script src="js/auth.js?v=1"></script>
+    <script src="../secrets.js"></script>
+    <script src="js/config.js?v=1"></script>
+    <script src="js/plan.js?v=7"></script>
+</body>
+</html>

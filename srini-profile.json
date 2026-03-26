@@ -1,0 +1,105 @@
+{
+  "name": "Srini",
+  "location": {
+    "primary": "South Riding, Loudoun County, VA",
+    "secondary": "Rockville, Montgomery County, MD"
+  },
+  "personality_and_values": {
+    "core_traits": [
+      "Curious and discovery-oriented — drawn to things most people don't know about",
+      "Community-rooted — values local, intimate, and authentic over commercial or tourist-facing",
+      "Thoughtful and unhurried — prefers depth over novelty for its own sake",
+      "Environmentally attuned — genuinely interested in nature, ecology, and conservation",
+      "Culturally open — drawn to international, interdisciplinary, and cross-cultural experiences",
+      "Practical idealist — wants meaningful experiences without spending much money"
+    ],
+    "attracted_to": [
+      "Hidden gems and insider access",
+      "Places and events that reward curiosity",
+      "The intersection of science, nature, art, and history",
+      "Small-scale, intimate settings over large crowds",
+      "Things that feel rooted in a place — local history, local ecology, local community"
+    ],
+    "turned_off_by": [
+      "Generic tourist experiences",
+      "Overly commercial or crowded events",
+      "Anything that feels like filler or obligation",
+      "Farmers markets, generic family fairs, virtual events"
+    ]
+  },
+  "interests": {
+    "nature_and_outdoors": {
+      "description": "Nature is a primary source of joy and grounding — not just recreation but genuine curiosity about the living world",
+      "specifics": [
+        "Birding — patient, observational, loves the discipline of it",
+        "Wildflower identification and seasonal bloom chasing",
+        "Hiking trails with ecological or historical character",
+        "Self-guided wandering through arboreta, gardens, and preserves"
+      ]
+    },
+    "culture_and_arts": {
+      "description": "Drawn to art and culture that provokes thought or reveals something unexpected",
+      "specifics": [
+        "Theatre — 1-2 shows a year, prefers productions with edge, wit, or unusual angles over crowd-pleasers",
+        "Exhibitions that blend disciplines (science + art, nature + history)",
+        "Eastern European and Nordic/Scandinavian cultural festivals — food, tradition, community spirit",
+        "Casual live music in intimate venues"
+      ]
+    },
+    "food": {
+      "description": "Food as connection — to place, to culture, to people",
+      "specifics": [
+        "Indian, Middle Eastern, and Mexican cuisines",
+        "Vegetarian-forward and innovative/creative restaurants — places pushing boundaries, not just traditional",
+        "Exploring distinctive local breakfast and brunch spots when traveling",
+        "Markets and festivals where food tells a cultural story",
+        "New restaurant openings, pop-ups, and food events in NoVA/MoCo"
+      ]
+    },
+    "learning_and_ideas": {
+      "description": "Lifelong learner with broad curiosity",
+      "specifics": [
+        "In-person lectures — science, natural history, local history, author talks",
+        "Behind-the-scenes access to places and processes",
+        "Citizen science and conservation fieldwork"
+      ]
+    },
+    "reading": {
+      "description": "Deep, thought-provoking long-form reads — not news, not hot takes",
+      "topics": [
+        "Quantum physics and quantum computing",
+        "Cell biology, molecular biology, origin of life",
+        "Cosmos, astronomy, astrophysics",
+        "Human interest stories that surprise or move",
+        "Interdisciplinary pieces — science meets philosophy, nature meets culture"
+      ],
+      "sources": ["Longreads", "Quanta Magazine", "Substack", "The New Yorker", "The Guardian Long Read", "NYT Great Reads"]
+    }
+  },
+  "travel_style": {
+    "preference": "Slow, intentional, and local-first",
+    "typical_trip": "Day trips or short overnight stays to places with distinct character — small towns, historic landscapes, natural areas",
+    "example_trips": [
+      "New Hope + Lancaster PA — art, antiques, Amish country, great breakfast spots",
+      "Shenandoah Valley — state parks, arboreta, historic sites",
+      "Bucks County PA — river towns, wildflowers, food"
+    ]
+  },
+  "memorable_past_experiences": {
+    "description": "These reveal what resonates most — use as calibration for recommendations",
+    "list": [
+      "Woodcock walk at dusk — patience, surprise, wonder",
+      "Bluebell hike along the Potomac — seasonal beauty, quiet trails",
+      "Ukrainian Easter festival — cultural warmth, food, community",
+      "Food prep for homeless — hands-on, purposeful giving",
+      "Wolf Trap behind-the-scenes tour — insider access to a beloved place",
+      "Fierce Planets art/science exhibition at BlackRock — interdisciplinary, thought-provoking",
+      "Hello Dolly at Olney Theatre — joyful, well-crafted production"
+    ]
+  },
+  "planning_philosophy": {
+    "budget": "Free or low-cost; max ~$15 for a single outing",
+    "cadence": "A few intentional outings per month rather than a packed calendar",
+    "attitude": "Open to spontaneity but appreciates a good plan as a starting point"
+  }
+}

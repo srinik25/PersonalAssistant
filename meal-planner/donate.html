@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Us | Meal Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f4f7f4; color: #1e2a1e; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        nav {
+            max-width: 1100px; margin: 0 auto; width: 100%;
+            display: flex; gap: 28px; align-items: center; padding: 16px 24px;
+        }
+        nav .site-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.15rem; font-weight: 700;
+            color: #1e2a1e; text-decoration: none; margin-right: auto;
+        }
+        nav a { color: #7a8a7a; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1e2a1e; }
+
+        .hero {
+            background: linear-gradient(135deg, #2d4a3e 0%, #3a6b56 40%, #2d4a3e 100%);
+            color: white; padding: 56px 40px 48px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(144,200,144,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(180,220,160,0.08) 0%, transparent 50%);
+            animation: shimmer 15s ease-in-out infinite alternate;
+        }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+        .hero h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.4rem; font-weight: 800; margin-bottom: 10px;
+        }
+        .hero .subtitle { font-size: 1rem; opacity: 0.75; line-height: 1.6; }
+
+        .page-wrap {
+            max-width: 640px; margin: -20px auto 0;
+            padding: 0 24px 60px; position: relative; z-index: 2;
+            flex: 1;
+        }
+
+        .card {
+            background: white; border-radius: 16px;
+            padding: 32px; margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.04);
+            opacity: 0; animation: fadeInUp 0.5s ease forwards;
+        }
+        .card-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.2rem; font-weight: 700; margin-bottom: 14px;
+            padding-bottom: 10px; border-bottom: 1px solid #d4ddd4;
+        }
+
+        .donate-text {
+            font-size: 0.92rem; color: #4a5e4a; line-height: 1.75; margin-bottom: 20px;
+        }
+
+        .cost-list { list-style: none; margin-bottom: 24px; }
+        .cost-list li {
+            padding: 8px 0 8px 24px; font-size: 0.88rem; color: #2d4a3e;
+            position: relative; line-height: 1.5;
+        }
+        .cost-list li::before {
+            content: ''; position: absolute; left: 0; top: 14px;
+            width: 8px; height: 8px; border-radius: 50%; background: #8cc084;
+        }
+
+        .payment-method {
+            background: #f4f7f4; border-radius: 12px; padding: 20px;
+            margin-bottom: 12px; display: flex; align-items: center; gap: 16px;
+        }
+        .payment-icon {
+            font-size: 1.8rem; width: 48px; height: 48px;
+            display: flex; align-items: center; justify-content: center;
+            background: white; border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .payment-info { flex: 1; }
+        .payment-name {
+            font-weight: 700; font-size: 0.95rem; margin-bottom: 2px;
+        }
+        .payment-handle {
+            font-size: 0.88rem; color: #4a8a4a; font-weight: 600;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+        .payment-placeholder {
+            font-size: 0.82rem; color: #7a8a7a; font-style: italic;
+        }
+
+        .thank-you {
+            text-align: center; padding: 20px;
+            font-size: 0.92rem; color: #4a5e4a; line-height: 1.6;
+        }
+        .thank-you strong {
+            display: block; font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.1rem; color: #2d4a3e; margin-bottom: 4px;
+        }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .footer {
+            background: #2d4a3e; color: rgba(255,255,255,0.6);
+            text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7;
+        }
+        .footer strong { color: #a3d49a; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(140,192,132,0.4); margin: 12px auto; }
+
+        @media (max-width: 640px) {
+            .hero { padding: 40px 24px 36px; }
+            .hero h1 { font-size: 1.8rem; }
+            .card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="site-title">Meal Planner</a>
+        <a href="index.html">Home</a>
+        <a href="plan.html">New Plan</a>
+        <a href="plans.html">Saved Plans</a>
+        <a href="samples.html">Samples</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Support Meal Planner</h1>
+            <p class="subtitle">Help us keep the lights on and the AI running.</p>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <div class="card">
+            <div class="card-title">Why We Need Your Support</div>
+            <p class="donate-text">
+                Meal Planner is a free tool built to help people eat better. But it does cost real money to run:
+            </p>
+            <ul class="cost-list">
+                <li>AI-powered nutrition analysis (every review = an API call)</li>
+                <li>Audio generation for accessibility features</li>
+                <li>Cloud database for storing your plans securely</li>
+                <li>Hosting and keeping the site running 24/7</li>
+            </ul>
+            <p class="donate-text">
+                If you find Meal Planner useful and want to help keep it going, consider donating any amount. There is no minimum and every bit helps. Thank you!
+            </p>
+        </div>
+
+        <div class="card" style="animation-delay:0.1s">
+            <div class="card-title">How to Donate</div>
+
+            <div class="payment-method">
+                <div class="payment-icon">&#128179;</div>
+                <div class="payment-info">
+                    <div class="payment-name">Zelle</div>
+                    <div class="payment-placeholder">Coming soon</div>
+                </div>
+            </div>
+
+            <div class="payment-method">
+                <div class="payment-icon">&#128178;</div>
+                <div class="payment-info">
+                    <div class="payment-name">Venmo</div>
+                    <div class="payment-placeholder">Coming soon</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="animation-delay:0.2s">
+            <div class="thank-you">
+                <strong>Thank You!</strong>
+                Your generosity helps us keep improving Meal Planner for everyone.
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Meal Planner</strong>
+        <div class="footer-divider"></div>
+        AI-powered weekly meal planning with nutrition insights.
+        <div style="margin-top:8px;"><a href="contact.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Contact Us</a> &nbsp;&middot;&nbsp; <a href="terms.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Terms</a> &nbsp;&middot;&nbsp; <a href="donate.html" style="color:#a3d49a;text-decoration:none;font-size:0.82rem;font-weight:500;">Support this project</a></div>
+    </footer>
+
+</body>
+</html>

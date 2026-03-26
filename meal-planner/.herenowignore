@@ -1,0 +1,7 @@
+node_modules
+functions
+.firebaserc
+firebase.json
+firestore.rules
+.git
+.gitignore

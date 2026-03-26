@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Meal Plans | Meal Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f4f7f4; color: #1e2a1e; min-height: 100vh; display: flex; flex-direction: column; }
+        nav { max-width: 1100px; margin: 0 auto; width: 100%; display: flex; gap: 28px; align-items: center; padding: 16px 24px; }
+        nav .site-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; font-weight: 700; color: #1e2a1e; text-decoration: none; margin-right: auto; }
+        nav a { color: #7a8a7a; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1e2a1e; }
+
+        .hero { background: linear-gradient(135deg, #2d4a3e 0%, #3a6b56 40%, #2d4a3e 100%); color: white; padding: 56px 40px 48px; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 70%, rgba(144,200,144,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(180,220,160,0.08) 0%, transparent 50%); animation: shimmer 15s ease-in-out infinite alternate; }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+        .hero h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 10px; }
+        .hero .subtitle { font-size: 1rem; opacity: 0.75; line-height: 1.6; }
+
+        .page-wrap { max-width: 1000px; margin: -20px auto 0; padding: 0 24px 60px; position: relative; z-index: 2; flex: 1; }
+
+        .section-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.5rem; font-weight: 800; margin: 32px 0 8px; color: #1e2a1e; }
+        .section-sub { color: #7a8a7a; font-size: 0.88rem; margin-bottom: 20px; line-height: 1.5; }
+
+        .sample-plan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 32px; }
+        .sample-day {
+            background: white; border-radius: 14px; padding: 18px 20px;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            border-left: 3px solid #8cc084;
+            opacity: 0; animation: fadeInUp 0.5s ease forwards;
+        }
+        .sample-day-name { font-family: 'Playfair Display', Georgia, serif; font-size: 0.92rem; font-weight: 700; color: #2d4a3e; margin-bottom: 8px; }
+        .sample-meal { font-size: 0.82rem; color: #4a5e4a; line-height: 1.5; margin-bottom: 4px; }
+        .sample-meal-type { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: #4a8a4a; letter-spacing: 0.03em; margin-right: 4px; }
+        .sample-dine-out { font-size: 0.6rem; color: #b08030; font-weight: 600; background: rgba(232,160,64,0.12); padding: 1px 6px; border-radius: 50px; margin-left: 4px; }
+        .sample-macros { font-size: 0.72rem; color: #7a8a7a; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e8ede8; }
+
+        .weekly-summary {
+            background: linear-gradient(135deg, #2d4a3e, #3a6b56);
+            border-radius: 16px; padding: 24px; color: white; text-align: center;
+            margin-bottom: 40px;
+        }
+        .weekly-summary h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.1rem; margin-bottom: 8px; }
+        .weekly-summary p { font-size: 0.85rem; opacity: 0.8; line-height: 1.6; }
+
+        .cta-btn {
+            display: inline-block; padding: 14px 32px; background: #8cc084; color: #1e2a1e;
+            border-radius: 50px; font-size: 0.95rem; font-weight: 700; text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .cta-btn:hover { background: #a3d49a; transform: translateY(-3px); box-shadow: 0 6px 24px rgba(140,192,132,0.35); }
+
+        .disclaimer { font-size: 0.78rem; color: #7a8a7a; text-align: center; margin-top: 8px; font-style: italic; line-height: 1.5; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .footer { background: #2d4a3e; color: rgba(255,255,255,0.6); text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7; }
+        .footer strong { color: #a3d49a; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(140,192,132,0.4); margin: 12px auto; }
+
+        @media (max-width: 640px) { .hero { padding: 40px 24px 36px; } .hero h1 { font-size: 1.8rem; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="site-title">Meal Planner</a>
+        <a href="index.html">Home</a>
+        <a href="plan.html">New Plan</a>
+        <a href="plans.html">Saved Plans</a>
+        <a href="samples.html" class="active">Samples</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Sample Meal Plans</h1>
+            <p class="subtitle">Get inspired with pre-made meal plans for different dietary styles.</p>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <!-- SAMPLE 1: Indian American Vegetarian -->
+        <h2 class="section-title">Indian American — Predominantly Vegetarian</h2>
+        <p class="section-sub">Mostly vegetarian with occasional chicken and salmon. Includes Indian staples, fusion meals, and 2-3 dining out meals per week.</p>
+
+        <div class="sample-plan-grid">
+            <div class="sample-day" style="animation-delay:0s">
+                <div class="sample-day-name">Monday</div>
+                <div class="sample-meal"><span class="sample-meal-type">Breakfast</span> Scrambled eggs (2) with avocado toast on Ezekiel bread, chai</div>
+                <div class="sample-meal"><span class="sample-meal-type">Lunch</span> Dal tadka with jeera rice, cucumber raita</div>
+                <div class="sample-meal"><span class="sample-meal-type">Dinner</span> Palak paneer, 2 chapati, green salad</div>
+                <div class="sample-meal"><span class="sample-meal-type">Snacks</span> Banana, Greek yogurt with honey, roasted chana</div>
+                <div class="sample-macros">~1,900 cal | P: 72g | C: 230g | F: 62g</div>
+            </div>
+            <div class="sample-day" style="animation-delay:0.05s">
+                <div class="sample-day-name">Tuesday</div>
+                <div class="sample-meal"><span class="sample-meal-type">Breakfast</span> Poha with peanuts, banana, green tea</div>
+                <div class="sample-meal"><span class="sample-meal-type">Lunch</span> Mexican rice bowl with black beans, avocado, salsa, sour cream <span class="sample-dine-out">Dining Out</span></div>
+                <div class="sample-meal"><span class="sample-meal-type">Dinner</span> Khichdi (dal + rice), pickle, papad</div>
+                <div class="sample-meal"><span class="sample-meal-type">Snacks</span> Hummus with Ezekiel bread, apple, masala chai</div>
+                <div class="sample-macros">~1,850 cal | P: 58g | C: 255g | F: 56g</div>
+            </div>
+            <div class="sample-day" style="animation-delay:0.1s">
+                <div class="sample-day-name">Wednesday</div>
+                <div class="sample-meal"><span class="sample-meal-type">Breakfast</span> Boiled eggs (2) with whole wheat toast, avocado, filter coffee</div>
+                <div class="sample-meal"><span class="sample-meal-type">Lunch</span> Chole (chickpea curry), 2 chapati, green salad</div>
+                <div class="sample-meal"><span class="sample-meal-type">Dinner</span> Salmon teriyaki with stir-fried vegetables, brown rice</div>
+                <div class="sample-meal"><span class="sample-meal-type">Snacks</span> Trail mix, banana, masala chai</div>
+                <div class="sample-macros">~2,000 cal | P: 82g | C: 235g | F: 65g</div>
+            </div>
+            <div class="sample-day" style="animation-delay:0.15s">
+                <div class="sample-day-name">Thursday</div>
+                <div class="sample-meal"><span class="sample-meal-type">Breakfast</span> Greek yogurt parfait with granola, banana, berries</div>
+                <div class="sample-meal"><span class="sample-meal-type">Lunch</span> Aloo gobi, moong dal, 2 chapati</div>
+                <div class="sample-meal"><span class="sample-meal-type">Dinner</span> Pad Thai noodles with tofu, vegetables, peanuts <span class="sample-dine-out">Dining Out</span></div>
+                <div class="sample-meal"><span class="sample-meal-type">Snacks</span> Hummus with carrots, roasted makhana, chai</div>
+                <div class="sample-macros">~1,800 cal | P: 60g | C: 248g | F: 55g</div>
+            </div>
+            <div class="sample-day" style="animation-delay:0.2s">
+                <div class="sample-day-name">Friday</div>
+                <div class="sample-meal"><span class="sample-meal-type">Breakfast</span> Upma with vegetables, masala chai</div>
+                <div class="sample-meal"><span class="sample-meal-type">Lunch</span> Rajma chawal (kidney bean curry with rice), pickle</div>
+                <div class="sample-meal"><span class="sample-meal-type">Dinner</span> Grilled chicken tikka, 2 chapati, raita, green salad <span class="sample-dine-out">Dining Out</span></div>
+                <div class="sample-meal"><span class="sample-meal-type">Snacks</span> Mixed nuts, mango lassi, dates</div>
+                <div class="sample-macros">~2,050 cal | P: 80g | C: 250g | F: 68g</div>
+            </div>
+            <div class="sample-day" style="animation-delay:0.25s">
+                <div class="sample-day-name">Saturday</div>
+                <div class="sample-meal"><span class="sample-meal-type">Breakfast</span> Dosa with sambar and coconut chutney, filter coffee</div>
+                <div class="sample-meal"><span class="sample-meal-type">Lunch</span> Paneer tikka wrap with mint chutney, sprout salad</div>
+                <div class="sample-meal"><span class="sample-meal-type">Dinner</span> Vegetable biryani, raita, papad</div>
+                <div class="sample-meal"><span class="sample-meal-type">Snacks</span> Avocado toast on Ezekiel bread, cutting chai, fruit chaat</div>
+                <div class="sample-macros">~1,950 cal | P: 56g | C: 270g | F: 62g</div>
+            </div>
+            <div class="sample-day" style="animation-delay:0.3s">
+                <div class="sample-day-name">Sunday</div>
+                <div class="sample-meal"><span class="sample-meal-type">Breakfast</span> Idli (4) with sambar, coconut chutney, chai</div>
+                <div class="sample-meal"><span class="sample-meal-type">Lunch</span> Egg bhurji (scrambled Indian-style), 2 chapati, salad</div>
+                <div class="sample-meal"><span class="sample-meal-type">Dinner</span> Kadhi pakora, steamed rice, bhindi fry</div>
+                <div class="sample-meal"><span class="sample-meal-type">Snacks</span> Greek yogurt, banana, roasted chana, herbal tea</div>
+                <div class="sample-macros">~1,850 cal | P: 68g | C: 240g | F: 58g</div>
+            </div>
+        </div>
+
+        <div class="weekly-summary">
+            <h3>Weekly Summary</h3>
+            <p>Average: ~1,915 cal/day | 3 dining out meals | Eggs 3x/week, chapati 3x, dal/khichdi featured, idli/dosa on weekends<br>
+            Includes: avocado, Greek yogurt, hummus + Ezekiel bread, Mexican rice bowl, Pad Thai, banana daily<br>
+            Rice limited to 1 meal/day (lunch or dinner). Macros estimated per USDA data for standard portions.</p>
+        </div>
+
+        <!-- CTA -->
+        <div style="text-align:center;margin-top:24px;">
+            <a href="plan.html" class="cta-btn">Create Your Own Plan</a>
+            <p class="disclaimer" style="margin-top:16px;">Use these as inspiration — customize meals to your preferences, allergies, and goals.</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Meal Planner</strong>
+        <div class="footer-divider"></div>
+        AI-powered weekly meal planning with nutrition insights.
+        <div style="margin-top:8px;"><a href="contact.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Contact Us</a> &nbsp;&middot;&nbsp; <a href="terms.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.82rem;font-weight:500;">Terms</a> &nbsp;&middot;&nbsp; <a href="donate.html" style="color:#a3d49a;text-decoration:none;font-size:0.82rem;font-weight:500;">Support this project</a></div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    </script>
+    <script src="js/auth.js?v=1"></script>
+</body>
+</html>

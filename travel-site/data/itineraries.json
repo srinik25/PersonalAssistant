@@ -1,0 +1,135 @@
+{
+  "trips": [
+    {
+      "id": "chile-bolivia",
+      "title": "Chile & Bolivia: Deserts, Salt Flats & Otherworldly Landscapes",
+      "tagline": "From the driest desert on Earth to the world's largest salt flat.",
+      "countries": ["Chile", "Bolivia"],
+      "region": "South America",
+      "duration": "12 days",
+      "style": "Adventure & Nature",
+      "bestSeason": "May – October (dry season)",
+      "heroImage": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80",
+      "overview": "A journey through the Atacama Desert and Bolivia's Uyuni Salt Flats — surreal landscapes, flamingo-dotted lagoons, ancient geysers at 14,000 feet, and some of the clearest night skies on the planet.",
+      "highlights": [
+        "Sunrise at El Tatio Geysers (4,320m)",
+        "Valle de la Luna sunset hike",
+        "3-day jeep tour across the Uyuni Salt Flats",
+        "Laguna Colorada — thousands of flamingos",
+        "Atacama stargazing — one of Earth's clearest skies"
+      ],
+      "itinerary": [
+        {"day": 1, "title": "Arrive Santiago", "desc": "Fly into Santiago. Explore Barrio Lastarria and Cerro San Cristóbal. Book a domestic flight to Calama for morning."},
+        {"day": 2, "title": "Santiago → San Pedro de Atacama", "desc": "Fly to Calama, transfer to San Pedro. Afternoon visit Valle de la Luna for sunset among wind-carved rock formations."},
+        {"day": 3, "title": "El Tatio Geysers & Atacama Villages", "desc": "4am departure for El Tatio — steaming geysers at sunrise in freezing altitude. Return via Machuca village for llama empanadas."},
+        {"day": 4, "title": "Atacama Lagoons & Stargazing", "desc": "Morning at Cejar and Tebinquinche lagoons (float in salt water). Evening stargazing tour with SPACE observatory."},
+        {"day": 5, "title": "Cross into Bolivia", "desc": "Early border crossing. Begin the 3-day jeep tour. Laguna Blanca and Laguna Verde at the foot of Volcán Licancabur."},
+        {"day": 6, "title": "Salvador Dalí Desert & Laguna Colorada", "desc": "Surreal rock formations in the Dalí Desert. Afternoon at Laguna Colorada — shallow red lake with thousands of James's flamingos."},
+        {"day": 7, "title": "Uyuni Salt Flat", "desc": "Full day on Salar de Uyuni — perspective photos on the infinite white expanse. Visit Isla Incahuasi (cactus island). Sunset on the salt flat."},
+        {"day": 8, "title": "Uyuni → Sucre", "desc": "Morning flight from Uyuni to Sucre. Explore Bolivia's constitutional capital — whitewashed colonial architecture, local markets."},
+        {"day": 9, "title": "Sucre Day Trip: Maragua Crater", "desc": "Hike the Maragua Crater — Jurassic dinosaur footprints, indigenous weaving villages, dramatic canyon landscapes."},
+        {"day": 10, "title": "Sucre → La Paz", "desc": "Fly to La Paz. Ride the Mi Teleférico cable cars for aerial city views. Evening at Mercado Lanza street food stalls."},
+        {"day": 11, "title": "La Paz & Death Road", "desc": "Optional: Mountain bike the legendary Yungas Road (Death Road). Or explore the Witches' Market and Valle de la Luna near La Paz."},
+        {"day": 12, "title": "Depart La Paz", "desc": "Morning at Tiwanaku ruins (pre-Inca). Afternoon flight home via Santa Cruz or Lima connection."}
+      ],
+      "tips": [
+        "Altitude is real — acclimatize in San Pedro (2,400m) before going higher",
+        "Bolivia visa: US citizens get visa on arrival at border ($160 cash)",
+        "Chile is pricier than Bolivia — budget accordingly",
+        "The 3-day jeep tour is basic — sleeping bags and shared dorms, but unforgettable",
+        "Atacama stargazing is a must — book SPACE or Atacama Desert Stargazing"
+      ],
+      "tags": ["desert", "salt flats", "stargazing", "jeep tour", "high altitude"]
+    },
+    {
+      "id": "iceland-faroe-islands",
+      "title": "Iceland & Faroe Islands: Volcanoes, Waterfalls & Remote Villages",
+      "tagline": "A road trip through two of the North Atlantic's most dramatic landscapes.",
+      "countries": ["Iceland", "Faroe Islands"],
+      "region": "Europe",
+      "duration": "14 days",
+      "style": "Road Trip & Photography",
+      "bestSeason": "June – August (midnight sun, all roads open)",
+      "heroImage": "https://images.unsplash.com/photo-1504829857797-ddff29c27927?w=800&q=80",
+      "overview": "Two weeks combining Iceland's Ring Road with a ferry crossing to the Faroe Islands — puffin cliffs, turf-roofed villages, waterfalls that plunge straight into the ocean, and roads that feel like driving through a nature documentary.",
+      "highlights": [
+        "Driving the full Ring Road (Route 1)",
+        "Jökulsárlón Glacier Lagoon & Diamond Beach",
+        "Múlafossur Waterfall, Vágar (Faroe Islands)",
+        "Puffin colonies on Mykines island",
+        "Secret hot springs in the Westfjords"
+      ],
+      "itinerary": [
+        {"day": 1, "title": "Arrive Reykjavik", "desc": "Land at Keflavík, pick up 4x4 rental. Explore Reykjavik's harbor, Hallgrímskirkja, and the Sun Voyager. Overnight in Reykjavik."},
+        {"day": 2, "title": "Golden Circle", "desc": "Þingvellir National Park (tectonic plates), Geysir geothermal area, Gullfoss waterfall. Overnight near Selfoss."},
+        {"day": 3, "title": "South Coast", "desc": "Seljalandsfoss (walk behind the waterfall), Skógafoss, black sand beach at Reynisfjara. Overnight Vík."},
+        {"day": 4, "title": "Glacier Lagoon", "desc": "Drive to Jökulsárlón Glacier Lagoon — icebergs floating to sea. Diamond Beach across the road. Zodiac boat tour among the ice."},
+        {"day": 5, "title": "East Fjords", "desc": "Scenic drive through the East Fjords — narrow roads, fishing villages, wild reindeer. Overnight Egilsstaðir."},
+        {"day": 6, "title": "Mývatn & North", "desc": "Lake Mývatn — pseudocraters, lava formations, Námaskarð mud pots. Evening soak at Mývatn Nature Baths."},
+        {"day": 7, "title": "Akureyri & Whale Watching", "desc": "Iceland's northern capital. Whale watching in Eyjafjörður (humpbacks almost guaranteed in summer). Overnight Akureyri."},
+        {"day": 8, "title": "Snæfellsnes Peninsula", "desc": "Drive west to Snæfellsnes — Kirkjufell mountain, Arnarstapi sea cliffs, Djúpalónssandur black pebble beach. Overnight Stykkishólmur."},
+        {"day": 9, "title": "Ferry to Faroe Islands", "desc": "Drive to Seyðisfjörður (east). Board the Smyril Line ferry (overnight crossing to Tórshavn). Bring snacks — it's a proper North Atlantic sailing."},
+        {"day": 10, "title": "Tórshavn", "desc": "Explore the world's smallest capital — turf-roofed Tinganes parliament, colorful harbor, KOKS restaurant (book months ahead). Overnight Tórshavn."},
+        {"day": 11, "title": "Vágar — Múlafossur & Lake Above the Ocean", "desc": "Drive to Vágar. Hike to the iconic Múlafossur waterfall plunging into the sea. Sørvágsvatn — the lake that appears to hover above the ocean."},
+        {"day": 12, "title": "Mykines — Puffin Island", "desc": "Ferry to Mykines (book early, weather-dependent). Walk to the lighthouse through thousands of nesting puffins. One of the most magical wildlife experiences in Europe."},
+        {"day": 13, "title": "Northern Islands", "desc": "Drive to Viðoy and Borðoy — the village of Múli (population: 0-4), Klaksvík's dramatic setting between mountains. Overnight in Klaksvík or Tórshavn."},
+        {"day": 14, "title": "Depart Faroe Islands", "desc": "Morning flight from Vágar Airport to Copenhagen or direct to Keflavík. Or take the ferry back for another night at sea."}
+      ],
+      "tips": [
+        "Book the Smyril Line ferry months ahead — limited car spaces",
+        "Mykines ferry cancels in bad weather — keep a backup day",
+        "In Iceland, F-roads require a 4x4 and are unbridged rivers",
+        "Faroe Islands: tunnels between islands are incredible (some sub-sea)",
+        "Pack layers for both — weather changes every 15 minutes"
+      ],
+      "tags": ["ring road", "waterfalls", "puffins", "midnight sun", "ferry", "remote"]
+    },
+    {
+      "id": "southeast-asia",
+      "title": "Southeast Asia: Temples, Street Food & River Towns",
+      "tagline": "Thailand, Laos, and Cambodia — three countries, one unforgettable route.",
+      "countries": ["Thailand", "Laos", "Cambodia"],
+      "region": "Southeast Asia",
+      "duration": "18 days",
+      "style": "Cultural & Food",
+      "bestSeason": "November – February (cool, dry season)",
+      "heroImage": "https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&q=80",
+      "overview": "A classic Southeast Asia loop — starting in Bangkok's street food alleys, heading north to Chiang Mai's temples, crossing into Laos via slow boat down the Mekong, and ending at sunrise over Angkor Wat.",
+      "highlights": [
+        "Bangkok's Chinatown street food scene",
+        "Chiang Mai temples & Sunday night market",
+        "Two-day slow boat down the Mekong to Luang Prabang",
+        "Kuang Si turquoise waterfalls",
+        "Sunrise at Angkor Wat"
+      ],
+      "itinerary": [
+        {"day": 1, "title": "Arrive Bangkok", "desc": "Land at Suvarnabhumi. Check in near Khao San or Silom. Evening street food tour in Chinatown (Yaowarat Road) — pad thai, mango sticky rice, grilled seafood."},
+        {"day": 2, "title": "Bangkok Temples & Markets", "desc": "Wat Pho (Reclining Buddha), Grand Palace, Wat Arun at sunset. Afternoon at Chatuchak Weekend Market or Jim Thompson House."},
+        {"day": 3, "title": "Bangkok → Chiang Mai", "desc": "Morning flight to Chiang Mai. Explore the Old City moat area. Afternoon at Doi Suthep temple with panoramic city views."},
+        {"day": 4, "title": "Chiang Mai", "desc": "Morning at an ethical elephant sanctuary. Afternoon cooking class — learn Thai green curry and tom yum from scratch. Evening at the Sunday Walking Street market."},
+        {"day": 5, "title": "Chiang Rai Day Trip", "desc": "White Temple (Wat Rong Khun), Blue Temple, Black House. Return to Chiang Mai or overnight in Chiang Rai."},
+        {"day": 6, "title": "Chiang Rai → Huay Xai (Laos Border)", "desc": "Bus to the Thai-Lao border at Chiang Khong/Huay Xai. Cross the Mekong. Board the slow boat for tomorrow."},
+        {"day": 7, "title": "Mekong Slow Boat Day 1", "desc": "All-day journey down the Mekong — jungle-clad banks, riverside villages, cold Beer Lao. Overnight in Pak Beng (basic but atmospheric)."},
+        {"day": 8, "title": "Mekong Slow Boat Day 2 → Luang Prabang", "desc": "Second day on the river. Arrive Luang Prabang by late afternoon. Evening at the famous night market along Sisavangvong Road."},
+        {"day": 9, "title": "Luang Prabang", "desc": "5:30am alms-giving ceremony. Royal Palace Museum. Afternoon at Kuang Si Waterfalls — swim in turquoise pools. Evening cocktails on the Mekong."},
+        {"day": 10, "title": "Luang Prabang → Vang Vieng", "desc": "Scenic drive (or minivan) through mountains to Vang Vieng. Afternoon kayaking or tubing on the Nam Song River."},
+        {"day": 11, "title": "Vang Vieng → Vientiane", "desc": "Drive to the Lao capital. Patuxai arch, Pha That Luang golden stupa. Riverside sunset beers."},
+        {"day": 12, "title": "Vientiane → Bangkok → Siem Reap", "desc": "Fly to Bangkok, connect to Siem Reap (or direct flight). Settle into a hotel near Pub Street. Evening fish amok dinner."},
+        {"day": 13, "title": "Angkor Wat Sunrise & Main Temples", "desc": "4:30am wake-up for sunrise at Angkor Wat — the reflection in the moat is iconic. Spend the day: Bayon (face towers), Ta Prohm (jungle temple from Tomb Raider)."},
+        {"day": 14, "title": "Angkor — Outer Temples", "desc": "Rent a tuk-tuk for the Grand Circuit. Banteay Srei (intricate pink sandstone), Preah Khan, Neak Pean. Less crowded, equally stunning."},
+        {"day": 15, "title": "Siem Reap Free Day", "desc": "Floating village on Tonlé Sap Lake, Angkor National Museum, or cooking class. Night: Phare Cambodian Circus (incredible acrobatics)."},
+        {"day": 16, "title": "Siem Reap → Phnom Penh", "desc": "Bus or fly to Phnom Penh. Royal Palace and Silver Pagoda. Central Market (Art Deco gem). Rooftop sunset drinks."},
+        {"day": 17, "title": "Phnom Penh", "desc": "Tuol Sleng Genocide Museum and Killing Fields — difficult but essential. Afternoon at the riverside promenade. Evening at a local Khmer restaurant."},
+        {"day": 18, "title": "Depart Phnom Penh", "desc": "Morning flight home via Bangkok, Singapore, or direct to your next destination."}
+      ],
+      "tips": [
+        "Get local SIMs at each country's airport — cheap and essential",
+        "Thailand visa-free 30 days, Laos visa on arrival ($40 cash), Cambodia e-visa ($30)",
+        "The Mekong slow boat is unforgettable but basic — bring snacks and a cushion",
+        "Angkor pass: 3-day is best value ($62) — you'll want at least 2 full days",
+        "Street food is safe and incredible — follow the crowds, eat where locals eat"
+      ],
+      "tags": ["temples", "street food", "slow boat", "Mekong", "Angkor Wat", "cultural"]
+    }
+  ]
+}
