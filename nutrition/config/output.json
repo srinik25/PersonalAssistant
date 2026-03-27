@@ -1,0 +1,95 @@
+{
+  "response_format": {
+    "description": "All responses must follow this structured format",
+    "fields": {
+      "name": "",
+      "history": "",
+      "native_country": "",
+      "nutrition_profile": {
+        "serving_size": "",
+        "calories": "",
+        "protein": "",
+        "fiber": "",
+        "fat": "",
+        "carbohydrates": "",
+        "key_vitamins": [],
+        "key_minerals": [],
+        "notable_properties": ""
+      },
+      "daily_intake": {
+        "tsp": "",
+        "tbsp": "",
+        "cup": ""
+      },
+      "best_time_to_eat": "",
+      "meal_incorporation": {
+        "can_be_added": true,
+        "suggestions": [],
+        "additional_notes": []
+      },
+      "recipe": {
+        "name": "",
+        "description": "",
+        "prep_time": "",
+        "cook_time": "",
+        "servings": "",
+        "ingredients": [],
+        "instructions": []
+      }
+    },
+    "example": {
+      "name": "Chia Seeds",
+      "history": "Chia (Salvia hispanica) was a staple food of the Aztecs and Mayans dating back to 3500 BC. The word 'chia' comes from the Mayan word for 'strength.'",
+      "native_country": "Mexico and Guatemala",
+      "nutrition_profile": {
+        "serving_size": "2 tablespoons (28g / 1 oz)",
+        "calories": "138 kcal",
+        "protein": "4.7g",
+        "fiber": "9.8g (35% of daily value)",
+        "fat": "8.7g total (5.0g omega-3 ALA, 1.6g omega-6)",
+        "carbohydrates": "12g",
+        "key_vitamins": ["B1 (Thiamine) - 15% DV", "B3 (Niacin) - 16% DV"],
+        "key_minerals": ["Calcium - 179mg (14% DV)", "Magnesium - 95mg (23% DV)", "Phosphorus - 244mg (20% DV)"],
+        "notable_properties": "Hydrophilic — absorbs up to 12x its weight in water. Gluten-free."
+      },
+      "daily_intake": {
+        "tsp": "4 to 6 teaspoons",
+        "tbsp": "1.5 to 2 tablespoons",
+        "cup": "approximately 1/8 cup"
+      },
+      "best_time_to_eat": "Morning (breakfast) is ideal for sustained energy and satiety.",
+      "meal_incorporation": {
+        "can_be_added": true,
+        "suggestions": [
+          "Chia Pudding: Mix 2 tbsp with 1/2 cup milk, refrigerate overnight",
+          "Smoothies: Add 1 tbsp for extra fiber and omega-3s",
+          "Baking: Use as egg substitute (1 tbsp chia + 3 tbsp water = 1 egg)"
+        ],
+        "additional_notes": [
+          "Soak chia seeds for at least 15 minutes before eating to aid digestion and maximize nutrient absorption.",
+          "Chia seeds are high in omega-3 ALA, but conversion to EPA/DHA is limited — consider algae-based supplements for DHA.",
+          "Start with 1 tbsp/day if new to chia seeds to avoid digestive discomfort from the high fiber content."
+        ]
+      },
+      "recipe": {
+        "name": "Overnight Chia Pudding",
+        "description": "A simple, no-cook vegan breakfast packed with omega-3s and fiber.",
+        "prep_time": "5 minutes",
+        "cook_time": "None (overnight soak)",
+        "servings": "2",
+        "ingredients": [
+          "4 tbsp chia seeds",
+          "1 cup almond milk",
+          "1 tsp vanilla extract",
+          "1 tbsp maple syrup",
+          "Fresh berries for topping"
+        ],
+        "instructions": [
+          "Mix chia seeds, almond milk, vanilla, and maple syrup in a jar.",
+          "Stir well and refrigerate overnight (at least 4 hours).",
+          "Stir again before serving, top with fresh berries."
+        ]
+      }
+    }
+  }
+}

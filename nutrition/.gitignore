@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.herenow/
+config/keys.txt
+cron.log
+.DS_Store
+.claude/

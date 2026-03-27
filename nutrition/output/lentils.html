@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lentils - Nutrition Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f3f0;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+
+        /* Back navigation */
+        .back-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            padding: 0 24px;
+        }
+        .back-nav a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 14px 0;
+            transition: color 0.2s;
+        }
+        .back-nav a:hover { color: #e6b980; }
+
+        /* Hero header */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #1a2540 100%);
+            color: white;
+            padding: 100px 40px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(212,163,115,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(230,185,128,0.06) 0%, transparent 50%);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        .hero-img {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid rgba(212,163,115,0.4);
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .hero h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+        }
+        .hero .subtitle {
+            font-size: 1.05rem;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+        .hero .badge {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 5px 16px;
+            background: rgba(212,163,115,0.2);
+            border: 1px solid rgba(212,163,115,0.4);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: #e6b980;
+        }
+
+        /* Main layout */
+        .main {
+            max-width: 860px;
+            margin: -28px auto 0;
+            padding: 0 24px 60px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Cards / Sections */
+        .section {
+            margin-bottom: 24px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .section h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: #1a1a2e;
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8dfd4;
+        }
+        .section h3 {
+            color: #d4a373;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section p {
+            line-height: 1.75;
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
+        /* Nutrition grid */
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 14px;
+        }
+        .nutrition-item {
+            background: linear-gradient(135deg, #f8f6f3, #f3efe9);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e8dfd4;
+        }
+        .nutrition-item strong {
+            display: block;
+            color: #16213e;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .nutrition-item span {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        /* Intake cards */
+        .intake-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 14px;
+        }
+        .intake-card {
+            background: linear-gradient(135deg, #fdf8f0, #f9f0e3);
+            padding: 20px 16px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e8d5bc;
+        }
+        .intake-card .label {
+            font-size: 0.7rem;
+            color: #8b6914;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .intake-card .value {
+            font-size: 1.15rem;
+            color: #1a1a2e;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        /* Lists */
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        ul li {
+            padding: 10px 16px;
+            margin-bottom: 6px;
+            background: #f8f6f3;
+            border-left: 3px solid #d4a373;
+            border-radius: 6px;
+            line-height: 1.6;
+            color: #4a5568;
+            font-size: 0.93rem;
+        }
+        ol.instructions {
+            padding: 0 0 0 24px;
+            margin-top: 10px;
+            counter-reset: step-counter;
+        }
+        ol.instructions li {
+            padding: 10px 16px;
+            margin-bottom: 8px;
+            background: #f8f6f3;
+            border-left: 3px solid #d4a373;
+            border-radius: 6px;
+            line-height: 1.6;
+            color: #4a5568;
+            font-size: 0.93rem;
+        }
+
+        /* Notes */
+        .note {
+            background: linear-gradient(135deg, #fdf8f0, #f9f0e3);
+            border-left: 4px solid #d4a373;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: #78350f;
+            line-height: 1.6;
+        }
+
+        /* Recipe meta */
+        .recipe-desc {
+            margin-bottom: 16px;
+        }
+        .recipe-meta {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 4px;
+        }
+        .meta-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 14px;
+            background: #f8f6f3;
+            border-radius: 12px;
+            border: 1px solid #e8dfd4;
+        }
+        .meta-icon { font-size: 1.3rem; }
+        .meta-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6b7280;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .meta-value {
+            font-weight: 700;
+            color: #1a1a2e;
+            font-size: 0.95rem;
+            margin-top: 2px;
+        }
+
+        /* Animations */
+        .animate-in {
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a2e;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 32px 24px;
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+        .footer strong {
+            color: rgba(255,255,255,0.85);
+        }
+        .footer .footer-divider {
+            width: 40px;
+            height: 2px;
+            background: rgba(212,163,115,0.4);
+            margin: 10px auto;
+            border-radius: 1px;
+        }
+
+        /* Audio player */
+        .audio-bar {
+            background: rgba(212,163,115,0.2);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(212,163,115,0.4);
+            border-radius: 50px;
+            padding: 8px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 16px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+        }
+        .audio-bar:hover {
+            background: rgba(212,163,115,0.35);
+            transform: scale(1.03);
+        }
+        .audio-bar .audio-icon {
+            font-size: 1.2rem;
+        }
+        .audio-bar .audio-label {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #e6b980;
+            letter-spacing: 0.3px;
+        }
+        .audio-bar.playing {
+            background: rgba(212,163,115,0.4);
+        }
+        .audio-bar.playing .audio-icon {
+            animation: pulse 1s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* YouTube link */
+        .youtube-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 24px;
+            background: #ff0000;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s, transform 0.15s;
+            margin-top: 12px;
+        }
+        .youtube-link:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+        }
+        .youtube-link .yt-icon {
+            font-size: 1.3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .hero { padding: 80px 20px 40px; }
+            .hero h1 { font-size: 2rem; }
+            .main { padding: 0 16px 40px; }
+            .card { padding: 24px 20px; }
+            .nutrition-grid { grid-template-columns: 1fr 1fr; }
+            .intake-grid { grid-template-columns: 1fr; }
+            .recipe-meta { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="back-nav">
+        <a href="index.html">&#8592; Nourish &amp; Know</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <img class="hero-img" src="images/lentils.png" alt="Lentils">
+            <h1>Lentils</h1>
+            <p class="subtitle">Comprehensive Nutrition Profile</p>
+            <span class="badge">&#127807; Plant-Based</span>
+            <div>
+                <div class="audio-bar" id="audioBtn" onclick="toggleAudio()">
+                    <span class="audio-icon" id="audioIcon">&#128264;</span>
+                    <span class="audio-label" id="audioLabel">Listen to this Content</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="section card animate-in" style="animation-delay:0.05s">
+            <h2>&#128220; History &amp; Origin</h2>
+            <p>Lentils are one of the oldest cultivated crops, with evidence of their consumption dating back to 9,000 to 13,000 years ago in the Near East. They have been a staple in Indian, Middle Eastern, and Mediterranean cuisines for centuries.</p>
+        </div>
+
+        <div class="section card animate-in" style="animation-delay:0.1s">
+            <h2>&#127758; Native Country</h2>
+            <p>Southwest Asia</p>
+        </div>
+
+        <div class="section card animate-in" style="animation-delay:0.2s">
+            <h2>&#129367; Nutrition Profile</h2>
+            <p><strong>Serving Size:</strong> 1 cup cooked (198g)</p>
+            <div class="nutrition-grid">
+                <div class="nutrition-item"><strong>Calories</strong><span>230 kcal</span></div>
+                <div class="nutrition-item"><strong>Protein</strong><span>17.9g</span></div>
+                <div class="nutrition-item"><strong>Fiber</strong><span>15.6g (56% of daily value)</span></div>
+                <div class="nutrition-item"><strong>Fat</strong><span>0.8g</span></div>
+                <div class="nutrition-item"><strong>Carbs</strong><span>39.9g</span></div>
+                <div class="nutrition-item"><strong>Notable</strong><span>High in plant-based protein and fiber, low in fat, gluten-free.</span></div>
+            </div>
+            <h3>Key Vitamins</h3>
+            <ul><li>Folate - 358mcg (90% DV is slightly high, should be around 89%)</li></ul>
+            <h3>Key Minerals</h3>
+            <ul><li>Phosphorus - 356mg (51% DV is slightly high, should be around 50%)</li></ul>
+        </div>
+
+        <div class="section card animate-in" style="animation-delay:0.3s">
+            <h2>&#128202; Daily Intake</h2>
+            <div class="intake-grid">
+                <div class="intake-card">
+                    <div class="label">Teaspoons</div>
+                    <div class="value">48 teaspoons</div>
+                </div>
+                <div class="intake-card">
+                    <div class="label">Tablespoons</div>
+                    <div class="value">16 tablespoons</div>
+                </div>
+                <div class="intake-card">
+                    <div class="label">Cup</div>
+                    <div class="value">1 cup</div>
+                </div>
+            </div>
+            
+            
+        </div>
+
+        <div class="section card animate-in" style="animation-delay:0.4s">
+            <h2>&#9200; Best Time to Eat</h2>
+            <p>Lentils can be consumed at any time of the day, but they are particularly beneficial for lunch or dinner to provide sustained energy and satiety.</p>
+        </div>
+
+        <div class="section card animate-in" style="animation-delay:0.5s">
+            <h2>&#127869; Meal Incorporation</h2>
+            <p><strong>Can be added to meals:</strong> Yes</p>
+            <ul><li>Soups: Add cooked lentils to vegetable soups for extra protein.</li><li>Salads: Toss cooked lentils with fresh vegetables and a vinaigrette.</li><li>Curries: Use lentils as a base for Indian-style curries.</li></ul>
+            <h3>Additional Notes</h3><div class="note"><ul><li>Soaking lentils for a few hours before cooking can reduce cooking time and improve digestibility.</li><li>Pair lentils with vitamin C-rich foods like tomatoes or bell peppers to enhance iron absorption.</li><li>Store dried lentils in an airtight container in a cool, dry place for up to a year.</li></ul></div>
+        </div>
+
+        
+            <div class="section card animate-in" style="animation-delay:0.6s">
+                <h2>&#127859; Recipe: Vegan Lentil Curry</h2>
+                <p class="recipe-desc">A hearty and flavorful vegan curry packed with protein and fiber.</p>
+                <div class="recipe-meta">
+                    <div class="meta-item">
+                        <span class="meta-icon">&#9202;</span>
+                        <span class="meta-label">Prep</span>
+                        <span class="meta-value">10 minutes</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-icon">&#128293;</span>
+                        <span class="meta-label">Cook</span>
+                        <span class="meta-value">30 minutes</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-icon">&#127860;</span>
+                        <span class="meta-label">Servings</span>
+                        <span class="meta-value">4</span>
+                    </div>
+                </div>
+                <h3>Ingredients</h3>
+                <ul><li>1 cup dried lentils</li><li>1 tablespoon olive oil</li><li>1 onion, chopped</li><li>2 garlic cloves, minced</li><li>1 tablespoon ginger, grated</li><li>1 teaspoon cumin</li><li>1 teaspoon coriander</li><li>1/2 teaspoon turmeric</li><li>1/2 teaspoon chili powder</li><li>1 can (14 oz) diced tomatoes</li><li>2 cups vegetable broth</li><li>Salt to taste</li><li>Fresh cilantro for garnish</li></ul>
+                <h3>Instructions</h3>
+                <ol class="instructions"><li>Rinse lentils under cold water and set aside.</li><li>In a large pot, heat olive oil over medium heat. Add onion and sauté until translucent.</li><li>Add garlic and ginger, cook for another minute.</li><li>Stir in cumin, coriander, turmeric, and chili powder, cooking for 30 seconds until fragrant.</li><li>Add diced tomatoes, vegetable broth, and lentils. Bring to a boil.</li><li>Reduce heat to low, cover, and simmer for 25-30 minutes, or until lentils are tender.</li><li>Season with salt to taste and garnish with fresh cilantro before serving.</li></ol>
+            </div>
+
+        <div class="section card animate-in" style="animation-delay:0.7s">
+            <h2>&#127909; Learn More</h2>
+            <p>Watch videos about Lentils — its history, how it's grown, and nutritional benefits.</p>
+            <a class="youtube-link" href="https://www.youtube.com/results?search_query=Lentils+nutrition+benefits+health" target="_blank" rel="noopener">
+                <span class="yt-icon">&#9654;</span>
+                Search "Lentils" on YouTube
+            </a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Nourish &amp; Know</strong> &#8212; Mostly Plant-Based Nutrition Guide
+        <div class="footer-divider"></div>
+        <span style="font-size:0.85rem; opacity:0.9; font-weight:600;">* AI-generated content and auto-validated. Use at your own discretion.</span>
+    </footer>
+
+    <script>
+    let speaking = false;
+    let utterance = null;
+
+    function getPageText() {
+        const sections = document.querySelectorAll('.section p, .section li, .nutrition-item');
+        let text = 'Lentils. Comprehensive Nutrition Profile. ';
+        sections.forEach(el => {
+            text += el.textContent.trim() + '. ';
+        });
+        return text;
+    }
+
+    function toggleAudio() {
+        const btn = document.getElementById('audioBtn');
+        const icon = document.getElementById('audioIcon');
+        const label = document.getElementById('audioLabel');
+
+        if (speaking) {
+            window.speechSynthesis.cancel();
+            speaking = false;
+            btn.classList.remove('playing');
+            icon.innerHTML = '&#128264;';
+            label.textContent = 'Listen to this Content';
+        } else {
+            utterance = new SpeechSynthesisUtterance(getPageText());
+            utterance.rate = 0.95;
+            utterance.pitch = 1;
+            utterance.onend = function() {
+                speaking = false;
+                btn.classList.remove('playing');
+                icon.innerHTML = '&#128264;';
+                label.textContent = 'Listen to this Content';
+            };
+            window.speechSynthesis.speak(utterance);
+            speaking = true;
+            btn.classList.add('playing');
+            icon.innerHTML = '&#9209;';
+            label.textContent = 'Stop listening';
+        }
+    }
+    </script>
+</body>
+</html>

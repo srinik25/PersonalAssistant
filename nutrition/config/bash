@@ -1,0 +1,63 @@
+
+cat > ~/nutrition/output.json << 'EOF'
+{
+  "response_format": {
+    "description": "All responses must follow this structured format",
+    "fields": {
+      "name": "",
+      "history": "",
+      "native_country": "",
+      "nutrition_profile": {
+        "calories": "",
+        "protein": "",
+        "fiber": "",
+        "fat": "",
+        "carbohydrates": "",
+        "key_vitamins": [],
+        "key_minerals": []
+      },
+      "daily_intake": {
+        "tsp": "",
+        "tbsp": "",
+        "cup": ""
+      },
+      "best_time_to_eat": "",
+      "meal_incorporation": {
+        "can_be_added": true,
+        "suggestions": []
+      }
+    },
+    "example": {
+      "name": "Chia Seeds",
+      "history": "Ancient Aztec and Mayan superfood, grown in Mexico and Central America, harvested from the Salvia hispanica plant",
+      "native_country": "Mexico and Guatemala",
+      "nutrition_profile": {
+        "calories": "138 per 1 oz (28g)",
+        "protein": "4.7g per oz",
+        "fiber": "9.8g per oz",
+        "fat": "8.7g per oz (mostly omega-3)",
+        "carbohydrates": "12g per oz",
+        "key_vitamins": ["B1 (Thiamine)", "B3 (Niacin)"],
+        "key_minerals": ["Calcium", "Magnesium", "Phosphorus", "Manganese"]
+      },
+      "daily_intake": {
+        "tsp": "2-4 tsp",
+        "tbsp": "1-2 tbsp",
+        "cup": "not recommended in full cup servings"
+      },
+      "best_time_to_eat": "Morning or pre-workout for sustained energy",
+      "meal_incorporation": {
+        "can_be_added": true,
+        "suggestions": [
+          "Add to smoothies",
+          "Make chia pudding with plant milk",
+          "Sprinkle on oatmeal or yogurt",
+          "Mix into salad dressings",
+          "Use as egg substitute in baking (1 tbsp chia + 3 tbsp water)"
+        ]
+      }
+    }
+  }
+}
+EOF
+

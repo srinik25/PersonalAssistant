@@ -1,0 +1,32 @@
+{
+  "name": "",
+  "demographics": {
+    "background": "Indian",
+    "gender": "female",
+    "age_range": "40s"
+  },
+  "core_philosophy": "Food is medicine",
+  "dietary_preferences": {
+    "primary": ["vegetarian", "vegan"],
+    "approach": "healthy, whole-food focused, natural foods",
+    "interests": ["cooking", "baking"]
+  },
+  "fitness": {
+    "practices": [
+      "yoga",
+      "strength training"
+    ]
+  },
+  "wellness": {
+    "practices": [
+      "meditation",
+      "mindfulness breathing"
+    ]
+  },
+  "passions": [
+    "health",
+    "exercise",
+    "nutrition",
+    "natural foods"
+  ]
+}

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Deployment Guide - Nourish &amp; Know</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #f5f3f0;
+            color: #1a1a2e;
+            line-height: 1.7;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #1a2540 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+        .header p { opacity: 0.8; font-size: 1rem; }
+        .container {
+            max-width: 860px;
+            margin: -20px auto 40px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 28px 32px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #1a1a2e;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8dfd4;
+        }
+        h3 {
+            color: #d4a373;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 16px 0 8px;
+        }
+        p { margin-bottom: 10px; color: #444; }
+        a { color: #d4a373; font-weight: 600; }
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #f0ede8;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.88rem;
+            color: #1a1a2e;
+        }
+        pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            background: #1a1a2e;
+            color: #e6b980;
+            padding: 18px 22px;
+            border-radius: 10px;
+            overflow-x: auto;
+            line-height: 1.7;
+            margin: 10px 0;
+        }
+        .step-list {
+            list-style: none;
+            padding: 0;
+            counter-reset: step;
+        }
+        .step-list li {
+            counter-increment: step;
+            padding: 12px 16px 12px 52px;
+            margin-bottom: 8px;
+            background: #fdf8f0;
+            border-left: 3px solid #d4a373;
+            border-radius: 6px;
+            position: relative;
+            color: #444;
+        }
+        .step-list li::before {
+            content: counter(step);
+            position: absolute;
+            left: 14px;
+            top: 11px;
+            width: 26px;
+            height: 26px;
+            background: #d4a373;
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.93rem;
+        }
+        th {
+            background: #f0ede8;
+            color: #1a1a2e;
+            text-align: left;
+            padding: 10px 14px;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #444;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        .badge-gold { background: #fdf8f0; color: #8b6914; }
+        .badge-navy { background: #1a1a2e; color: #e6b980; }
+        .footer {
+            background: #1a1a2e;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 24px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Web Deployment Guide</h1>
+        <p>How the Nourish &amp; Know site is hosted, deployed, and maintained</p>
+    </div>
+    <div class="container">
+
+        <div class="card">
+            <h2>Hosting Platform: here.now</h2>
+            <p><strong>What is it?</strong> <a href="https://here.now" target="_blank">here.now</a> is a free static hosting service that lets you publish files and folders to the web instantly. It gives you a live, shareable URL with no server setup needed.</p>
+            <table>
+                <tr><th>Feature</th><th>Anonymous (Free)</th><th>Authenticated (Free Account)</th></tr>
+                <tr><td>Expiry</td><td>24 hours</td><td><strong>Permanent</strong></td></tr>
+                <tr><td>Max file size</td><td>250 MB</td><td>5 GB</td></tr>
+                <tr><td>Rate limit</td><td>5/hour/IP</td><td>60/hour</td></tr>
+                <tr><td>Account needed</td><td>No</td><td>Yes (email)</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>How We Got a Permanent Site</h2>
+            <ol class="step-list">
+                <li>First published anonymously (no account) &mdash; got a temporary URL that expired in 24 hours</li>
+                <li>Requested a sign-in code via the here.now auth API:
+                    <pre>curl -sS https://here.now/api/auth/agent/request-code \
+  -H "content-type: application/json" \
+  -d '{"email": "srinikatta24@gmail.com"}'</pre>
+                </li>
+                <li>Received a one-time code via email and verified it:
+                    <pre>curl -sS https://here.now/api/auth/agent/verify-code \
+  -H "content-type: application/json" \
+  -d '{"email":"srinikatta24@gmail.com","code":"JQH4-H7JQ"}'</pre>
+                </li>
+                <li>Saved the returned API key to <code>~/.herenow/credentials</code>:
+                    <pre>mkdir -p ~/.herenow
+echo "YOUR_API_KEY" > ~/.herenow/credentials
+chmod 600 ~/.herenow/credentials</pre>
+                </li>
+                <li>Republished &mdash; the site became <strong>permanent</strong> and saved to the account</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>How Deployment Works</h2>
+            <p>The site is published using a shell script provided by the here.now skill:</p>
+            <pre>bash ~/.claude/skills/here-now/scripts/publish.sh ./output \
+  --slug wintry-tower-54cj \
+  --client claude-code</pre>
+            <h3>What this does:</h3>
+            <ol class="step-list">
+                <li><strong>Create/Update</strong> &mdash; Registers the publish with the here.now API, specifying the site slug</li>
+                <li><strong>Upload files</strong> &mdash; Uploads all files from the <code>output/</code> directory. Only changed files are uploaded (unchanged files are skipped for speed)</li>
+                <li><strong>Finalize</strong> &mdash; Marks the publish as complete. The site is not live until this step succeeds</li>
+            </ol>
+            <p>The <code>--slug wintry-tower-54cj</code> flag updates the existing site instead of creating a new one. Authentication is read automatically from <code>~/.herenow/credentials</code>.</p>
+        </div>
+
+        <div class="card">
+            <h2>Live Site URL</h2>
+            <p><a href="https://wintry-tower-54cj.here.now/" target="_blank">https://wintry-tower-54cj.here.now/</a></p>
+            <p><span class="badge badge-navy">Permanent</span> <span class="badge badge-gold">Authenticated</span></p>
+        </div>
+
+        <div class="card">
+            <h2>Daily Automated Deployment</h2>
+            <p>A macOS <strong>launchd agent</strong> runs every day at 7:00 AM:</p>
+            <pre>~/Library/LaunchAgents/com.nutrition.daily.plist</pre>
+            <p>It executes <code>daily_run.py</code> which:</p>
+            <ol class="step-list">
+                <li>Generates the next food profile using GPT-4o</li>
+                <li>Validates the nutrition data with a cross-check</li>
+                <li>Saves the HTML to the <code>output/</code> folder</li>
+                <li>Regenerates <code>index.html</code> with the new food card</li>
+                <li>Publishes to here.now (using the saved API key)</li>
+                <li>Sends SMS via Gmail-to-SMS gateway (T-Mobile: <code>number@tmomail.net</code>)</li>
+                <li>Falls back to email if SMS fails</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>Manual Republishing</h2>
+            <p>To republish manually after making changes:</p>
+            <pre># 1. Regenerate the index (if foods changed)
+python3 -c "
+import sys; sys.path.insert(0, '.')
+from daily_run import update_index_html
+update_index_html()
+"
+
+# 2. Publish to here.now
+bash ~/.claude/skills/here-now/scripts/publish.sh ./output \
+  --slug wintry-tower-54cj \
+  --client claude-code</pre>
+        </div>
+
+        <div class="card">
+            <h2>File Structure Published</h2>
+            <pre>output/
+  index.html          # Landing page with search, tabs, food cards
+  almonds.html        # Individual food profile pages
+  apples.html
+  ...                 # (35+ food profiles)
+  images/             # Food images from Wikipedia Commons
+    almonds.jpg
+    apples.jpg
+    ...</pre>
+        </div>
+
+        <div class="card">
+            <h2>Key Configuration Files</h2>
+            <table>
+                <tr><th>File</th><th>Purpose</th></tr>
+                <tr><td><code>~/.herenow/credentials</code></td><td>here.now API key for authenticated publishing</td></tr>
+                <tr><td><code>.herenow/state.json</code></td><td>Local cache of publish state (slug, claim tokens)</td></tr>
+                <tr><td><code>com.nutrition.daily.plist</code></td><td>macOS launchd agent for daily automation</td></tr>
+                <tr><td><code>config/keys.txt</code></td><td>OpenAI API key + Gmail SMTP credentials</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Cost</h2>
+            <table>
+                <tr><th>Service</th><th>Cost</th></tr>
+                <tr><td>here.now hosting</td><td><strong>Free</strong> (permanent with account)</td></tr>
+                <tr><td>Custom domain</td><td>Free (1 domain on free plan)</td></tr>
+                <tr><td>OpenAI GPT-4o</td><td>~$0.05-0.10 per food (2 API calls each)</td></tr>
+                <tr><td>Gmail SMS gateway</td><td><strong>Free</strong></td></tr>
+                <tr><td>Wikipedia images</td><td><strong>Free</strong> (CC licensed)</td></tr>
+            </table>
+        </div>
+
+    </div>
+    <footer class="footer">
+        <strong>Nourish &amp; Know</strong> &mdash; Web Deployment Documentation
+    </footer>
+</body>
+</html>

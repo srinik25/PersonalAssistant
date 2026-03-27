@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pumpkin Seeds - Nutrition Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f3f0;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+
+        /* Back navigation */
+        .back-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            padding: 0 24px;
+        }
+        .back-nav a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 14px 0;
+            transition: color 0.2s;
+        }
+        .back-nav a:hover { color: #e6b980; }
+
+        /* Hero header */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #1a2540 100%);
+            color: white;
+            padding: 100px 40px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(212,163,115,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(230,185,128,0.06) 0%, transparent 50%);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        .hero-img {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid rgba(212,163,115,0.4);
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .hero h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+        }
+        .hero .subtitle {
+            font-size: 1.05rem;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+        .hero .badge {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 5px 16px;
+            background: rgba(212,163,115,0.2);
+            border: 1px solid rgba(212,163,115,0.4);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: #e6b980;
+        }
+
+        /* Main layout */
+        .main {
+            max-width: 860px;
+            margin: -28px auto 0;
+            padding: 0 24px 60px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Cards / Sections */
+        .section {
+            margin-bottom: 24px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .section h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: #1a1a2e;
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8dfd4;
+        }
+        .section h3 {
+            color: #d4a373;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section p {
+            line-height: 1.75;
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
+        /* Nutrition grid */
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 14px;
+        }
+        .nutrition-item {
+            background: linear-gradient(135deg, #f8f6f3, #f3efe9);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e8dfd4;
+        }
+        .nutrition-item strong {
+            display: block;
+            color: #16213e;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .nutrition-item span {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        /* Intake cards */
+        .intake-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 14px;
+        }
+        .intake-card {
+            background: linear-gradient(135deg, #fdf8f0, #f9f0e3);
+            padding: 20px 16px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e8d5bc;
+        }
+        .intake-card .label {
+            font-size: 0.7rem;
+            color: #8b6914;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .intake-card .value {
+            font-size: 1.15rem;
+            color: #1a1a2e;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        /* Lists */
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        ul li {
+            padding: 10px 16px;
+            margin-bottom: 6px;
+            background: #f8f6f3;
+            border-left: 3px solid #d4a373;
+            border-radius: 6px;
+            line-height: 1.6;
+            color: #4a5568;
+            font-size: 0.93rem;
+        }
+        ol.instructions {
+            padding: 0 0 0 24px;
+            margin-top: 10px;
+            counter-reset: step-counter;
+        }
+        ol.instructions li {
+            padding: 10px 16px;
+            margin-bottom: 8px;
+            background: #f8f6f3;
+            border-left: 3px solid #d4a373;
+            border-radius: 6px;
+            line-height: 1.6;
+            color: #4a5568;
+            font-size: 0.93rem;
+        }
+
+        /* Notes */
+        .note {
+            background: linear-gradient(135deg, #fdf8f0, #f9f0e3);
+            border-left: 4px solid #d4a373;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: #78350f;
+            line-height: 1.6;
+        }
+
+        /* Recipe meta */
+        .recipe-desc {
+            margin-bottom: 16px;
+        }
+        .recipe-meta {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 4px;
+        }
+        .meta-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 14px;
+            background: #f8f6f3;
+            border-radius: 12px;
+            border: 1px solid #e8dfd4;
+        }
+        .meta-icon { font-size: 1.3rem; }
+        .meta-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6b7280;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .meta-value {
+            font-weight: 700;
+            color: #1a1a2e;
+            font-size: 0.95rem;
+            margin-top: 2px;
+        }
+
+        /* Animations */
+        .animate-in {
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a2e;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 32px 24px;
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+        .footer strong {
+            color: rgba(255,255,255,0.85);
+        }
+        .footer .footer-divider {
+            width: 40px;
+            height: 2px;
+            background: rgba(212,163,115,0.4);
+            margin: 10px auto;
+            border-radius: 1px;
+        }
+
+        /* Audio player */
+        .audio-bar {
+            background: rgba(212,163,115,0.2);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(212,163,115,0.4);
+            border-radius: 50px;
+            padding: 8px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 16px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+        }
+        .audio-bar:hover {
+            background: rgba(212,163,115,0.35);
+            transform: scale(1.03);
+        }
+        .audio-bar .audio-icon {
+            font-size: 1.2rem;
+        }
+        .audio-bar .audio-label {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #e6b980;
+            letter-spacing: 0.3px;
+        }
+        .audio-bar.playing {
+            background: rgba(212,163,115,0.4);
+        }
+        .audio-bar.playing .audio-icon {
+            animation: pulse 1s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* YouTube link */
+        .youtube-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 24px;
+            background: #ff0000;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s, transform 0.15s;
+            margin-top: 12px;
+        }
+        .youtube-link:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+        }
+        .youtube-link .yt-icon {
+            font-size: 1.3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .hero { padding: 80px 20px 40px; }
+            .hero h1 { font-size: 2rem; }
+            .main { padding: 0 16px 40px; }
+            .card { padding: 24px 20px; }
+            .nutrition-grid { grid-template-columns: 1fr 1fr; }
+            .intake-grid { grid-template-columns: 1fr; }
+            .recipe-meta { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="back-nav">
+        <a href="index.html">&#8592; Nourish &amp; Know</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <img class="hero-img" src="images/pumpkin_seeds.jpg" alt="Pumpkin Seeds">
+            <h1>Pumpkin Seeds</h1>
+            <p class="subtitle">Comprehensive Nutrition Profile</p>
+            <span class="badge">&#127807; Plant-Based</span>
+            <div>
+                <div class="audio-bar" id="audioBtn" onclick="toggleAudio()">
+                    <span class="audio-icon" id="audioIcon">&#128264;</span>
+                    <span class="audio-label" id="audioLabel">Listen to this Content</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="section card animate-in" style="animation-delay:0.05s">
+            <h2>&#128220; History &amp; Origin</h2>
+            <p>Pumpkin seeds, also known as pepitas, have been consumed by Native American tribes for centuries. They were used for both culinary and medicinal purposes, particularly for their purported benefits in supporting urinary and prostate health.</p>
+        </div>
+
+        <div class="section card animate-in" style="animation-delay:0.1s">
+            <h2>&#127758; Native Country</h2>
+            <p>North America</p>
+        </div>
+
+        <div class="section card animate-in" style="animation-delay:0.2s">
+            <h2>&#129367; Nutrition Profile</h2>
+            <p><strong>Serving Size:</strong> 1 ounce (28g / approximately 1/4 cup)</p>
+            <div class="nutrition-grid">
+                <div class="nutrition-item"><strong>Calories</strong><span>151 kcal</span></div>
+                <div class="nutrition-item"><strong>Protein</strong><span>7g</span></div>
+                <div class="nutrition-item"><strong>Fiber</strong><span>1.1g</span></div>
+                <div class="nutrition-item"><strong>Fat</strong><span>13g total (5g omega-6)</span></div>
+                <div class="nutrition-item"><strong>Carbs</strong><span>5g</span></div>
+                <div class="nutrition-item"><strong>Notable</strong><span>Rich in antioxidants, including carotenoids and vitamin E. Contains tryptophan, which may promote restful sleep.</span></div>
+            </div>
+            <h3>Key Vitamins</h3>
+            <ul><li>Vitamin K - 18% DV</li><li>Vitamin B2 (Riboflavin) - 8% DV</li></ul>
+            <h3>Key Minerals</h3>
+            <ul><li>Magnesium - 37% DV</li><li>Phosphorus - 33% DV</li><li>Zinc - 14% DV</li><li>Iron - 23% DV</li></ul>
+        </div>
+
+        <div class="section card animate-in" style="animation-delay:0.3s">
+            <h2>&#128202; Daily Intake</h2>
+            <div class="intake-grid">
+                <div class="intake-card">
+                    <div class="label">Teaspoons</div>
+                    <div class="value">9 teaspoons</div>
+                </div>
+                <div class="intake-card">
+                    <div class="label">Tablespoons</div>
+                    <div class="value">3 tablespoons</div>
+                </div>
+                <div class="intake-card">
+                    <div class="label">Cup</div>
+                    <div class="value">approximately 1/4 cup</div>
+                </div>
+            </div>
+            
+            
+        </div>
+
+        <div class="section card animate-in" style="animation-delay:0.4s">
+            <h2>&#9200; Best Time to Eat</h2>
+            <p>Evening, as the tryptophan content may aid in promoting restful sleep.</p>
+        </div>
+
+        <div class="section card animate-in" style="animation-delay:0.5s">
+            <h2>&#127869; Meal Incorporation</h2>
+            <p><strong>Can be added to meals:</strong> Yes</p>
+            <ul><li>Salads: Sprinkle 2 tbsp on top for added crunch and nutrients.</li><li>Smoothies: Blend 1 tbsp into your smoothie for extra protein and healthy fats.</li><li>Baking: Use as a topping for bread or muffins.</li></ul>
+            <h3>Additional Notes</h3><div class="note"><ul><li>Roasting pumpkin seeds can enhance their flavor but may reduce some of their nutrient content; opt for raw or lightly roasted varieties.</li><li>Soaking pumpkin seeds can help reduce phytic acid, an anti-nutrient that can impair mineral absorption.</li><li>Store pumpkin seeds in an airtight container in a cool, dry place to maintain freshness and prevent rancidity.</li></ul></div>
+        </div>
+
+        
+            <div class="section card animate-in" style="animation-delay:0.6s">
+                <h2>&#127859; Recipe: Pumpkin Seed Pesto</h2>
+                <p class="recipe-desc">A vegan twist on traditional pesto, using pumpkin seeds for a nutty flavor and creamy texture.</p>
+                <div class="recipe-meta">
+                    <div class="meta-item">
+                        <span class="meta-icon">&#9202;</span>
+                        <span class="meta-label">Prep</span>
+                        <span class="meta-value">10 minutes</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-icon">&#128293;</span>
+                        <span class="meta-label">Cook</span>
+                        <span class="meta-value">None</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-icon">&#127860;</span>
+                        <span class="meta-label">Servings</span>
+                        <span class="meta-value">4</span>
+                    </div>
+                </div>
+                <h3>Ingredients</h3>
+                <ul><li>1 cup raw pumpkin seeds</li><li>2 cups fresh basil leaves</li><li>2 cloves garlic</li><li>1/4 cup nutritional yeast</li><li>1/4 cup olive oil</li><li>Juice of 1 lemon</li><li>Salt and pepper to taste</li></ul>
+                <h3>Instructions</h3>
+                <ol class="instructions"><li>In a food processor, combine pumpkin seeds, basil, and garlic. Pulse until finely chopped.</li><li>Add nutritional yeast, lemon juice, salt, and pepper. Pulse to combine.</li><li>With the processor running, slowly drizzle in olive oil until the mixture is smooth and creamy.</li><li>Adjust seasoning to taste. Serve immediately or store in an airtight container in the refrigerator for up to one week.</li></ol>
+            </div>
+
+        <div class="section card animate-in" style="animation-delay:0.7s">
+            <h2>&#127909; Learn More</h2>
+            <p>Watch videos about Pumpkin Seeds — its history, how it's grown, and nutritional benefits.</p>
+            <a class="youtube-link" href="https://www.youtube.com/results?search_query=Pumpkin+Seeds+nutrition+benefits+health" target="_blank" rel="noopener">
+                <span class="yt-icon">&#9654;</span>
+                Search "Pumpkin Seeds" on YouTube
+            </a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Nourish &amp; Know</strong> &#8212; Mostly Plant-Based Nutrition Guide
+        <div class="footer-divider"></div>
+        <span style="font-size:0.85rem; opacity:0.9; font-weight:600;">* AI-generated content and auto-validated. Use at your own discretion.</span>
+    </footer>
+
+    <script>
+    let speaking = false;
+    let utterance = null;
+
+    function getPageText() {
+        const sections = document.querySelectorAll('.section p, .section li, .nutrition-item');
+        let text = 'Pumpkin Seeds. Comprehensive Nutrition Profile. ';
+        sections.forEach(el => {
+            text += el.textContent.trim() + '. ';
+        });
+        return text;
+    }
+
+    function toggleAudio() {
+        const btn = document.getElementById('audioBtn');
+        const icon = document.getElementById('audioIcon');
+        const label = document.getElementById('audioLabel');
+
+        if (speaking) {
+            window.speechSynthesis.cancel();
+            speaking = false;
+            btn.classList.remove('playing');
+            icon.innerHTML = '&#128264;';
+            label.textContent = 'Listen to this Content';
+        } else {
+            utterance = new SpeechSynthesisUtterance(getPageText());
+            utterance.rate = 0.95;
+            utterance.pitch = 1;
+            utterance.onend = function() {
+                speaking = false;
+                btn.classList.remove('playing');
+                icon.innerHTML = '&#128264;';
+                label.textContent = 'Listen to this Content';
+            };
+            window.speechSynthesis.speak(utterance);
+            speaking = true;
+            btn.classList.add('playing');
+            icon.innerHTML = '&#9209;';
+            label.textContent = 'Stop listening';
+        }
+    }
+    </script>
+</body>
+</html>

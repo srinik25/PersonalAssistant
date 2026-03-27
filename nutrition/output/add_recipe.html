@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Recipe | Nourish &amp; Know</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #f5f3f0;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+        .back-nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100; padding: 0 24px;
+        }
+        .back-nav a {
+            display: inline-flex; align-items: center; gap: 8px;
+            color: rgba(255,255,255,0.85); text-decoration: none;
+            font-size: 0.9rem; font-weight: 500; padding: 14px 0;
+            transition: color 0.2s;
+        }
+        .back-nav a:hover { color: #e6b980; }
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #1a2540 100%);
+            color: white; padding: 80px 40px 40px; text-align: center;
+        }
+        .hero h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.2rem; font-weight: 800; margin-bottom: 8px;
+        }
+        .hero p { opacity: 0.8; font-size: 0.95rem; }
+        .container {
+            max-width: 700px; margin: -20px auto 40px;
+            padding: 0 24px; position: relative; z-index: 1;
+        }
+        .form-card {
+            background: white; border-radius: 16px;
+            padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .field { margin-bottom: 20px; }
+        .field label {
+            display: block; font-weight: 600; font-size: 0.9rem;
+            color: #1a1a2e; margin-bottom: 6px;
+        }
+        .field input, .field textarea {
+            width: 100%; padding: 12px 16px;
+            font-family: 'Inter', sans-serif; font-size: 0.95rem;
+            border: 1px solid #e0dcd6; border-radius: 10px;
+            color: #1a1a2e; background: #faf9f7;
+            outline: none; transition: border-color 0.2s;
+        }
+        .field input:focus, .field textarea:focus {
+            border-color: #d4a373;
+        }
+        .field textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+        .field .hint {
+            font-size: 0.8rem; color: #8a8494; margin-top: 4px;
+        }
+        .photo-upload {
+            border: 2px dashed #e0dcd6; border-radius: 12px;
+            padding: 30px; text-align: center; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+        .photo-upload:hover {
+            border-color: #d4a373; background: #fdf8f0;
+        }
+        .photo-upload input[type="file"] {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer;
+        }
+        .photo-upload .upload-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+        .photo-upload .upload-text { font-size: 0.9rem; color: #8a8494; }
+        .photo-preview {
+            display: none; margin-top: 12px; text-align: center;
+        }
+        .photo-preview img {
+            max-width: 100%; max-height: 200px; border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .buttons {
+            display: flex; gap: 12px; margin-top: 28px;
+        }
+        .btn {
+            flex: 1; padding: 14px 24px; border: none; border-radius: 50px;
+            font-family: 'Inter', sans-serif; font-size: 0.95rem;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-draft {
+            background: #f0ede8; color: #1a1a2e;
+        }
+        .btn-draft:hover { background: #e8dfd4; }
+        .btn-publish {
+            background: #1a1a2e; color: #e6b980;
+        }
+        .btn-publish:hover { background: #16213e; transform: translateY(-1px); }
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #1a1a2e; color: #e6b980; padding: 14px 28px;
+            border-radius: 50px; font-size: 0.9rem; font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            opacity: 0; transition: opacity 0.3s;
+            z-index: 200;
+        }
+        .toast.show { opacity: 1; }
+        .drafts-section {
+            margin-top: 28px;
+        }
+        .drafts-section h3 {
+            font-size: 1rem; font-weight: 700; color: #1a1a2e;
+            margin-bottom: 12px; padding-bottom: 8px;
+            border-bottom: 2px solid #e8dfd4;
+        }
+        .draft-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 16px; background: #fdf8f0; border-radius: 8px;
+            margin-bottom: 8px; border-left: 3px solid #d4a373;
+        }
+        .draft-item .draft-name { font-weight: 600; color: #1a1a2e; }
+        .draft-item .draft-actions { display: flex; gap: 8px; }
+        .draft-item button {
+            padding: 6px 14px; border: none; border-radius: 50px;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer;
+        }
+        .draft-item .btn-edit { background: #e8dfd4; color: #1a1a2e; }
+        .draft-item .btn-del { background: #fee2e2; color: #991b1b; }
+        .draft-item .btn-pub { background: #1a1a2e; color: #e6b980; }
+        @media (max-width: 640px) {
+            .hero { padding: 70px 20px 30px; }
+            .hero h1 { font-size: 1.8rem; }
+            .container { padding: 0 16px; }
+            .form-card { padding: 24px 20px; }
+            .buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="back-nav">
+        <a href="index.html">&#8592; Nourish &amp; Know</a>
+    </nav>
+
+    <div class="hero">
+        <h1>Add a Recipe</h1>
+        <p>Share your favorite plant-based recipe</p>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <div class="field">
+                <label>Recipe Name</label>
+                <input type="text" id="recipeName" placeholder="e.g., Chickpea Curry">
+            </div>
+            <div class="field">
+                <label>Ingredients</label>
+                <textarea id="recipeIngredients" placeholder="One ingredient per line&#10;e.g.,&#10;1 can chickpeas&#10;1 tbsp olive oil&#10;2 cloves garlic"></textarea>
+                <p class="hint">Enter one ingredient per line</p>
+            </div>
+            <div class="field">
+                <label>Method</label>
+                <textarea id="recipeMethod" placeholder="Step-by-step instructions&#10;e.g.,&#10;1. Heat oil in a pan&#10;2. Add garlic and saut&eacute; for 1 minute&#10;3. Add chickpeas and spices"></textarea>
+                <p class="hint">Enter each step on a new line</p>
+            </div>
+            <div class="field">
+                <label>Photo</label>
+                <div class="photo-upload" id="photoUpload">
+                    <span class="upload-icon">&#128247;</span>
+                    <span class="upload-text">Click or drag to upload a photo</span>
+                    <input type="file" id="recipePhoto" accept="image/*" onchange="previewPhoto(this)">
+                </div>
+                <div class="photo-preview" id="photoPreview">
+                    <img id="photoImg" src="" alt="Preview">
+                </div>
+            </div>
+            <div class="buttons">
+                <button class="btn btn-draft" onclick="saveDraft()">Save Draft</button>
+                <button class="btn btn-publish" onclick="publishRecipe()">Publish</button>
+            </div>
+        </div>
+
+        <div class="drafts-section" id="draftsSection" style="display:none">
+            <h3>Your Drafts</h3>
+            <div id="draftsList"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    const db = firebase.firestore();
+
+    let editingId = null;
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function previewPhoto(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photoImg').src = e.target.result;
+                document.getElementById('photoPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function compressImage(dataUrl, maxWidth, quality) {
+        return new Promise((resolve) => {
+            if (!dataUrl || !dataUrl.startsWith('data:')) { resolve(''); return; }
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let w = img.width, h = img.height;
+                if (w > maxWidth) { h = h * maxWidth / w; w = maxWidth; }
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = function() { resolve(''); };
+            img.src = dataUrl;
+        });
+    }
+
+    async function getFormData() {
+        const name = document.getElementById('recipeName').value.trim();
+        const ingredients = document.getElementById('recipeIngredients').value.trim();
+        const method = document.getElementById('recipeMethod').value.trim();
+        const imgSrc = document.getElementById('photoImg').src;
+        let photo = '';
+        if (imgSrc && imgSrc.startsWith('data:')) {
+            photo = await compressImage(imgSrc, 600, 0.6);
+        }
+        if (!name) { showToast('Please enter a recipe name'); return null; }
+        if (!ingredients) { showToast('Please enter ingredients'); return null; }
+        if (!method) { showToast('Please enter the method'); return null; }
+        return { name, ingredients, method, photo, id: editingId || Date.now().toString() };
+    }
+
+    async function saveDraft() {
+        try {
+            const data = await getFormData();
+            if (!data) return;
+            let saveData = { ...data };
+            const drafts = JSON.parse(localStorage.getItem('nk_drafts') || '{}');
+            drafts[saveData.id] = { ...saveData, status: 'draft', savedAt: new Date().toISOString() };
+            localStorage.setItem('nk_drafts', JSON.stringify(drafts));
+            showToast('Draft saved!');
+            clearForm();
+            renderDrafts();
+        } catch(e) {
+            if (e.name === 'QuotaExceededError') {
+                showToast('Storage full. Try without a photo.');
+            } else {
+                showToast('Error: ' + e.message);
+            }
+        }
+    }
+
+    async function publishRecipe() {
+        try {
+            const data = await getFormData();
+            if (!data) return;
+            let saveData = { ...data, status: 'published', publishedAt: new Date().toISOString() };
+            const docId = editingId || saveData.id;
+            await db.collection('recipes').doc(docId).set(saveData);
+            // Remove from local drafts
+            const drafts = JSON.parse(localStorage.getItem('nk_drafts') || '{}');
+            delete drafts[docId];
+            localStorage.setItem('nk_drafts', JSON.stringify(drafts));
+            showToast('Recipe published! Visible on all devices.');
+            clearForm();
+            renderDrafts();
+        } catch(e) {
+            if (e.name === 'QuotaExceededError') {
+                showToast('Storage full. Try without a photo.');
+            } else {
+                showToast('Error: ' + e.message);
+            }
+        }
+    }
+
+    function clearForm() {
+        editingId = null;
+        document.getElementById('recipeName').value = '';
+        document.getElementById('recipeIngredients').value = '';
+        document.getElementById('recipeMethod').value = '';
+        document.getElementById('photoImg').src = '';
+        document.getElementById('photoPreview').style.display = 'none';
+    }
+
+    function checkAdmin() {
+        const pw = prompt('Enter admin password:');
+        return pw === 'ashasrini';
+    }
+
+    function loadDraft(id) {
+        const drafts = JSON.parse(localStorage.getItem('nk_drafts') || '{}');
+        const d = drafts[id];
+        if (!d) return;
+        editingId = id;
+        document.getElementById('recipeName').value = d.name;
+        document.getElementById('recipeIngredients').value = d.ingredients;
+        document.getElementById('recipeMethod').value = d.method;
+        if (d.photo) {
+            document.getElementById('photoImg').src = d.photo;
+            document.getElementById('photoPreview').style.display = 'block';
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast('Draft loaded for editing');
+    }
+
+    function deleteDraft(id) {
+        if (!checkAdmin()) return;
+        const drafts = JSON.parse(localStorage.getItem('nk_drafts') || '{}');
+        delete drafts[id];
+        localStorage.setItem('nk_drafts', JSON.stringify(drafts));
+        renderDrafts();
+        showToast('Draft deleted');
+    }
+
+    function publishDraft(id) {
+        if (!checkAdmin()) return;
+        const drafts = JSON.parse(localStorage.getItem('nk_drafts') || '{}');
+        const d = drafts[id];
+        if (!d) return;
+        db.collection('recipes').doc(id).set({ ...d, status: 'published', publishedAt: new Date().toISOString() }).then(() => {
+            delete drafts[id];
+            localStorage.setItem('nk_drafts', JSON.stringify(drafts));
+            renderDrafts();
+            showToast('Recipe published to all devices!');
+        });
+    }
+
+    function renderDrafts() {
+        const drafts = JSON.parse(localStorage.getItem('nk_drafts') || '{}');
+        const section = document.getElementById('draftsSection');
+        const list = document.getElementById('draftsList');
+        const entries = Object.entries(drafts);
+        if (entries.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+        section.style.display = 'block';
+        list.innerHTML = entries.map(([id, d]) =>
+            `<div class="draft-item">
+                <span class="draft-name">${d.name}</span>
+                <span class="draft-actions">
+                    <button class="btn-edit" onclick="loadDraft('${id}')">Edit</button>
+                    <button class="btn-pub" onclick="publishDraft('${id}')">Publish</button>
+                    <button class="btn-del" onclick="deleteDraft('${id}')">Delete</button>
+                </span>
+            </div>`
+        ).join('');
+    }
+
+    // Init
+    renderDrafts();
+
+    // Auto-load draft if redirected from edit
+    (function() {
+        const params = new URLSearchParams(window.location.search);
+        const editId = params.get('edit');
+        if (editId) {
+            loadDraft(editId);
+            return;
+        }
+        // Also auto-load if there's exactly one draft (just moved from edit)
+        const drafts = JSON.parse(localStorage.getItem('nk_drafts') || '{}');
+        const lastEdit = localStorage.getItem('nk_last_edit');
+        if (lastEdit && drafts[lastEdit]) {
+            loadDraft(lastEdit);
+            localStorage.removeItem('nk_last_edit');
+        }
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How This Was Built | Nourish &amp; Know</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #f5f3f0;
+            color: #1a1a2e;
+            line-height: 1.75;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #1a2540 100%);
+            color: white;
+            padding: 48px 40px 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .header p { opacity: 0.8; font-size: 0.95rem; max-width: 500px; margin: 0 auto; }
+        .container {
+            max-width: 780px;
+            margin: -16px auto 40px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 28px 32px;
+            margin-bottom: 18px;
+        }
+        h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: #1a1a2e;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8dfd4;
+        }
+        h3 {
+            color: #d4a373;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 14px 0 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        p { margin-bottom: 10px; color: #444; font-size: 0.93rem; }
+        a { color: #d4a373; font-weight: 600; }
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #f0ede8;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.84rem;
+            color: #1a1a2e;
+        }
+        pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.82rem;
+            background: #1a1a2e;
+            color: #e6b980;
+            padding: 16px 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            line-height: 1.7;
+            margin: 8px 0 12px;
+        }
+        pre .comment { color: #6b7280; }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul li {
+            padding: 8px 14px;
+            margin-bottom: 5px;
+            background: #faf9f7;
+            border-left: 3px solid #d4a373;
+            border-radius: 5px;
+            font-size: 0.92rem;
+            color: #444;
+        }
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+        .tag-navy { background: #1a1a2e; color: #e6b980; }
+        .tag-gold { background: #fdf8f0; color: #8b6914; }
+        .tag-green { background: #e8f5e9; color: #2e7d32; }
+        .flow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+            font-size: 0.88rem;
+            color: #6b7280;
+        }
+        .flow span {
+            background: #f0ede8;
+            padding: 6px 14px;
+            border-radius: 8px;
+            color: #1a1a2e;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .flow .arrow { background: none; color: #d4a373; font-size: 1.1rem; }
+        .footer {
+            background: #1a1a2e;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 24px;
+            font-size: 0.85rem;
+        }
+        .footer strong { color: rgba(255,255,255,0.85); }
+        @media (max-width: 640px) {
+            .header { padding: 36px 20px 30px; }
+            .header h1 { font-size: 1.8rem; }
+            .card { padding: 22px 20px; }
+            pre { font-size: 0.78rem; padding: 14px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>How This Was Built</h1>
+        <p style="color:#e6b980; font-size:1.05rem;">A nutrition website built entirely through conversation with an AI coding assistant (Vibe Coding).</p>
+    </div>
+    <div class="container">
+
+        <div class="card" style="border-left: 4px solid #d4a373;">
+            <h2>Bottom Line Up Front (BLUF)</h2>
+            <p>This is a nutrition website built primarily using <strong>Claude Code</strong> &mdash; Anthropic's AI coding assistant. Content is mostly AI-generated via GPT-4o, but auto-validated through cross-checks and tightly constrained by system prompts and output schemas. No code was written manually &mdash; every feature was built through plain English conversation.</p>
+            <h3>Why We Built This</h3>
+            <ul>
+                <li>To be a useful nutrition reference site that we and friends can actually use day-to-day</li>
+                <li>To experiment with emerging AI capabilities &mdash; to see how far you can get building a real app purely through conversation, without writing a single line of code manually</li>
+            </ul>
+            <p style="font-size:0.88rem; color:#6b7280;">The entire site &mdash; 40+ food profiles, search, tabs, images, recipes, Firebase, SMS, daily automation &mdash; was built in roughly <strong>4-6 hours of conversation</strong> spread across a few sessions.</p>
+            <h3>Prerequisites</h3>
+            <ul>
+                <li><strong>Claude Code subscription</strong> &mdash; Anthropic's CLI tool (<a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank">docs</a>). $20/month for the base plan; $100/month for heavier Claude Code usage.</li>
+                <li><strong>An LLM API key</strong> &mdash; GPT-4o (OpenAI) in this case, for content generation and validation. Estimated total API cost for this entire site: <strong>~$8</strong> (as of March 19, 2026) (~650 API calls including vision-based image validation).</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>What is Nourish &amp; Know?</h2>
+            <p>A nutrition profiles website with 40+ foods, each with history, nutrition data, daily intake, recipes, and practical tips. Every profile is AI-generated, cross-validated, and published to a live URL.</p>
+            <p><a href="https://wintry-tower-54cj.here.now/" target="_blank">Visit the live site</a></p>
+        </div>
+
+        <div class="card">
+            <h2>What is Claude Code?</h2>
+            <p><a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank">Claude Code</a> is Anthropic's command-line interface (CLI) tool that lets you build software by describing what you want in plain English. It reads your files, writes code, runs commands, and iterates &mdash; all from your terminal.</p>
+            <p>Think of it as a senior developer sitting next to you, except it never sleeps and types really fast.</p>
+        </div>
+
+        <div class="card">
+            <h2>Installing Claude Code</h2>
+            <h3>Mac (via Homebrew)</h3>
+            <pre><span class="comment"># Install Claude Code</span>
+brew install --cask claude-code
+
+<span class="comment"># Verify it worked</span>
+claude --version
+
+<span class="comment"># Start coding</span>
+cd your-project-folder
+claude</pre>
+            <h3>Mac (alternative: npm)</h3>
+            <pre>brew install node
+npm install -g @anthropic-ai/claude-code
+claude</pre>
+            <h3>Windows</h3>
+            <pre><span class="comment"># Install Node.js from https://nodejs.org, then:</span>
+npm install -g @anthropic-ai/claude-code
+claude</pre>
+            <h3>After Install</h3>
+            <ul>
+                <li><strong>Authenticate:</strong> Run <code>claude</code> in a project directory and sign in via browser with your Claude.ai account</li>
+                <li><strong>Initialize:</strong> Run <code>/init</code> inside Claude Code to generate a <code>CLAUDE.md</code> &mdash; this gives Claude persistent context about your project</li>
+                <li><strong>Subscription required:</strong> Claude Code only works with a paid Claude.ai account (Pro at $20/month). The free plan does not include Claude Code.</li>
+            </ul>
+            <h3>Good to Know</h3>
+            <ul>
+                <li><strong>Homebrew doesn't auto-update</strong> &mdash; run <code>brew upgrade claude-code</code> periodically for latest features. The native installer (<code>curl -fsSL https://claude.ai/install.sh | bash</code>) auto-updates if you prefer.</li>
+                <li><strong>Disk cleanup:</strong> Homebrew keeps old versions after upgrades. Run <code>brew cleanup claude-code</code> periodically to reclaim space.</li>
+            </ul>
+            <p style="font-size:0.85rem; color:#6b7280;"><strong>Why does the npm method need Node.js?</strong> Claude Code's CLI is built as a Node.js package. Node.js is only needed to install and run Claude Code &mdash; we don't use it anywhere in the actual website (which is pure HTML/CSS/JS). <strong>npm</strong> (Node Package Manager) comes bundled with Node.js &mdash; think of it as an app store for developer tools.</p>
+        </div>
+
+        <div class="card">
+            <h2>Installing Python &amp; Libraries via Claude Code</h2>
+            <p>You don't need to memorize pip commands. Just ask:</p>
+            <pre><span class="comment"># In Claude Code, just type:</span>
+"install python and the requests library"
+"I need the openai library for API calls"
+"set up a virtual environment and install dependencies"</pre>
+            <p>Claude Code figures out the right commands (<code>brew install python</code>, <code>pip install requests</code>, etc.) and runs them for you.</p>
+            <p style="font-size:0.85rem; color:#6b7280;"><strong>Note:</strong> The backend of this site is all Python &mdash; content generation, validation, image downloading, SMS, and publishing are all Python scripts. It could just as easily have been TypeScript, Go, or any other language &mdash; Claude Code works with whatever you choose.</p>
+        </div>
+
+        <div class="card">
+            <h2>How It Was Built</h2>
+            <p>The entire site was built through conversation. No code was written manually.</p>
+            <div class="flow">
+                <span>Describe what you want</span>
+                <span class="arrow">&rarr;</span>
+                <span>Claude Code writes the code</span>
+                <span class="arrow">&rarr;</span>
+                <span>Review &amp; iterate</span>
+                <span class="arrow">&rarr;</span>
+                <span>Deploy</span>
+            </div>
+
+            <h3>Content Generation</h3>
+            <ul>
+                <li><strong>GPT-4o</strong> generates nutrition data as structured JSON (via OpenAI API)</li>
+                <li>A second GPT-4o call <strong>cross-validates</strong> the data for accuracy</li>
+                <li>Python converts JSON to styled <strong>HTML pages</strong></li>
+            </ul>
+
+            <h3>Image Sourcing</h3>
+            <ul>
+                <li>Images sourced from <strong>Wikimedia Commons</strong> (free, CC-licensed)</li>
+                <li>Each image <strong>validated by GPT-4o Vision</strong> to ensure it shows the actual food (not a plant, painting, or unrelated item)</li>
+                <li>Rejects and retries automatically until a clean photo is found</li>
+            </ul>
+
+            <h3>Features Added Through Conversation</h3>
+            <ul>
+                <li>Search bar with real-time filtering</li>
+                <li>Category tabs (Nuts, Fruits, Vegetables, Grains, Other, Recipes)</li>
+                <li>Browser text-to-speech ("Listen to this Content")</li>
+                <li>YouTube links for each food</li>
+                <li>Recipe submission with photo upload <em style="color:#8a8494;">(the only non-AI-generated feature &mdash; actual tried-and-tested recipes added the old-fashioned way via an HTML form)</em></li>
+                <li>SMS notifications via email-to-SMS gateway <em style="color:#8a8494;">(for site owners &mdash; notifies when new content is published)</em></li>
+                <li>Daily automation via macOS launchd <em style="color:#8a8494;">(used for initial bulk content generation; now content is added on-demand via Claude Code, e.g., "add acai to the site")</em></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Hosting</h2>
+            <p>The site is hosted on <a href="https://here.now" target="_blank">here.now</a> &mdash; a free static hosting service.</p>
+            <pre><span class="comment"># Publishing is one command:</span>
+bash publish.sh ./output --slug wintry-tower-54cj</pre>
+            <ul>
+                <li><span class="tag tag-green">Free</span> Permanent hosting with an account</li>
+                <li><span class="tag tag-gold">Fast</span> Only changed files are uploaded</li>
+                <li><span class="tag tag-navy">Simple</span> No server config, no build step</li>
+            </ul>
+            <p>Sign up via email, get an API key, save it locally. Every publish after that is authenticated and permanent.</p>
+            <p style="font-size:0.85rem; color:#6b7280;"><strong>Note:</strong> The site is just static HTML files &mdash; it can be easily rehosted anywhere. Claude Code can deploy to Firebase Hosting, AWS S3, Netlify, GoDaddy, or any other provider with a simple conversation.</p>
+        </div>
+
+        <div class="card">
+            <h2>Version Control</h2>
+            <p>Local Git repo tracks all changes. Claude Code handles commits automatically &mdash; you just tell it to commit when you're ready:</p>
+            <pre><span class="comment"># You say:</span>
+"commit the changes"
+
+<span class="comment"># Claude Code runs:</span>
+git add -A
+git commit -m "Add new foods, Firebase recipes, image validation..."</pre>
+            <p>Claude Code writes descriptive commit messages summarizing what changed, stages the right files, and excludes sensitive data. Sensitive files are excluded via <code>.gitignore</code>: API keys, credentials, logs.</p>
+        </div>
+
+        <div class="card">
+            <h2>Database Persistence</h2>
+            <p>Unlike the nutrition profiles (which are static HTML files generated by Claude Code), recipes are created by users through the web frontend and need a database to persist across devices and sessions. We use <a href="https://firebase.google.com/" target="_blank">Firebase Firestore</a> (Google's free NoSQL database):</p>
+            <ul>
+                <li><strong>Reads from any device</strong> &mdash; recipes sync across laptop, phone, any browser</li>
+                <li><strong>Writes are password-protected</strong> &mdash; adding, editing, and deleting recipes requires an admin password to prevent unauthorized changes</li>
+                <li><strong>Drafts stay local</strong> &mdash; localStorage for work-in-progress, Firestore for published</li>
+            </ul>
+            <pre><span class="comment"># Free tier covers everything we need:</span>
+Storage: 1 GB  |  Reads: 50K/day  |  Writes: 20K/day</pre>
+        </div>
+
+        <div class="card">
+            <h2>Application Technical Stack</h2>
+            <div class="flow">
+                <span>Python</span>
+                <span class="arrow">+</span>
+                <span>GPT-4o</span>
+                <span class="arrow">+</span>
+                <span>HTML/CSS/JS</span>
+                <span class="arrow">+</span>
+                <span>Firebase</span>
+                <span class="arrow">+</span>
+                <span>here.now</span>
+            </div>
+            <p style="margin-top: 12px;">Zero frameworks. Zero build tools. Just files, an LLM, and a conversation.</p>
+        </div>
+
+    </div>
+    <footer class="footer">
+        <strong>Nourish &amp; Know</strong> &mdash; Built with Claude Code
+    </footer>
+</body>
+</html>

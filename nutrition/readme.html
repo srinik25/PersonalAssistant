@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition Project - Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f7fa;
+            color: #1a1a2e;
+            line-height: 1.7;
+        }
+        .header {
+            background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 40%, #40916c 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 8px; }
+        .header p { opacity: 0.85; font-size: 1.1rem; }
+        .container {
+            max-width: 900px;
+            margin: -20px auto 40px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 32px 36px;
+            margin-bottom: 24px;
+        }
+        h2 {
+            color: #1b4332;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8f5e9;
+        }
+        h3 {
+            color: #2d6a4f;
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin: 18px 0 8px;
+        }
+        p { margin-bottom: 12px; color: #444; }
+        .tree {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.88rem;
+            background: #1a1a2e;
+            color: #a8e6cf;
+            padding: 24px 28px;
+            border-radius: 10px;
+            overflow-x: auto;
+            line-height: 1.8;
+        }
+        .tree .comment { color: #6b7280; }
+        .tree .folder { color: #ffd166; font-weight: 500; }
+        .tree .file { color: #a8e6cf; }
+        .tree .highlight { color: #81b29a; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.95rem;
+        }
+        th {
+            background: #e8f5e9;
+            color: #1b4332;
+            text-align: left;
+            padding: 10px 14px;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #444;
+        }
+        tr:hover td { background: #f9fdf9; }
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #f0f4f0;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.88rem;
+            color: #1b4332;
+        }
+        .step-list {
+            list-style: none;
+            padding: 0;
+            counter-reset: step;
+        }
+        .step-list li {
+            counter-increment: step;
+            padding: 12px 16px 12px 52px;
+            margin-bottom: 8px;
+            background: #f9fbe7;
+            border-left: 3px solid #40916c;
+            border-radius: 6px;
+            position: relative;
+            color: #444;
+        }
+        .step-list li::before {
+            content: counter(step);
+            position: absolute;
+            left: 14px;
+            top: 11px;
+            width: 26px;
+            height: 26px;
+            background: #40916c;
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-green { background: #d4edda; color: #1b4332; }
+        .badge-amber { background: #fff3cd; color: #856404; }
+        .link { color: #2d6a4f; font-weight: 600; text-decoration: none; }
+        .link:hover { text-decoration: underline; }
+        .footer {
+            background: #1b4332;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 28px 24px;
+            font-size: 0.85rem;
+        }
+        .footer strong { color: rgba(255,255,255,0.85); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Nutrition Project</h1>
+        <p>Automated plant-based nutrition profile generator, publisher, and notifier</p>
+    </div>
+    <div class="container">
+
+        <div class="card">
+            <h2>Project Overview</h2>
+            <p>This project automatically generates detailed nutrition profiles for plant-based foods using GPT-4o, validates the data, produces styled HTML pages, publishes them to a live website, and sends SMS notifications. It runs daily via cron.</p>
+            <p><strong>Live site:</strong> <a class="link" href="https://wintry-tower-54cj.here.now/">https://wintry-tower-54cj.here.now/</a></p>
+        </div>
+
+        <div class="card">
+            <h2>Project Structure</h2>
+            <div class="tree">
+<span class="folder">nutrition/</span>
+<span class="folder">├── config/</span>                    <span class="comment"># Configuration files</span>
+<span class="file">│   ├── keys.txt</span>               <span class="comment"># API keys (OpenAI, Gmail SMTP credentials)</span>
+<span class="file">│   ├── system_prompt.json</span>     <span class="comment"># LLM role &amp; guidelines for generating data</span>
+<span class="file">│   ├── profile.json</span>           <span class="comment"># User dietary profile (vegetarian/vegan)</span>
+<span class="file">│   ├── output.json</span>            <span class="comment"># Expected JSON response format &amp; example</span>
+<span class="file">│   ├── daily_tracker.json</span>     <span class="comment"># Tracks processed foods (day counter + history)</span>
+<span class="file">│   └── bash</span>                   <span class="comment"># Cron setup script</span>
+│
+<span class="folder">├── output/</span>                    <span class="comment"># Generated HTML (published to here.now)</span>
+<span class="file">│   ├── index.html</span>             <span class="comment"># Landing page with card grid</span>
+<span class="file">│   └── *.html</span>                 <span class="comment"># Individual food nutrition profile pages</span>
+│
+<span class="file">├── nutrition_generator.py</span>     <span class="comment"># Core module (generate, validate, render)</span>
+<span class="file">├── daily_run.py</span>               <span class="comment"># Active daily runner (cron, 10:03 AM)</span>
+<span class="file">├── daily_nutrition.py</span>         <span class="comment"># Original daily runner (legacy)</span>
+<span class="file">├── run_batch.py</span>               <span class="comment"># One-time batch processor</span>
+<span class="file">├── send_sms.py</span>                <span class="comment"># Standalone SMS sender</span>
+<span class="file">├── cron.log</span>                   <span class="comment"># Log file for daily cron runs</span>
+<span class="file">└── readme.html</span>                <span class="comment"># This file</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Core Files</h2>
+            <table>
+                <tr>
+                    <th>File</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td><code>nutrition_generator.py</code></td>
+                    <td>Core module with 4 functions: <code>load_config()</code> reads config files, <code>query_llm()</code> calls GPT-4o for nutrition JSON, <code>validate_data()</code> checks structure/numbers/units + LLM cross-check, <code>generate_html()</code> converts JSON to styled HTML</td>
+                </tr>
+                <tr>
+                    <td><code>daily_run.py</code></td>
+                    <td>Active daily runner. Generates next food, updates index.html, publishes to here.now, sends SMS. Falls back to email if SMS fails. Runs via crontab at 10:03 AM.</td>
+                </tr>
+                <tr>
+                    <td><code>daily_nutrition.py</code></td>
+                    <td>Original daily runner. Picks next food from list, generates profile, and emails it. Superseded by <code>daily_run.py</code>.</td>
+                </tr>
+                <tr>
+                    <td><code>run_batch.py</code></td>
+                    <td>One-time batch script. Ran all remaining items at once with publish + SMS after each. Already used.</td>
+                </tr>
+                <tr>
+                    <td><code>send_sms.py</code></td>
+                    <td>Simple standalone SMS sender via Gmail-to-SMS gateway (email to <code>number@tmomail.net</code>).</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Config Files</h2>
+            <table>
+                <tr>
+                    <th>File</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td><code>keys.txt</code></td>
+                    <td>OpenAI API key (GPT-4o) and Gmail SMTP credentials (sender email, app password, recipients)</td>
+                </tr>
+                <tr>
+                    <td><code>system_prompt.json</code></td>
+                    <td>Defines the LLM's role as a nutrition expert and guidelines for generating accurate data</td>
+                </tr>
+                <tr>
+                    <td><code>profile.json</code></td>
+                    <td>User dietary preferences (vegetarian/vegan) used to tailor nutrition advice and recipes</td>
+                </tr>
+                <tr>
+                    <td><code>output.json</code></td>
+                    <td>JSON schema and example that tells the LLM exactly what format to return (fields, structure)</td>
+                </tr>
+                <tr>
+                    <td><code>daily_tracker.json</code></td>
+                    <td>Tracks progress: current day index and history of all processed items with timestamps</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>How It Works (End-to-End)</h2>
+            <ol class="step-list">
+                <li><code>daily_run.py</code> runs via crontab at <strong>10:03 AM daily</strong></li>
+                <li>Reads <code>daily_tracker.json</code> to find the next food item in the queue</li>
+                <li>Calls <code>nutrition_generator.py</code> which hits <strong>GPT-4o twice</strong> &mdash; once to generate nutrition data, once to cross-validate it</li>
+                <li>Saves the styled HTML to <code>output/</code> and regenerates <code>index.html</code> with the new card</li>
+                <li>Publishes the entire <code>output/</code> folder to <a class="link" href="https://wintry-tower-54cj.here.now/">here.now</a> (permanent, authenticated)</li>
+                <li>Sends <strong>SMS</strong> to both phone numbers via Gmail-to-SMS gateway; if SMS fails, falls back to <strong>email</strong></li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>Notifications</h2>
+            <h3>SMS (Primary)</h3>
+            <p>Sent via email-to-SMS gateway (<code>number@tmomail.net</code> for T-Mobile). Both recipients get a text with the new food profile link.</p>
+            <h3>Email (Fallback)</h3>
+            <p>If SMS fails (e.g., carrier block), an HTML email with the profile link is sent to the Yahoo email addresses configured in <code>keys.txt</code>.</p>
+        </div>
+
+        <div class="card">
+            <h2>Food Queue</h2>
+            <p><span class="badge badge-green">Completed (17)</span></p>
+            <p>Cashews, Tomatoes, Tofu, Almonds, Turmeric, Quinoa, Sweet Potato, Chickpeas, Spinach, Avocado, Chia Seeds, Lentils, Broccoli, Blueberries, Walnuts, Oats, Kale</p>
+            <p style="margin-top: 12px;"><span class="badge badge-amber">Upcoming (10)</span></p>
+            <p>Edamame, Pumpkin Seeds, Mango, Beetroot, Cauliflower, Black Beans, Ginger, Pomegranate, Hemp Seeds, Asparagus</p>
+        </div>
+
+    </div>
+    <footer class="footer">
+        <strong>Nutrition Project</strong> &mdash; Automated Plant-Based Nutrition Guide
+    </footer>
+</body>
+</html>

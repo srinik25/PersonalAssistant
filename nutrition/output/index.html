@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nourish &amp; Know | Plant-Based Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f3f0;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #1a2540 100%);
+            color: white;
+            padding: 32px 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(212,163,115,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(230,185,128,0.06) 0%, transparent 50%);
+            animation: shimmer 15s ease-in-out infinite alternate;
+        }
+        @keyframes shimmer {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-5%, 5%); }
+        }
+        .hero-content {
+            position: relative; z-index: 1;
+            max-width: 700px; margin: 0 auto;
+        }
+        .hero-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+        .hero h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.2rem; font-weight: 800;
+            letter-spacing: -0.5px; margin-bottom: 8px; line-height: 1.1;
+        }
+        .hero .subtitle {
+            font-size: 0.95rem; font-weight: 400; opacity: 0.85;
+            line-height: 1.5; max-width: 520px; margin: 0 auto 14px;
+        }
+        .hero .badge {
+            display: inline-block; padding: 6px 18px;
+            background: rgba(212,163,115,0.2);
+            border: 1px solid rgba(212,163,115,0.4);
+            border-radius: 50px; font-size: 0.85rem;
+            font-weight: 500; letter-spacing: 0.5px;
+            backdrop-filter: blur(4px);
+            color: #e6b980;
+        }
+        .main {
+            max-width: 1100px; margin: -30px auto 0;
+            padding: 0 24px 60px; position: relative; z-index: 2;
+        }
+        .section-label {
+            text-align: center; font-size: 0.8rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 2px;
+            color: #8a8494; margin-bottom: 28px; padding-top: 10px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white; border-radius: 16px;
+            padding: 28px 24px; text-decoration: none;
+            color: #1a1a2e;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.25s ease, border-color 0.25s ease;
+            display: flex; flex-direction: column;
+            align-items: flex-start; gap: 10px;
+            border: 1px solid rgba(0,0,0,0.04);
+            border-left: 3px solid transparent;
+            opacity: 0; animation: fadeInUp 0.5s ease forwards;
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 30px rgba(26,26,46,0.12), 0 2px 8px rgba(0,0,0,0.06);
+            border-left-color: #d4a373;
+        }
+        .card:hover .card-arrow {
+            opacity: 1; transform: translateX(0);
+        }
+        .card-img {
+            width: 100%; height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 4px;
+        }
+        .card-emoji { font-size: 2rem; line-height: 1; }
+        .card-name { font-weight: 700; font-size: 1.1rem; color: #1a1a2e; }
+        .card-arrow {
+            margin-top: auto; font-size: 0.85rem; color: #d4a373;
+            font-weight: 600; opacity: 0; transform: translateX(-6px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .footer {
+            background: #1a1a2e; color: rgba(255,255,255,0.6);
+            text-align: center; padding: 36px 24px;
+            font-size: 0.85rem; line-height: 1.7;
+        }
+        .footer strong { color: rgba(255,255,255,0.85); font-weight: 600; }
+        .footer .footer-divider {
+            width: 40px; height: 2px;
+            background: rgba(212,163,115,0.4);
+            margin: 12px auto; border-radius: 1px;
+        }
+        @media (max-width: 640px) {
+            .hero { padding: 40px 24px 30px; }
+            .hero h1 { font-size: 1.8rem; }
+            .hero .subtitle { font-size: 1rem; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+            .card { padding: 20px 18px; }
+            .card-emoji { font-size: 1.6rem; }
+            .card-name { font-size: 1rem; }
+        }
+        .search-wrap {
+            max-width: 480px;
+            margin: 0 auto 28px;
+        }
+        .search-box {
+            width: 100%;
+            padding: 14px 20px 14px 48px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            border: 1px solid #e0dcd6;
+            border-radius: 50px;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 18px center no-repeat;
+            color: #1a1a2e;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .search-box:focus {
+            border-color: #d4a373;
+            box-shadow: 0 2px 12px rgba(212,163,115,0.15);
+        }
+        .search-box::placeholder {
+            color: #aaa;
+        }
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8a8494;
+            font-size: 1rem;
+            display: none;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 1px solid #e0dcd6;
+            background: white;
+            color: #6b7280;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab:hover {
+            border-color: #d4a373;
+            color: #d4a373;
+        }
+        .tab.active {
+            background: #1a1a2e;
+            color: #e6b980;
+            border-color: #1a1a2e;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Nourish &amp; Know</h1>
+            <p class="subtitle">Your guide to eating well &mdash; one food at a time.</p>
+            <span class="badge">&#127807; Vegetarian &amp; Vegan Friendly</span>
+        </div>
+    </div>
+    <div class="main">
+        <div class="search-wrap">
+            <input type="text" class="search-box" id="searchInput" placeholder="Search foods..." oninput="filterCards()">
+        </div>
+        <div class="tabs">
+            <button class="tab active" onclick="setTab('all')">All</button>
+            <button class="tab" onclick="setTab('nuts')">Nuts &amp; Seeds</button>
+            <button class="tab" onclick="setTab('fruits')">Fruits</button>
+            <button class="tab" onclick="setTab('vegetables')">Vegetables</button>
+            <button class="tab" onclick="setTab('grains')">Grains &amp; Legumes</button>
+            <button class="tab" onclick="setTab('other')">Other</button>
+            <button class="tab" onclick="setTab('recipes')" style="border-color:#d4a373; color:#d4a373;">Recipes</button>
+        </div>
+        <div class="grid" id="foodGrid">
+            <a class="card" href="almonds.html" data-category="nuts" style="animation-delay:0.03s">
+                <img class="card-img" src="images/almonds.jpg" alt="Almonds" loading="lazy">
+                <span class="card-name">Almonds</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="apples.html" data-category="fruits" style="animation-delay:0.06s">
+                <img class="card-img" src="images/apples.jpg" alt="Apples" loading="lazy">
+                <span class="card-name">Apples</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="avocado.html" data-category="fruits" style="animation-delay:0.09s">
+                <img class="card-img" src="images/avocado.jpg" alt="Avocado" loading="lazy">
+                <span class="card-name">Avocado</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="bamboo_shoots.html" data-category="vegetables" style="animation-delay:0.12s">
+                <img class="card-img" src="images/bamboo_shoots_v2.jpg" alt="Bamboo Shoots" loading="lazy">
+                <span class="card-name">Bamboo Shoots</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="bananas.html" data-category="fruits" style="animation-delay:0.15s">
+                <img class="card-img" src="images/bananas_v3.jpg" alt="Bananas" loading="lazy">
+                <span class="card-name">Bananas</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="basmati_rice.html" data-category="grains" style="animation-delay:0.18s">
+                <img class="card-img" src="images/basmati_rice.jpg" alt="Basmati Rice" loading="lazy">
+                <span class="card-name">Basmati Rice</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="beetroot.html" data-category="vegetables" style="animation-delay:0.21s">
+                <img class="card-img" src="images/beetroot.png" alt="Beetroot" loading="lazy">
+                <span class="card-name">Beetroot</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="black_beans.html" data-category="grains" style="animation-delay:0.24s">
+                <img class="card-img" src="images/black_beans_v2.jpg" alt="Black Beans" loading="lazy">
+                <span class="card-name">Black Beans</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="black_pepper.html" data-category="other" style="animation-delay:0.27s">
+                <img class="card-img" src="images/black_pepper_v4.jpg" alt="Black Pepper" loading="lazy">
+                <span class="card-name">Black Pepper</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="blueberries.html" data-category="fruits" style="animation-delay:0.30s">
+                <img class="card-img" src="images/blueberries.jpg" alt="Blueberries" loading="lazy">
+                <span class="card-name">Blueberries</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="broccoli.html" data-category="vegetables" style="animation-delay:0.33s">
+                <img class="card-img" src="images/broccoli.jpg" alt="Broccoli" loading="lazy">
+                <span class="card-name">Broccoli</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="cashews.html" data-category="nuts" style="animation-delay:0.36s">
+                <img class="card-img" src="images/cashews.jpg" alt="Cashews" loading="lazy">
+                <span class="card-name">Cashews</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="cauliflower.html" data-category="vegetables" style="animation-delay:0.39s">
+                <img class="card-img" src="images/cauliflower.jpg" alt="Cauliflower" loading="lazy">
+                <span class="card-name">Cauliflower</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="chia_seeds.html" data-category="nuts" style="animation-delay:0.42s">
+                <img class="card-img" src="images/chia_seeds.jpg" alt="Chia Seeds" loading="lazy">
+                <span class="card-name">Chia Seeds</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="chickpeas.html" data-category="grains" style="animation-delay:0.45s">
+                <img class="card-img" src="images/chickpeas_v3.jpg" alt="Chickpeas" loading="lazy">
+                <span class="card-name">Chickpeas</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="cinnamon.html" data-category="other" style="animation-delay:0.48s">
+                <img class="card-img" src="images/cinnamon_v2.jpg" alt="Cinnamon" loading="lazy">
+                <span class="card-name">Cinnamon</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="coconut.html" data-category="other" style="animation-delay:0.51s">
+                <img class="card-img" src="images/coconut_v3.jpg" alt="Coconut" loading="lazy">
+                <span class="card-name">Coconut</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="colcassia.html" data-category="vegetables" style="animation-delay:0.54s">
+                <img class="card-img" src="images/colcassia_v2.jpg" alt="Colcassia" loading="lazy">
+                <span class="card-name">Colcassia</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="dark_chocolate.html" data-category="other" style="animation-delay:0.57s">
+                <img class="card-img" src="images/dark_chocolate.jpg" alt="Dark Chocolate" loading="lazy">
+                <span class="card-name">Dark Chocolate</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="dates.html" data-category="other" style="animation-delay:0.60s">
+                <img class="card-img" src="images/dates.jpg" alt="Dates" loading="lazy">
+                <span class="card-name">Dates</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="drumstick.html" data-category="vegetables" style="animation-delay:0.63s">
+                <img class="card-img" src="images/drumstick_v2.jpg" alt="Drumstick" loading="lazy">
+                <span class="card-name">Drumstick</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="edamame.html" data-category="grains" style="animation-delay:0.66s">
+                <img class="card-img" src="images/edamame.jpg" alt="Edamame" loading="lazy">
+                <span class="card-name">Edamame</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="flaxseeds.html" data-category="nuts" style="animation-delay:0.69s">
+                <img class="card-img" src="images/flaxseeds_v2.jpg" alt="Flaxseeds" loading="lazy">
+                <span class="card-name">Flaxseeds</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="ginger.html" data-category="other" style="animation-delay:0.72s">
+                <img class="card-img" src="images/ginger_v2.jpg" alt="Ginger" loading="lazy">
+                <span class="card-name">Ginger</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="kale.html" data-category="vegetables" style="animation-delay:0.75s">
+                <img class="card-img" src="images/kale.jpg" alt="Kale" loading="lazy">
+                <span class="card-name">Kale</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="lentils.html" data-category="grains" style="animation-delay:0.78s">
+                <img class="card-img" src="images/lentils.png" alt="Lentils" loading="lazy">
+                <span class="card-name">Lentils</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="macadamia_nuts.html" data-category="nuts" style="animation-delay:0.81s">
+                <img class="card-img" src="images/macadamia_nuts_v2.jpg" alt="Macadamia Nuts" loading="lazy">
+                <span class="card-name">Macadamia Nuts</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="mango.html" data-category="fruits" style="animation-delay:0.84s">
+                <img class="card-img" src="images/mango.jpg" alt="Mango" loading="lazy">
+                <span class="card-name">Mango</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="miso.html" data-category="other" style="animation-delay:0.87s">
+                <img class="card-img" src="images/miso.jpg" alt="Miso" loading="lazy">
+                <span class="card-name">Miso</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="moringa_leaves.html" data-category="vegetables" style="animation-delay:0.90s">
+                <img class="card-img" src="images/moringa_leaves.jpg" alt="Moringa Leaves" loading="lazy">
+                <span class="card-name">Moringa Leaves</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="mushrooms.html" data-category="other" style="animation-delay:0.93s">
+                <img class="card-img" src="images/mushrooms.jpg" alt="Mushrooms" loading="lazy">
+                <span class="card-name">Mushrooms</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="oats.html" data-category="grains" style="animation-delay:0.96s">
+                <img class="card-img" src="images/oats_v2.jpg" alt="Oats" loading="lazy">
+                <span class="card-name">Oats</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="peaches.html" data-category="fruits" style="animation-delay:0.99s">
+                <img class="card-img" src="images/peaches_v2.jpg" alt="Peaches" loading="lazy">
+                <span class="card-name">Peaches</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="strawberries.html" data-category="fruits" style="animation-delay:1.02s">
+                <img class="card-img" src="images/strawberries.jpg" alt="Strawberries" loading="lazy">
+                <span class="card-name">Strawberries</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="pumpkin_seeds.html" data-category="nuts" style="animation-delay:1.02s">
+                <img class="card-img" src="images/pumpkin_seeds.jpg" alt="Pumpkin Seeds" loading="lazy">
+                <span class="card-name">Pumpkin Seeds</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="quinoa.html" data-category="grains" style="animation-delay:1.05s">
+                <img class="card-img" src="images/quinoa_v3.jpg" alt="Quinoa" loading="lazy">
+                <span class="card-name">Quinoa</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="ragi.html" data-category="grains" style="animation-delay:1.08s">
+                <img class="card-img" src="images/ragi.jpg" alt="Ragi" loading="lazy">
+                <span class="card-name">Ragi</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="raw_jackfruit.html" data-category="fruits" style="animation-delay:1.11s">
+                <img class="card-img" src="images/raw_jackfruit.jpg" alt="Raw Jackfruit" loading="lazy">
+                <span class="card-name">Raw Jackfruit</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="saffron.html" data-category="other" style="animation-delay:1.14s">
+                <img class="card-img" src="images/saffron.jpg" alt="Saffron" loading="lazy">
+                <span class="card-name">Saffron</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="spinach.html" data-category="vegetables" style="animation-delay:1.17s">
+                <img class="card-img" src="images/spinach.jpg" alt="Spinach" loading="lazy">
+                <span class="card-name">Spinach</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="sweet_potato.html" data-category="vegetables" style="animation-delay:1.20s">
+                <img class="card-img" src="images/sweet_potato.jpg" alt="Sweet Potato" loading="lazy">
+                <span class="card-name">Sweet Potato</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="tempeh.html" data-category="other" style="animation-delay:1.23s">
+                <img class="card-img" src="images/tempeh.jpg" alt="Tempeh" loading="lazy">
+                <span class="card-name">Tempeh</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="tofu.html" data-category="other" style="animation-delay:1.26s">
+                <img class="card-img" src="images/tofu.jpg" alt="Tofu" loading="lazy">
+                <span class="card-name">Tofu</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="tomatoes.html" data-category="vegetables" style="animation-delay:1.29s">
+                <img class="card-img" src="images/tomatoes.jpg" alt="Tomatoes" loading="lazy">
+                <span class="card-name">Tomatoes</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="turmeric.html" data-category="other" style="animation-delay:1.32s">
+                <img class="card-img" src="images/turmeric_v2.jpg" alt="Turmeric" loading="lazy">
+                <span class="card-name">Turmeric</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="walnuts.html" data-category="nuts" style="animation-delay:1.35s">
+                <img class="card-img" src="images/walnuts.jpg" alt="Walnuts" loading="lazy">
+                <span class="card-name">Walnuts</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+            <a class="card" href="yogurt.html" data-category="other" style="animation-delay:1.38s">
+                <img class="card-img" src="images/yogurt.jpg" alt="Yogurt" loading="lazy">
+                <span class="card-name">Yogurt</span>
+                <span class="card-arrow">View profile &#8594;</span>
+            </a>
+        </div>
+        <div id="recipeSearchResults" style="margin-top:24px;"></div>
+    </div>
+    <p class="no-results" id="noResults">No results found.</p>
+    <div id="recipesView" style="display:none; max-width:1100px; margin:0 auto; padding:0 24px 40px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid #e8dfd4; margin-bottom:24px;">
+            <p style="font-size:0.85rem; color:#8a8494; font-style:italic; letter-spacing:0.3px; margin:0;">Personally curated and kitchen-tested recipes &mdash; no AI involved.</p>
+            <a href="add_recipe.html" style="padding:8px 20px; background:#1a1a2e; color:#d4a373; border-radius:50px; font-size:0.85rem; font-weight:600; text-decoration:none; white-space:nowrap; margin-left:16px;">+ Add Recipe</a>
+        </div>
+        <div id="recipeCards" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px;"></div>
+        <p id="recipesEmpty" style="text-align:center; padding:40px 20px; color:#8a8494; font-size:1.1rem;">Tasty treats coming soon .........</p>
+    </div>
+    <footer class="footer">
+        <strong>Nourish &amp; Know</strong> &#8212; Mostly Plant-Based Nutrition Guide
+        <div class="footer-divider"></div>
+        <span style="font-size:0.85rem; opacity:0.9; font-weight:600;">* AI-generated content and auto-validated. Use at your own discretion.</span>
+    </footer>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    const db = firebase.firestore();
+
+    let activeTab = 'all';
+
+    function setTab(tab) {
+        activeTab = tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        filterCards();
+    }
+
+    function filterCards() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const cards = document.querySelectorAll('#foodGrid .card');
+        const grid = document.getElementById('foodGrid');
+        const comingSoon = document.getElementById('comingSoon');
+
+        const recipesView = document.getElementById('recipesView');
+        if (activeTab === 'recipes') {
+            grid.style.display = 'none';
+            recipesView.style.display = 'block';
+            document.getElementById('noResults').style.display = 'none';
+            renderRecipes();
+            return;
+        }
+        grid.style.display = '';
+        recipesView.style.display = 'none';
+
+        let visible = 0;
+        cards.forEach(card => {
+            const name = card.querySelector('.card-name').textContent.toLowerCase();
+            const cat = card.getAttribute('data-category');
+            const matchesSearch = name.includes(query);
+            const matchesTab = activeTab === 'all' || cat === activeTab;
+            if (matchesSearch && matchesTab) {
+                card.style.display = '';
+                visible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Also search recipes from Firestore cache
+        const recipeResults = document.getElementById('recipeSearchResults');
+        if (query && (activeTab === 'all' || activeTab === 'recipes') && window._cachedRecipes) {
+            const matchingRecipes = window._cachedRecipes.filter(r =>
+                r.name.toLowerCase().includes(query)
+            );
+            if (matchingRecipes.length > 0) {
+                recipeResults.innerHTML =
+                    '<p style="font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:2px; color:#8a8494; margin-bottom:16px;">Matching Recipes</p>' +
+                    '<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px;">' +
+                    matchingRecipes.map(r => `
+                        <div style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04);">
+                            ${r.photo ? `<img src="${r.photo}" style="width:100%; height:140px; object-fit:cover;">` : ''}
+                            <div style="padding:16px 20px;">
+                                <h3 style="font-family:'Playfair Display',serif; color:#1a1a2e; font-size:1.1rem; margin-bottom:4px;">${r.name}</h3>
+                                <span style="font-size:0.78rem; color:#d4a373; font-weight:600;">Recipe</span>
+                            </div>
+                        </div>
+                    `).join('') + '</div>';
+                visible += matchingRecipes.length;
+            } else {
+                recipeResults.innerHTML = '';
+            }
+        } else {
+            recipeResults.innerHTML = '';
+        }
+
+        document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    function checkAdmin() {
+        const pw = prompt('Enter admin password:');
+        return pw === 'ashasrini';
+    }
+
+    function toggleRecipeActions(card) {
+        const actions = card.querySelector('.recipe-actions');
+        // Close all other open actions first
+        document.querySelectorAll('.recipe-actions').forEach(a => {
+            if (a !== actions) a.style.display = 'none';
+        });
+        actions.style.display = actions.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function editRecipe(id) {
+        if (!checkAdmin()) return;
+        // Fetch from Firestore, save to localStorage for editing
+        db.collection('recipes').doc(id).get().then(doc => {
+            if (!doc.exists) return;
+            const r = doc.data();
+            const drafts = JSON.parse(localStorage.getItem('nk_drafts') || '{}');
+            drafts[id] = { ...r, id: id, status: 'draft' };
+            localStorage.setItem('nk_drafts', JSON.stringify(drafts));
+            localStorage.setItem('nk_last_edit', id);
+            window.location.href = 'add_recipe.html?edit=' + id;
+        });
+    }
+
+    function deleteRecipe(id) {
+        if (!checkAdmin()) return;
+        db.collection('recipes').doc(id).delete().then(() => {
+            renderRecipes();
+        });
+    }
+
+    function renderRecipes() {
+        const cards = document.getElementById('recipeCards');
+        const empty = document.getElementById('recipesEmpty');
+        cards.innerHTML = '<p style="text-align:center; color:#8a8494;">Loading recipes...</p>';
+        db.collection('recipes').orderBy('publishedAt', 'desc').get().then(snapshot => {
+            const entries = [];
+            snapshot.forEach(doc => {
+                entries.push({ id: doc.id, ...doc.data() });
+            });
+            window._cachedRecipes = entries;
+            if (entries.length === 0) {
+                cards.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            cards.innerHTML = entries.map(r => `
+                <div class="recipe-card" style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); cursor:pointer;" onclick="toggleRecipeActions(this)">
+                    ${r.photo ? `<img src="${r.photo}" style="width:100%; height:180px; object-fit:cover;">` : ''}
+                    <div style="padding:20px 24px;">
+                        <h3 style="font-family:'Playfair Display',serif; color:#1a1a2e; font-size:1.2rem; margin-bottom:12px;">${r.name}</h3>
+                        <h4 style="color:#d4a373; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Ingredients</h4>
+                        <p style="color:#4a5568; font-size:0.9rem; line-height:1.6; white-space:pre-line; margin-bottom:14px;">${r.ingredients}</p>
+                        <h4 style="color:#d4a373; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Method</h4>
+                        <p style="color:#4a5568; font-size:0.9rem; line-height:1.6; white-space:pre-line;">${r.method}</p>
+                        <div class="recipe-actions" style="display:none; margin-top:16px; padding-top:14px; border-top:1px solid #e8dfd4; text-align:right;">
+                            <button onclick="event.stopPropagation(); editRecipe('${r.id}')" style="padding:8px 16px; border:1px solid #e0dcd6; border-radius:50px; background:white; color:#1a1a2e; font-size:0.85rem; font-weight:600; cursor:pointer; margin-right:8px;">&#9998; Edit</button>
+                            <button onclick="event.stopPropagation(); deleteRecipe('${r.id}')" style="padding:8px 16px; border:1px solid #fee2e2; border-radius:50px; background:#fee2e2; color:#991b1b; font-size:0.85rem; font-weight:600; cursor:pointer;">&#128465; Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }).catch(err => {
+            cards.innerHTML = '<p style="text-align:center; color:#991b1b; padding:20px;">Could not load recipes. Check console for details.</p>';
+            console.error('Firestore error:', err);
+        });
+    }
+
+    // Pre-load recipes for search
+    db.collection('recipes').get().then(snapshot => {
+        window._cachedRecipes = [];
+        snapshot.forEach(doc => {
+            window._cachedRecipes.push({ id: doc.id, ...doc.data() });
+        });
+    });
+    </script>
+</body>
+</html>
