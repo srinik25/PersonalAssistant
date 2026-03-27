@@ -138,8 +138,8 @@
     });
     var db = firebase.firestore();
     </script>
-    <script src="js/auth.js?v=1"></script>
-    <script src="js/app.js?v=1"></script>
+    <script src="js/auth.js?v=2"></script>
+    <script src="js/app.js?v=2"></script>
     <script>
     onAuthReady(function(user) {
         if (!user) {
@@ -151,9 +151,11 @@
         }
         loadDashboard();
     });
+    window.onerror = function(msg, url, line) { document.title = 'ERR: ' + msg; console.error(msg, url, line); };
 
     function loadDashboard() {
         loadAccounts().then(function(accounts) {
+            console.log('Loaded accounts:', accounts.length, accounts);
             var totalValue = 0, totalHoldings = 0, latestUpdate = null;
             var byType = {};
 

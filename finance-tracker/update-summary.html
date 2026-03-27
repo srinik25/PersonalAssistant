@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html><head><title>Update Summary</title></head>
+<body><pre id="log">Updating goals summary...</pre>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",authDomain:"nutrition-198dd.firebaseapp.com",projectId:"nutrition-198dd",storageBucket:"nutrition-198dd.firebasestorage.app",messagingSenderId:"851241392706",appId:"1:851241392706:web:0738d4ac6e001e83a36bdb"});
+var db = firebase.firestore();
+db.collection('finance_profiles').doc('local-user').update({
+    goalsSummary: "Person 1 (52, retired May 2024) and Person 2 (47, federal employee, $185k, 5 more years). No dependents. Objectives: reduce volatility via annuities, tax efficiency (Roth conversions), guaranteed income $105k+/year at 62 (annuity $38k + SS $51k + FERS $16.4k), manage healthcare inflation. Withdrawal rate at 62: ~0.9%. 2026 goals: divest $20-30k NVDA, start Roth TSP ~$10k, invest on dips, monthly review, fund Trust."
+}).then(function() {
+    document.getElementById('log').textContent += '\nDone! Goals summary saved.';
+}).catch(function(err) {
+    document.getElementById('log').textContent += '\nError: ' + err.message;
+});
+</script></body></html>

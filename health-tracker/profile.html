@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Profile - Health Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f5f4; color: #1a3a3a; min-height: 100vh; }
+        nav { max-width: 1100px; margin: 0 auto; display: flex; gap: 28px; align-items: center; padding: 16px 24px; }
+        nav .site-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; font-weight: 700; color: #1a4a4a; text-decoration: none; margin-right: auto; }
+        nav a { color: #5a7a7a; text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
+        nav a:hover, nav a.active { color: #1a4a4a; }
+
+        .hero { background: linear-gradient(135deg, #1a4a4a 0%, #2a6b6b 40%, #1a4a4a 100%); color: white; padding: 60px 40px 52px; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 70%, rgba(122,192,176,0.1) 0%, transparent 50%); animation: shimmer 15s ease-in-out infinite alternate; }
+        @keyframes shimmer { 0% { transform: translate(0,0); } 100% { transform: translate(-5%,5%); } }
+        .hero-content { position: relative; z-index: 1; }
+        .hero h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 8px; }
+        .hero .subtitle { font-size: 1rem; opacity: 0.8; }
+
+        .main { max-width: 700px; margin: 0 auto; padding: 48px 24px 60px; }
+        .card { background: white; border-radius: 16px; padding: 32px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04); margin-bottom: 24px; }
+        .card h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.3rem; font-weight: 800; color: #1a4a4a; margin-bottom: 20px; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: #3a5a5a; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 14px; border: 1.5px solid #c0d8d4; border-radius: 10px; font-size: 0.95rem; font-family: inherit; color: #1a3a3a; background: #f8fbfa; transition: border-color 0.2s, box-shadow 0.2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #4a9a8a; box-shadow: 0 0 0 3px rgba(74,154,138,0.15); }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+
+        .btn { display: inline-block; padding: 14px 32px; border-radius: 50px; font-size: 0.95rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.25s; font-family: inherit; }
+        .btn-primary { background: #2a6b6b; color: white; }
+        .btn-primary:hover { background: #1a4a4a; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(26,74,74,0.25); }
+        .btn-secondary { background: #e8f4f0; color: #2a6b6b; }
+        .btn-secondary:hover { background: #d0e8e2; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+        .summary-box { background: #f0f8f6; border: 1px solid #c0e0d8; border-radius: 12px; padding: 20px; margin-top: 16px; }
+        .summary-box h4 { font-family: 'Playfair Display', Georgia, serif; color: #1a4a4a; margin-bottom: 8px; font-size: 0.95rem; }
+        .summary-box .summary-text { font-size: 0.9rem; color: #3a5a5a; line-height: 1.7; }
+        .summary-box .summary-text ul { margin: 8px 0; padding-left: 24px; }
+        .summary-box .summary-text li { margin: 4px 0; }
+
+        .status-msg { padding: 12px 16px; border-radius: 10px; font-size: 0.88rem; margin-top: 16px; display: none; }
+        .status-success { display: block; background: #e8f8f0; color: #1a6a4a; border: 1px solid #b0e0c8; }
+        .status-error { display: block; background: #fde8e8; color: #8a2a2a; border: 1px solid #e0b0b0; }
+
+        .footer { background: #1a4a4a; color: rgba(255,255,255,0.6); text-align: center; padding: 36px 24px; font-size: 0.85rem; line-height: 1.7; }
+        .footer strong { color: #7ac0b0; font-weight: 600; }
+        .footer .footer-divider { width: 40px; height: 2px; background: rgba(122,192,176,0.4); margin: 12px auto; }
+
+        @media (max-width: 768px) { .hero { padding: 40px 24px 32px; } .hero h1 { font-size: 1.8rem; } .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="site-title">Health Tracker</a>
+        <a href="index.html">Dashboard</a>
+        <a href="analysis.html">Analysis</a>
+        <a href="profile.html" class="active">Profile</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Health Profile</h1>
+            <p class="subtitle">Your baseline health information for personalized analysis.</p>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="card">
+            <h2>Basic Information</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" id="field-age" placeholder="e.g., 42">
+                </div>
+                <div class="form-group">
+                    <label>Sex</label>
+                    <select id="field-sex">
+                        <option value="">Select...</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Height</label>
+                    <input type="text" id="field-height" placeholder="e.g., 5'10&quot; or 178cm">
+                </div>
+                <div class="form-group">
+                    <label>Weight</label>
+                    <input type="text" id="field-weight" placeholder="e.g., 175 lbs or 80 kg">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Blood Type</label>
+                    <select id="field-bloodType">
+                        <option value="">Select...</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="Unknown">Unknown</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Allergies</label>
+                    <input type="text" id="field-allergies" placeholder="e.g., Penicillin, pollen">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Family History</h2>
+            <div class="form-group">
+                <label>Family medical history (freeform)</label>
+                <textarea id="field-familyHistory" placeholder="e.g., Father had heart disease, Mother had diabetes..."></textarea>
+            </div>
+            <button class="btn btn-secondary" id="btn-summarize-family" onclick="summarizeFamilyHistory()">Summarize with AI</button>
+        </div>
+
+        <div class="card">
+            <h2>Current Medications</h2>
+            <div class="form-group">
+                <label>Medications & supplements</label>
+                <textarea id="field-medications" placeholder="e.g., Metformin 500mg daily, Vitamin D 2000 IU..."></textarea>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btn-save" onclick="saveProfileData()">Save Profile</button>
+        </div>
+        <div class="status-msg" id="status-msg"></div>
+
+        <div class="summary-box" id="goals-summary-box" style="display:none;">
+            <h4>AI-Generated Health Goals Summary</h4>
+            <div class="summary-text" id="goals-summary-text"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <strong>Health Tracker</strong>
+        <div class="footer-divider"></div>
+        AI-powered health analysis -- for personal reference only, not medical advice.
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    var db = firebase.firestore();
+    </script>
+    <script src="js/secrets.js"></script>
+    <script src="js/pii.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+    var profileId = null;
+
+    onAuthReady(function(user) {
+        loadProfileData();
+    });
+
+    function loadProfileData() {
+        loadProfile().then(function(profile) {
+            if (profile) {
+                profileId = profile.id;
+                document.getElementById('field-age').value = profile.age || '';
+                document.getElementById('field-sex').value = profile.sex || '';
+                document.getElementById('field-height').value = profile.height || '';
+                document.getElementById('field-weight').value = profile.weight || '';
+                document.getElementById('field-bloodType').value = profile.bloodType || '';
+                document.getElementById('field-allergies').value = profile.allergies || '';
+                document.getElementById('field-familyHistory').value = profile.familyHistory || '';
+                document.getElementById('field-medications').value = profile.medications || '';
+                if (profile.goalsSummary) {
+                    document.getElementById('goals-summary-box').style.display = '';
+                    document.getElementById('goals-summary-text').innerHTML = formatAnalysisText(profile.goalsSummary);
+                }
+            }
+        });
+    }
+
+    function saveProfileData() {
+        var btn = document.getElementById('btn-save');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        var profile = {
+            id: profileId,
+            age: document.getElementById('field-age').value,
+            sex: document.getElementById('field-sex').value,
+            height: document.getElementById('field-height').value,
+            weight: document.getElementById('field-weight').value,
+            bloodType: document.getElementById('field-bloodType').value,
+            allergies: document.getElementById('field-allergies').value,
+            familyHistory: document.getElementById('field-familyHistory').value,
+            medications: document.getElementById('field-medications').value,
+            goalsSummary: ''
+        };
+
+        // First save, then generate goals summary via LLM
+        saveProfile(profile).then(function(ref) {
+            if (!profileId && ref && ref.id) profileId = ref.id;
+            // Now generate goals summary
+            var promptParts = [];
+            if (profile.age) promptParts.push('Age: ' + profile.age);
+            if (profile.sex) promptParts.push('Sex: ' + profile.sex);
+            if (profile.height) promptParts.push('Height: ' + profile.height);
+            if (profile.weight) promptParts.push('Weight: ' + profile.weight);
+            if (profile.allergies) promptParts.push('Allergies: ' + stripPII(profile.allergies));
+            if (profile.familyHistory) promptParts.push('Family history: ' + stripPII(profile.familyHistory));
+            if (profile.medications) promptParts.push('Medications: ' + stripPII(profile.medications));
+
+            if (promptParts.length < 2) {
+                showStatus('Profile saved.', 'success');
+                btn.disabled = false;
+                btn.textContent = 'Save Profile';
+                return;
+            }
+
+            var prompt = 'Based on this health profile, generate a brief health goals summary with key areas to monitor. Be concise, use bullet points.\n\n' + promptParts.join('\n');
+            return callHealthLLM(prompt, 800).then(function(summary) {
+                profile.id = profileId;
+                profile.goalsSummary = summary;
+                return saveProfile(profile).then(function() {
+                    document.getElementById('goals-summary-box').style.display = '';
+                    document.getElementById('goals-summary-text').innerHTML = formatAnalysisText(summary);
+                    showStatus('Profile saved with AI-generated goals summary.', 'success');
+                });
+            });
+        }).catch(function(err) {
+            console.error(err);
+            showStatus('Error: ' + err.message, 'error');
+        }).finally(function() {
+            btn.disabled = false;
+            btn.textContent = 'Save Profile';
+        });
+    }
+
+    function summarizeFamilyHistory() {
+        var text = document.getElementById('field-familyHistory').value.trim();
+        if (!text) { alert('Please enter family history first.'); return; }
+
+        var btn = document.getElementById('btn-summarize-family');
+        btn.disabled = true;
+        btn.textContent = 'Summarizing...';
+
+        var prompt = 'Summarize this family medical history into concise bullet points. Be brief.\n\n' + stripPII(text);
+        callHealthLLM(prompt, 400).then(function(summary) {
+            document.getElementById('field-familyHistory').value = summary;
+        }).catch(function(err) {
+            alert('Error: ' + err.message);
+        }).finally(function() {
+            btn.disabled = false;
+            btn.textContent = 'Summarize with AI';
+        });
+    }
+
+    function showStatus(msg, type) {
+        var el = document.getElementById('status-msg');
+        el.textContent = msg;
+        el.className = 'status-msg status-' + type;
+        setTimeout(function() { el.style.display = 'none'; el.className = 'status-msg'; }, 5000);
+    }
+    </script>
+</body>
+</html>

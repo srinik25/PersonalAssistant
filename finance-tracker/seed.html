@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed Finance Data</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color: #1e2d4a; }
+        h1 { color: #2a4a7a; }
+        .log { background: #1e2d4a; color: #7ab0d4; padding: 16px; border-radius: 8px; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; max-height: 500px; overflow-y: auto; }
+        button { background: #2a4a7a; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1rem; cursor: pointer; margin: 8px 4px; }
+        button:hover { background: #3a5a8a; }
+        button.danger { background: #8a3a3a; }
+        button.danger:hover { background: #a04a4a; }
+        .warn { color: #c08030; font-size: 0.9rem; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Seed Finance Data</h1>
+    <p>Pre-populate your finance tracker with data from Financial Summary 2025.</p>
+    <button onclick="seedAll()">Seed All Accounts + Profile</button>
+    <button class="danger" onclick="clearAll()">Clear All Data</button>
+    <p class="warn">Warning: Seeding will add accounts. Clear first if you want a fresh start.</p>
+    <div class="log" id="log">Ready.\n</div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+        authDomain: "nutrition-198dd.firebaseapp.com",
+        projectId: "nutrition-198dd",
+        storageBucket: "nutrition-198dd.firebasestorage.app",
+        messagingSenderId: "851241392706",
+        appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+    });
+    var db = firebase.firestore();
+    </script>
+    <script src="js/auth.js?v=1"></script>
+    <script>
+    var logEl = document.getElementById('log');
+    function log(msg) { logEl.textContent += msg + '\n'; logEl.scrollTop = logEl.scrollHeight; }
+
+    var ACCOUNTS = [
+        {
+            name: 'Citibank Brokerage', type: 'brokerage',
+            notes: 'Growth account, bridge years. NVDA is largest position.',
+            funds: [
+                { name: 'NVDA', amount: 124000, description: 'NVIDIA — semiconductor/AI leader' },
+                { name: 'VIG', amount: 49000, description: 'Dividend appreciation ETF' },
+                { name: 'USMV', amount: 28000, description: 'U.S. minimum volatility ETF' },
+                { name: 'FDVV', amount: 25000, description: 'High-dividend ETF' },
+                { name: 'VTI', amount: 17500, description: 'Total U.S. stock market ETF' },
+                { name: 'COWZ', amount: 15500, description: 'Cash Cows ETF — high FCF' },
+                { name: 'BOTZ', amount: 14000, description: 'Global X Robotics & AI ETF' },
+                { name: 'ABBV', amount: 11500, description: 'AbbVie — pharma dividend value' },
+                { name: 'TVOYX', amount: 10000, description: 'Small-cap value mutual fund' },
+                { name: 'VXUS', amount: 8000, description: 'Total international ETF' }
+            ]
+        },
+        {
+            name: 'Fidelity Taxable 1 (Fid1)', type: 'brokerage',
+            notes: 'Diversified taxable account with individual stocks and ETFs.',
+            funds: [
+                { name: 'ORCL', amount: 52000, description: 'Oracle — U.S. large-cap tech' },
+                { name: 'IJR', amount: 31000, description: 'U.S. small-cap ETF' },
+                { name: 'SPYM', amount: 30500, description: 'S&P 500 ETF' },
+                { name: 'Cash', amount: 26000, description: 'Uninvested cash' },
+                { name: 'VTCLX', amount: 21000, description: 'Tax-managed U.S. equity' },
+                { name: 'VIGAX', amount: 20500, description: 'Large-cap growth index' },
+                { name: 'VIMAX', amount: 19000, description: 'Mid-cap index' },
+                { name: 'XLI', amount: 12500, description: 'Industrials sector ETF' },
+                { name: 'GLDM', amount: 11000, description: 'Gold ETF' },
+                { name: 'KOMP', amount: 10000, description: 'Innovation ETF' },
+                { name: 'XT', amount: 10000, description: 'Ex-technology innovation ETF' },
+                { name: 'DFIEX', amount: 6500, description: 'DFA International Core Equity' }
+            ]
+        },
+        {
+            name: 'Fidelity Taxable 2 (Fid2)', type: 'brokerage',
+            notes: 'Managed account. International Index Strategy. 0.40% annual fee.',
+            funds: [
+                { name: 'International Index Strategy', amount: 102500, description: 'Pure international equity exposure (managed)' }
+            ]
+        },
+        {
+            name: 'Fidelity Taxable 3 (Fid3)', type: 'brokerage',
+            notes: 'Managed account. U.S. Large Cap Index Strategy. 0.40% annual fee.',
+            funds: [
+                { name: 'U.S. Large Cap Index Strategy', amount: 101000, description: 'Core U.S. large-cap exposure (managed)' }
+            ]
+        },
+        {
+            name: 'Fidelity Taxable 4 (Fid4 DCA Plan)', type: 'brokerage',
+            notes: 'Dollar-cost averaging plan. $200k cash to be deployed over 12 months.',
+            funds: [
+                { name: 'Cash', amount: 200000, description: 'To be deployed over 12 months' },
+                { name: 'VGIT', amount: 2500, description: 'Intermediate Treasuries' },
+                { name: 'VWO', amount: 2000, description: 'Emerging markets' },
+                { name: 'FZROX', amount: 2000, description: 'U.S. total market ZERO fee' },
+                { name: 'IDEV', amount: 1500, description: 'Developed international' },
+                { name: 'QUAL', amount: 1500, description: 'U.S. quality factor' },
+                { name: 'IGF', amount: 500, description: 'Global infrastructure' }
+            ]
+        },
+        {
+            name: 'Wells Fargo IRA (Srini - WF1)', type: 'ira',
+            notes: 'Srini IRA. AXA Variable Annuity with GMIB — $38k/year guaranteed starting age 59. High fee (2.45%).',
+            funds: [
+                { name: 'AXA Variable Annuity', amount: 550000, description: 'GMIB, $38k/year starting age 59' },
+                { name: 'JDBAX', amount: 47500, description: 'Janus Henderson Balanced 60/40' },
+                { name: 'BOTZ', amount: 2500, description: 'Robotics & AI ETF' }
+            ]
+        },
+        {
+            name: 'Fidelity IRA (Srini - Fid5)', type: 'ira',
+            notes: 'Srini IRA. Low-cost index funds with international small-cap value tilt.',
+            funds: [
+                { name: 'FNILX', amount: 98500, description: 'Fidelity ZERO large-cap index' },
+                { name: 'FSSNX', amount: 56000, description: 'U.S. small-cap index' },
+                { name: 'FLCOX', amount: 55500, description: 'U.S. large-cap value' },
+                { name: 'FSMDX', amount: 49500, description: 'U.S. mid-cap index' },
+                { name: 'AVDV', amount: 41500, description: 'International small-cap value' },
+                { name: 'Cash', amount: 19000, description: 'Uninvested cash' }
+            ]
+        },
+        {
+            name: 'Wells Fargo IRA (Arathi - WF2)', type: 'ira',
+            notes: 'Arathi IRA. Indexed annuities (Equitable + Symetra) — principal-protected with 0% fees.',
+            funds: [
+                { name: 'Equitable Indexed Annuity #1', amount: 355500, description: 'Principal-protected indexed annuity' },
+                { name: 'Equitable Indexed Annuity #2', amount: 183500, description: 'Second segment, principal-protected' },
+                { name: 'Symetra Indexed Annuity', amount: 175000, description: 'Principal-protected S&P point-to-point' },
+                { name: 'RSP', amount: 16000, description: 'Structured yield product' }
+            ]
+        },
+        {
+            name: 'TSP 401k (Arathi)', type: 'other',
+            notes: 'Arathi federal TSP (Thrift Savings Plan). Ultra-low fees. 4 years of service.',
+            funds: [
+                { name: 'C Fund', amount: 69500, description: 'S&P 500 index' },
+                { name: 'S Fund', amount: 35000, description: 'Small/mid-cap index' },
+                { name: 'I Fund', amount: 35000, description: 'International index' }
+            ]
+        },
+        {
+            name: 'Fidelity Roth IRA (Arathi - Fid6)', type: 'roth_ira',
+            notes: 'Arathi Roth. 100% equity for long-term growth.',
+            funds: [
+                { name: 'VTI', amount: 6500, description: 'Total U.S. market' },
+                { name: 'AVUV', amount: 5500, description: 'U.S. small-cap value' },
+                { name: 'VXUS', amount: 3500, description: 'Total international' }
+            ]
+        },
+        {
+            name: 'Fidelity Roth IRA (Srini - Fid7)', type: 'roth_ira',
+            notes: 'Srini Roth. Small-cap and international value tilt.',
+            funds: [
+                { name: 'AVUV', amount: 11000, description: 'U.S. small-cap value' },
+                { name: 'AVDV', amount: 5000, description: 'International small-cap value' },
+                { name: 'AVES', amount: 2000, description: 'Emerging markets small-value' }
+            ]
+        },
+        {
+            name: 'Coinbase', type: 'crypto',
+            notes: 'Speculative sleeve, ~1.3% of portfolio.',
+            funds: [
+                { name: 'Bitcoin (0.443 BTC)', amount: 39000, description: 'Bitcoin' }
+            ]
+        },
+        {
+            name: 'Bank of America MMA', type: 'mma',
+            notes: 'Cash reserves — excluded from investment portfolio. Emergency fund.',
+            funds: [
+                { name: 'Money Market', amount: 101000, description: 'Cash reserve' }
+            ]
+        },
+        {
+            name: 'Capital One MMA', type: 'mma',
+            notes: 'Cash reserves — excluded from investment portfolio. Emergency fund.',
+            funds: [
+                { name: 'Money Market', amount: 110000, description: 'Cash reserve' }
+            ]
+        }
+    ];
+
+    var PROFILE = {
+        age: 52,
+        retirementAge: 52,
+        spouseAge: 47,
+        riskTolerance: 'moderate',
+        goals: 'Srini retired May 2024. Arathi (47) federal employee earning $185k, planning 5 more years. No kids/dependents.\n\nKey objectives:\n- Reduce portfolio volatility through downside-protected annuities\n- Strengthen tax efficiency (Roth contributions and future conversions)\n- Maintain 6-7% return assumptions\n- Ensure guaranteed income $105k+/year at age 62+\n- Manage healthcare inflation (5-7%)\n- Keep expenses covered by Arathi salary during working years\n\nGuaranteed income at 62+: AXA annuity $38k + Srini SS $24k + Arathi SS $27k + FERS pension $16.4k = $105.4k/year\nWithdrawal rate at 62+: ~0.9% ($25k/year from portfolio)\n\n2026 Goals: Divest 20-30k NVDA, start Roth TSP (~10k), invest on market dips, monthly portfolio review, fund the Trust.'
+    };
+
+    function seedAll() {
+        log('Starting seed...');
+        var now = new Date().toISOString();
+        var promises = [];
+
+        // Seed profile
+        var profileData = {
+            userId: currentUser.uid,
+            age: PROFILE.age,
+            retirementAge: PROFILE.retirementAge,
+            riskTolerance: PROFILE.riskTolerance,
+            goals: PROFILE.goals,
+            updatedAt: now
+        };
+        promises.push(
+            db.collection('finance_profiles').doc(currentUser.uid).set(profileData, { merge: true })
+                .then(function() { log('  ✓ Profile saved'); })
+        );
+
+        // Seed accounts
+        ACCOUNTS.forEach(function(acct) {
+            var data = {
+                name: acct.name,
+                type: acct.type,
+                notes: acct.notes || '',
+                funds: acct.funds || [],
+                userId: currentUser.uid,
+                createdAt: now,
+                updatedAt: now
+            };
+            promises.push(
+                db.collection('finance_accounts').add(data).then(function(ref) {
+                    log('  ✓ ' + acct.name + ' — $' + sumFunds(acct.funds).toLocaleString() + ' (' + ref.id + ')');
+                })
+            );
+        });
+
+        Promise.all(promises).then(function() {
+            log('\nDone! ' + ACCOUNTS.length + ' accounts + profile seeded.');
+            log('Go to http://localhost:8080 to see your data.');
+        }).catch(function(err) {
+            log('\nERROR: ' + err.message);
+        });
+    }
+
+    function sumFunds(funds) {
+        return funds.reduce(function(s, f) { return s + (f.amount || 0); }, 0);
+    }
+
+    function clearAll() {
+        if (!confirm('Delete ALL finance accounts and profile for local-user? This cannot be undone.')) return;
+        log('Clearing all data...');
+        db.collection('finance_accounts').where('userId', '==', currentUser.uid).get().then(function(snap) {
+            var batch = db.batch();
+            snap.forEach(function(doc) { batch.delete(doc.ref); });
+            return batch.commit().then(function() { log('  ✓ Deleted ' + snap.size + ' accounts'); });
+        }).then(function() {
+            return db.collection('finance_profiles').doc(currentUser.uid).delete().then(function() {
+                log('  ✓ Deleted profile');
+            });
+        }).then(function() {
+            log('\nAll data cleared.');
+        }).catch(function(err) {
+            log('ERROR: ' + err.message);
+        });
+    }
+    </script>
+</body>
+</html>

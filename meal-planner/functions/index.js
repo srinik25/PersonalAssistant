@@ -1,16 +1,205 @@
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
+const OpenAI = require("openai");
 
 admin.initializeApp();
 const db = admin.firestore();
 
-// Secrets — set via: firebase functions:secrets:set GMAIL_EMAIL / GMAIL_APP_PASSWORD / NOTIFY_EMAIL
+// Secrets — set via: firebase functions:secrets:set <NAME>
 const gmailEmail = defineSecret("GMAIL_EMAIL");
 const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
 const notifyEmail = defineSecret("NOTIFY_EMAIL");
+const openaiKey = defineSecret("OPENAI_API_KEY");
+
+// ========== 0. NUTRITION PROFILE GENERATOR (Nourish & Know app) ==========
+const NUTRITION_SYSTEM_PROMPT = {
+    role: "Nutrition Expert",
+    guidelines: {
+        accuracy: "Only provide verified, evidence-based nutritional information",
+        no_fabrication: "Never make up or guess at nutritional data",
+        verification: "Double and triple check all data before presenting",
+        statistics: "Verify all stats and numbers for accuracy",
+        sources: "Reference authentic, credible sources"
+    }
+};
+const NUTRITION_PROFILE = {
+    demographics: { background: "Indian", gender: "female", age_range: "40s" },
+    core_philosophy: "Food is medicine",
+    dietary_preferences: { primary: ["vegetarian"], approach: "healthy, whole-food focused, natural foods" },
+    fitness: { practices: ["yoga", "strength training"] }
+};
+const NUTRITION_OUTPUT_FIELDS = {
+    name: "", history: "", native_country: "",
+    nutrition_profile: { serving_size: "", calories: "", protein: "", fiber: "", fat: "", carbohydrates: "", key_vitamins: [], key_minerals: [], notable_properties: "" },
+    daily_intake: { tsp: "", tbsp: "", cup: "" },
+    best_time_to_eat: "",
+    meal_incorporation: { can_be_added: true, suggestions: [], additional_notes: [] },
+    recipe: { name: "", description: "", prep_time: "", cook_time: "", servings: "", ingredients: [], instructions: [] }
+};
+
+exports.generateNutritionProfile = onRequest(
+    { secrets: [openaiKey], timeoutSeconds: 60, memory: "256MiB", cors: true },
+    async (req, res) => {
+        if (req.method !== "POST") { res.status(405).json({ error: "Method not allowed" }); return; }
+        const food = (req.body.food || "").trim();
+        if (!food || food.length < 2 || food.length > 80 || /[<>{};]/.test(food)) {
+            res.status(400).json({ error: "Invalid food name" }); return;
+        }
+        const client = new OpenAI({ apiKey: openaiKey.value() });
+        const systemMessage = [
+            `You are a ${NUTRITION_SYSTEM_PROMPT.role}.`,
+            `Guidelines: ${JSON.stringify(NUTRITION_SYSTEM_PROMPT.guidelines)}`,
+            `User profile: ${JSON.stringify(NUTRITION_PROFILE)}`,
+            `IMPORTANT: Respond ONLY with valid JSON matching this exact format:`,
+            JSON.stringify(NUTRITION_OUTPUT_FIELDS, null, 2),
+            "Fill in ALL fields with accurate, evidence-based data.",
+            "Return ONLY the JSON object, no markdown fences or extra text."
+        ].join("\n");
+        const userMessage = [
+            `Give me the complete nutritional profile for: ${food}`,
+            "Include history, native country, full nutrition profile with serving size,",
+            "daily intake, best time to eat, meal incorporation suggestions,",
+            "and a vegetarian recipe using this food item.",
+            "Prefer Indian, Middle Eastern, or Asian-style recipes (e.g., dal, biryani, curry, stir-fry, chai).",
+            "Vegetarian means dairy like ghee, yogurt, milk, and paneer are fine — do NOT restrict to vegan.",
+            "Tailor everything for a vegetarian diet.",
+            "CRITICAL for daily_intake: tsp, tbsp, and cup values MUST be equivalent conversions of the SAME amount.",
+            "For the recipe: include name, description, prep_time, cook_time, servings, ingredients list, and step-by-step instructions.",
+            "For meal_incorporation, include an 'additional_notes' array with 2-3 practical, evidence-based tips."
+        ].join("\n");
+        const callOpenAI = async (temperature) => {
+            const response = await client.chat.completions.create({
+                model: "gpt-4o",
+                messages: [{ role: "system", content: systemMessage }, { role: "user", content: userMessage }],
+                temperature
+            });
+            let content = response.choices[0].message.content.trim();
+            if (content.startsWith("```")) content = content.split("\n").slice(1).join("\n").split("```")[0].trim();
+            return JSON.parse(content);
+        };
+        try {
+            let data;
+            try { data = await callOpenAI(0.3); } catch { data = await callOpenAI(0.1); }
+            res.status(200).json(data);
+        } catch (err) {
+            console.error("generateNutritionProfile error:", err);
+            res.status(500).json({ error: "Failed to generate profile" });
+        }
+    }
+);
+
+// ========== 0a. PARSE ITEM PROXY (What's Happening site) ==========
+// No auth required — this is a public community site. Key is kept server-side.
+exports.parseItem = onRequest(
+    { secrets: [openaiKey], cors: true },
+    async (req, res) => {
+        if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+        const { prompt } = req.body;
+        if (!prompt) { res.status(400).json({ error: "Missing prompt" }); return; }
+
+        try {
+            const oaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${openaiKey.value()}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: prompt }],
+                    temperature: 0.2,
+                    max_tokens: 4000
+                })
+            });
+            const data = await oaiRes.json();
+            res.json(data);
+        } catch (e) {
+            console.error("parseItem error:", e);
+            res.status(500).json({ error: e.message });
+        }
+    }
+);
+
+// ========== 0b. NUTRITION REVIEW PROXY ==========
+// Keeps OpenAI key server-side. Verifies Firebase auth, proxies to OpenAI with streaming.
+exports.nutritionReview = onRequest(
+    { secrets: [openaiKey], cors: true },
+    async (req, res) => {
+        if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+        let userId = "anonymous", userName = "anonymous";
+        try {
+            const token = (req.headers.authorization || "").replace("Bearer ", "");
+            const decoded = await admin.auth().verifyIdToken(token);
+            userId = decoded.uid;
+            userName = decoded.name || decoded.email || "user";
+        } catch (e) {
+            res.status(401).json({ error: "Unauthorized" }); return;
+        }
+
+        const { messages, max_tokens = 600, action = "day_review" } = req.body;
+
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+
+        try {
+            const oaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${openaiKey.value()}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini", messages, temperature: 0.3, max_tokens,
+                    stream: true, stream_options: { include_usage: true }
+                })
+            });
+
+            if (!oaiRes.ok) {
+                const err = await oaiRes.json();
+                res.write(`data: ${JSON.stringify({ error: err.error })}\n\n`);
+                res.end(); return;
+            }
+
+            const reader = oaiRes.body.getReader();
+            const decoder = new TextDecoder();
+            let usage = null;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const text = decoder.decode(value, { stream: true });
+                for (const line of text.split("\n")) {
+                    if (line.startsWith("data: ") && line !== "data: [DONE]") {
+                        try { const p = JSON.parse(line.slice(6)); if (p.usage) usage = p.usage; } catch (e) {}
+                    }
+                }
+                res.write(text);
+            }
+
+            if (usage) {
+                await db.collection("token_usage").add({
+                    userId, userName, action, model: "gpt-4o-mini",
+                    promptTokens: usage.prompt_tokens || 0,
+                    completionTokens: usage.completion_tokens || 0,
+                    totalTokens: usage.total_tokens || 0,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            res.end();
+        } catch (e) {
+            console.error("nutritionReview error:", e);
+            if (!res.headersSent) res.status(500).json({ error: e.message });
+            else res.end();
+        }
+    }
+);
 
 function createTransporter(email, password) {
     return nodemailer.createTransport({
@@ -53,7 +242,42 @@ exports.onContactCreated = onDocumentCreated(
     }
 );
 
-// ========== 2. WEEKLY TOKEN USAGE REPORT (Every Monday 8am ET) ==========
+// ========== 2. TRAVEL INQUIRY EMAIL NOTIFICATION ==========
+exports.onTravelInquiry = onDocumentCreated(
+    {
+        document: "travel_inquiries/{docId}",
+        secrets: [gmailEmail, gmailAppPassword, notifyEmail]
+    },
+    async (event) => {
+        const data = event.data.data();
+        const transporter = createTransporter(gmailEmail.value(), gmailAppPassword.value());
+
+        const mailOptions = {
+            from: `"Travel Planner" <${gmailEmail.value()}>`,
+            to: notifyEmail.value(),
+            subject: `[Travel] New inquiry from ${data.name || "Anonymous"} — ${data.tripType || "Trip"}`,
+            html: `
+                <h2>New Travel Inquiry</h2>
+                <table style="border-collapse:collapse;font-family:sans-serif;">
+                    <tr><td style="padding:6px 12px;font-weight:bold;">Name:</td><td style="padding:6px 12px;">${data.name || "N/A"}</td></tr>
+                    <tr><td style="padding:6px 12px;font-weight:bold;">Email:</td><td style="padding:6px 12px;">${data.email || "N/A"}</td></tr>
+                    <tr><td style="padding:6px 12px;font-weight:bold;">Trip Type:</td><td style="padding:6px 12px;">${data.tripType || "N/A"}</td></tr>
+                    <tr><td style="padding:6px 12px;font-weight:bold;">Group Size:</td><td style="padding:6px 12px;">${data.groupSize || "N/A"}</td></tr>
+                    <tr><td style="padding:6px 12px;font-weight:bold;">Dates:</td><td style="padding:6px 12px;">${data.dates || "N/A"}</td></tr>
+                </table>
+                <div style="margin-top:16px;padding:16px;background:#f5f3f0;border-radius:8px;font-family:sans-serif;line-height:1.6;">
+                    ${(data.message || "").replace(/\n/g, "<br>")}
+                </div>
+                <p style="margin-top:16px;font-size:12px;color:#999;">Automated notification from Travel Planner.</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log("Travel inquiry notification sent for:", event.params.docId);
+    }
+);
+
+// ========== 3. WEEKLY TOKEN USAGE REPORT (Every Monday 8am ET) ==========
 exports.weeklyTokenReport = onSchedule(
     {
         schedule: "every monday 08:00",

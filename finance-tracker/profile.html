@@ -143,9 +143,31 @@
     });
     var db = firebase.firestore();
     </script>
-    <script src="js/auth.js?v=1"></script>
+    <script src="js/auth.js?v=2"></script>
+    <script src="js/secrets.js"></script>
+    <script src="js/pii.js?v=1"></script>
     <script>
     var selectedRisk = '';
+
+    function summarizeGoals(goalsText) {
+        if (!goalsText || goalsText.length < 100) return Promise.resolve(goalsText);
+        return fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_API_KEY },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: 'Summarize this financial profile into 2-3 concise sentences. Keep key numbers (ages, income, target amounts). Remove all names — use "Person 1", "Person 2". No fluff.' },
+                    { role: 'user', content: goalsText }
+                ],
+                temperature: 0,
+                max_tokens: 150
+            })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.error) return goalsText;
+            return data.choices[0].message.content;
+        }).catch(function() { return goalsText; });
+    }
 
     function selectRisk(el) {
         document.querySelectorAll('#risk-chips .chip').forEach(function(c) { c.classList.remove('selected'); });
@@ -172,17 +194,23 @@
 
     function saveProfileData() {
         var statusEl = document.getElementById('save-status');
-        statusEl.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #d0d8e4;border-top-color:#4a7aaa;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;"></span> Saving...';
+        statusEl.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #d0d8e4;border-top-color:#4a7aaa;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;"></span> Saving & summarizing goals...';
 
-        db.collection('finance_profiles').doc(currentUser.uid).set({
-            userId: currentUser.uid,
-            age: document.getElementById('prof-age').value ? parseInt(document.getElementById('prof-age').value) : null,
-            retirementAge: document.getElementById('prof-retirement').value ? parseInt(document.getElementById('prof-retirement').value) : null,
-            goals: document.getElementById('prof-goals').value.trim(),
-            riskTolerance: selectedRisk,
-            notes: document.getElementById('prof-notes').value.trim(),
-            updatedAt: new Date().toISOString()
-        }, { merge: true }).then(function() {
+        var goalsRaw = document.getElementById('prof-goals').value.trim();
+        var notesRaw = document.getElementById('prof-notes').value.trim();
+
+        summarizeGoals(stripPII(goalsRaw + (notesRaw ? '\n' + notesRaw : ''))).then(function(summary) {
+            return db.collection('finance_profiles').doc(currentUser.uid).set({
+                userId: currentUser.uid,
+                age: document.getElementById('prof-age').value ? parseInt(document.getElementById('prof-age').value) : null,
+                retirementAge: document.getElementById('prof-retirement').value ? parseInt(document.getElementById('prof-retirement').value) : null,
+                goals: goalsRaw,
+                goalsSummary: summary,
+                riskTolerance: selectedRisk,
+                notes: notesRaw,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+        }).then(function() {
             statusEl.innerHTML = '<span class="success">Profile saved!</span>';
         }).catch(function(err) {
             statusEl.innerHTML = '<span class="error">Error: ' + err.message + '</span>';

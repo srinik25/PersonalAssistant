@@ -64,13 +64,13 @@ function sumFunds(funds) {
 function loadAccounts() {
     return db.collection('finance_accounts')
         .where('userId', '==', currentUser.uid)
-        .orderBy('updatedAt', 'desc')
         .get()
         .then(function(snap) {
             var accounts = [];
             snap.forEach(function(doc) {
                 accounts.push(Object.assign({ id: doc.id }, doc.data()));
             });
+            accounts.sort(function(a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); });
             return accounts;
         });
 }
@@ -133,13 +133,12 @@ function loadSnapshots(accountId, limit) {
     return db.collection('finance_snapshots')
         .where('userId', '==', currentUser.uid)
         .where('accountId', '==', accountId)
-        .orderBy('date', 'desc')
-        .limit(limit || 10)
         .get()
         .then(function(snap) {
             var snapshots = [];
             snap.forEach(function(doc) { snapshots.push(doc.data()); });
-            return snapshots;
+            snapshots.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+            return snapshots.slice(0, limit || 10);
         });
 }
 
@@ -160,7 +159,7 @@ function trackTokenUsage(action, responseData) {
     }).catch(function() {});
 }
 
-function callFinanceLLM(systemPrompt, userPrompt, action) {
+function callFinanceLLM(systemPrompt, userPrompt, action, maxTokens) {
     return fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_API_KEY },
@@ -171,7 +170,7 @@ function callFinanceLLM(systemPrompt, userPrompt, action) {
                 { role: 'user', content: userPrompt }
             ],
             temperature: 0.3,
-            max_tokens: 2000
+            max_tokens: maxTokens || 800
         })
     }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.error) throw new Error(data.error.message);
@@ -180,21 +179,35 @@ function callFinanceLLM(systemPrompt, userPrompt, action) {
     });
 }
 
+function stripPII(text) {
+    if (!text) return text;
+    // Remove common name patterns - names stored in profile
+    var names = (typeof PII_NAMES !== 'undefined') ? PII_NAMES : [];
+    names.forEach(function(name) {
+        text = text.replace(new RegExp('\\b' + name + '\\b', 'gi'), 'Person');
+    });
+    // Remove email addresses
+    text = text.replace(/[\w.-]+@[\w.-]+\.\w+/g, '[email]');
+    // Remove phone numbers
+    text = text.replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[phone]');
+    return text;
+}
+
 function buildProfileContext(profile) {
     var parts = [];
     if (profile.age) parts.push('Age: ' + profile.age);
-    if (profile.goals) parts.push('Financial goals: ' + profile.goals);
+    // Use pre-summarized goals (generated on profile save) — never send full goals to LLM
+    var goals = profile.goalsSummary || profile.goals;
+    if (goals) parts.push('Financial goals: ' + stripPII(goals));
     if (profile.riskTolerance) parts.push('Risk tolerance: ' + profile.riskTolerance);
     if (profile.retirementAge) parts.push('Target retirement age: ' + profile.retirementAge);
     return parts.length ? parts.join('\n') : 'No profile information provided.';
 }
 
 function generateAccountAnalysis(account, profile) {
-    var systemPrompt = 'You are a certified financial planner (CFP) providing educational portfolio analysis. ' +
-        'Do NOT provide specific buy/sell recommendations for individual securities. ' +
-        'Provide general observations about diversification, risk, allocation, and alignment with goals. ' +
-        'Be honest, specific, and actionable. This is educational analysis, NOT financial advice. ' +
-        'IMPORTANT: Do not include any personally identifiable information in your response.';
+    var systemPrompt = 'You are a CFP providing brief educational portfolio analysis. ' +
+        'No buy/sell recommendations. Be concise — use bullet points, not paragraphs. ' +
+        'No personally identifiable information in your response.';
 
     var holdingsText = '';
     if (account.funds && account.funds.length) {
@@ -217,7 +230,7 @@ function generateAccountAnalysis(account, profile) {
         'Total value: ' + formatCurrency(sumFunds(account.funds)) + '\n\n' +
         'Holdings:\n' + holdingsText + '\n\n' +
         'User profile:\n' + buildProfileContext(profile) + '\n\n' +
-        (account.notes ? 'Account notes/plans: ' + account.notes + '\n\n' : '') +
+        (account.notes ? 'Account notes/plans: ' + stripPII(account.notes) + '\n\n' : '') +
         'Current date: ' + new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + '\n\n' +
         'Provide:\n' +
         '1. ACCOUNT HEALTH SCORE: 1-10\n' +
@@ -228,16 +241,13 @@ function generateAccountAnalysis(account, profile) {
         '6. SUGGESTIONS: Actionable improvements (general, not specific security recommendations)\n\n' +
         'Format with clear headers. Be specific and honest.';
 
-    return callFinanceLLM(systemPrompt, userPrompt, 'account_analysis');
+    return callFinanceLLM(systemPrompt, userPrompt, 'account_analysis', 800);
 }
 
 function generateOverallAnalysis(accounts, profile, snapshots) {
-    var systemPrompt = 'You are a certified financial planner (CFP) providing a comprehensive portfolio review. ' +
-        'Analyze the overall financial picture across all accounts. ' +
-        'Do NOT provide specific buy/sell recommendations. ' +
-        'Focus on asset allocation, diversification, tax-advantaged strategy, risk assessment, and actionable improvements. ' +
-        'Be thorough, honest, and educational. This is NOT financial advice. ' +
-        'IMPORTANT: Do not include any personally identifiable information.';
+    var systemPrompt = 'You are a CFP providing a portfolio review across all accounts. ' +
+        'No buy/sell recommendations. Be concise — use bullet points, not paragraphs. ' +
+        'No personally identifiable information in your response.';
 
     // Group accounts by type (strip PII - no account names)
     var byType = {};
@@ -299,7 +309,7 @@ function generateOverallAnalysis(accounts, profile, snapshots) {
         (trendText ? '9. TREND ANALYSIS: Comment on portfolio trajectory\n\n' : '') +
         'Format with clear headers. Be specific, honest, and actionable.';
 
-    return callFinanceLLM(systemPrompt, userPrompt, 'overall_analysis');
+    return callFinanceLLM(systemPrompt, userPrompt, 'overall_analysis', 1200);
 }
 
 function formatAnalysisText(text) {

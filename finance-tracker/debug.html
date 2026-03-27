@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html><head><title>Debug</title></head>
+<body>
+<pre id="log">Testing Firestore...</pre>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+    apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+    authDomain: "nutrition-198dd.firebaseapp.com",
+    projectId: "nutrition-198dd",
+    storageBucket: "nutrition-198dd.firebasestorage.app",
+    messagingSenderId: "851241392706",
+    appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+});
+var db = firebase.firestore();
+var log = document.getElementById('log');
+
+// Test 1: Simple query without orderBy
+db.collection('finance_accounts').where('userId', '==', 'local-user').get()
+    .then(function(snap) {
+        log.textContent += '\n\nTest 1 (where only): ' + snap.size + ' docs found';
+        snap.forEach(function(doc) {
+            log.textContent += '\n  - ' + doc.data().name + ' (' + doc.id + ')';
+        });
+    })
+    .catch(function(err) {
+        log.textContent += '\n\nTest 1 ERROR: ' + err.code + ' — ' + err.message;
+    });
+
+// Test 2: With orderBy (what loadAccounts uses)
+db.collection('finance_accounts').where('userId', '==', 'local-user').orderBy('updatedAt', 'desc').get()
+    .then(function(snap) {
+        log.textContent += '\n\nTest 2 (where + orderBy): ' + snap.size + ' docs found';
+    })
+    .catch(function(err) {
+        log.textContent += '\n\nTest 2 ERROR: ' + err.code + ' — ' + err.message;
+    });
+
+// Test 3: Get all docs in collection (no filter)
+db.collection('finance_accounts').get()
+    .then(function(snap) {
+        log.textContent += '\n\nTest 3 (all docs): ' + snap.size + ' docs found';
+    })
+    .catch(function(err) {
+        log.textContent += '\n\nTest 3 ERROR: ' + err.code + ' — ' + err.message;
+    });
+</script>
+</body>
+</html>

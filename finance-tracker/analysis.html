@@ -118,10 +118,11 @@
     });
     var db = firebase.firestore();
     </script>
-    <script src="js/auth.js?v=1"></script>
-    <script src="../secrets.js"></script>
+    <script src="js/auth.js?v=2"></script>
+    <script src="js/secrets.js"></script>
     <script src="js/config.js?v=1"></script>
-    <script src="js/app.js?v=1"></script>
+    <script src="js/pii.js?v=1"></script>
+    <script src="js/app.js?v=2"></script>
     <script>
     var allAccounts = [];
     var userProfile = {};
@@ -154,13 +155,13 @@
         db.collection('finance_analyses')
             .where('userId', '==', currentUser.uid)
             .where('scope', '==', 'overall')
-            .orderBy('generatedAt', 'desc')
-            .limit(1)
             .get()
             .then(function(snap) {
                 if (snap.empty) return;
-                var data = snap.docs[0].data();
-                renderOverallAnalysis(data.analysis, data.generatedAt);
+                var docs = [];
+                snap.forEach(function(d) { docs.push(d.data()); });
+                docs.sort(function(a, b) { return (b.generatedAt || '').localeCompare(a.generatedAt || ''); });
+                renderOverallAnalysis(docs[0].analysis, docs[0].generatedAt);
             }).catch(function() {});
     }
 

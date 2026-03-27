@@ -324,13 +324,9 @@ function reviewDay() {
 
     var mealsText = meals.join('\n');
 
-    // First LLM call: nutrition analysis
-    callNutritionLLM(mealsText, day.dayName).then(function(firstResult) {
-        // Second LLM call: verify the first analysis
-        return verifyNutrition(mealsText, firstResult).then(function(verified) {
-            day.nutritionReview = verified;
-            renderNutritionResult(verified);
-        });
+    callNutritionLLM(mealsText, day.dayName).then(function(result) {
+        day.nutritionReview = result;
+        renderNutritionResult(result);
     }).catch(function(err) {
         resultEl.innerHTML = '<div class="nutrition-card"><div class="nutrition-text">Could not analyze nutrition. ' + esc(err.message) + '</div></div>';
     });
@@ -354,44 +350,65 @@ function buildProfileContext() {
     return '\n\nUSER PROFILE:\n' + parts.join('\n') + '\n\nTailor your analysis and suggestions to this person\'s profile, goals, and dietary preferences.';
 }
 
-function callNutritionLLM(mealsText, dayName) {
-    var systemPrompt = 'You are a certified nutrition expert and registered dietitian. You MUST be thorough and accurate. ' +
-        'Do NOT make up calorie counts or macro numbers — only provide estimates you are confident about based on standard USDA food databases. ' +
-        'Assume normal, standard portion sizes for one person unless otherwise specified. ' +
-        'If a food description is vague, note the assumption you are making. ' +
-        'If a meal is marked as "dining out", note that portions may be larger and nutritional info may be less precise. ' +
-        'Always double-check your math before responding. ' +
-        'Be helpful but honest — if a meal plan is unhealthy, say so clearly. ' +
-        'Do NOT include any "Reviewer Note" sections in your response.';
+var NUTRITION_FN_URL = 'https://us-central1-nutrition-198dd.cloudfunctions.net/nutritionReview';
 
-    var profileCtx = buildProfileContext();
-    var userPrompt = 'Review this single day meal plan for ' + dayName + ':\n\n' + mealsText + profileCtx + '\n\n' +
-        'Provide:\n' +
-        '1. SCORE: Rate 1-10 (10 = perfectly balanced). Be honest.\n' +
-        '2. ESTIMATED CALORIES: Total for the day (give a range if uncertain)\n' +
-        '3. MACRO BREAKDOWN: Approximate protein, carbs, fat in grams\n' +
-        '4. STRENGTHS: What is good about this day\n' +
-        '5. GAPS: What is missing or could be improved (fiber, greens, protein, vitamins, etc.)\n' +
-        '6. SUGGESTIONS: Specific food additions or swaps to improve balance\n\n' +
-        'Format as clean text with headers. Be specific and actionable. Do not add any reviewer notes.';
-
-    return fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_API_KEY },
-        body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ],
-            temperature: 0.3,
-            max_tokens: 1500
-        })
-    }).then(function(r) { return r.json(); }).then(function(data) {
-        if (data.error) throw new Error(data.error.message);
-        trackTokenUsage('day_review_' + dayName, data);
-        return data.choices[0].message.content;
+function streamLLM(messages, targetEl, onDone, action, maxTokens) {
+    targetEl.textContent = '';
+    return firebase.auth().currentUser.getIdToken().then(function(token) {
+        return fetch(NUTRITION_FN_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ messages: messages, max_tokens: maxTokens || 600, action: action || 'day_review' })
+        });
+    }).then(function(r) {
+        if (!r.ok) return r.json().then(function(e) { throw new Error((e.error && e.error.message) || 'Error ' + r.status); });
+        var reader = r.body.getReader();
+        var decoder = new TextDecoder();
+        var fullText = '';
+        function read() {
+            return reader.read().then(function(chunk) {
+                if (chunk.done) { onDone(fullText); return fullText; }
+                decoder.decode(chunk.value, { stream: true }).split('\n').forEach(function(line) {
+                    if (!line.startsWith('data: ')) return;
+                    var data = line.slice(6).trim();
+                    if (data === '[DONE]') return;
+                    try {
+                        var parsed = JSON.parse(data);
+                        if (parsed.error) throw new Error(parsed.error.message || 'API error');
+                        var delta = parsed.choices && parsed.choices[0].delta.content;
+                        if (delta) { fullText += delta; targetEl.textContent = fullText; }
+                    } catch(e) {}
+                });
+                return read();
+            });
+        }
+        return read();
     });
+}
+
+function callNutritionLLM(mealsText, dayName) {
+    var systemPrompt = 'You are a nutrition expert. Be concise and accurate. Use standard USDA data. Assume normal portions for one person. Use plain text only — no markdown, no asterisks, no bold formatting.';
+    var profileCtx = buildProfileContext();
+    var userPrompt = 'Review this meal plan for ' + dayName + ':\n\n' + mealsText + profileCtx + '\n\n' +
+        'Provide (be concise):\n' +
+        'SCORE: X/10\n' +
+        'ESTIMATED CALORIES: range\n' +
+        'MACRO BREAKDOWN: protein Xg, carbs Xg, fat Xg\n' +
+        'STRENGTHS: 2-3 bullet points\n' +
+        'GAPS: 2-3 bullet points\n' +
+        'SUGGESTIONS: 2-3 specific swaps or additions\n';
+
+    var resultEl = document.getElementById('nutrition-result');
+    resultEl.innerHTML = '<div class="nutrition-card"><h3>Nutrition Review</h3>' +
+        '<div class="nutrition-text" id="stream-text" style="white-space:pre-wrap;font-size:0.88rem;line-height:1.7;"></div></div>';
+
+    return streamLLM(
+        [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+        document.getElementById('stream-text'),
+        function(fullText) { renderNutritionResult(fullText); },
+        'day_review_' + dayName,
+        600
+    );
 }
 
 function verifyNutrition(mealsText, firstAnalysis) {
@@ -429,12 +446,26 @@ function verifyNutrition(mealsText, firstAnalysis) {
 
 function renderNutritionResult(text) {
     var resultEl = document.getElementById('nutrition-result');
-    // Strip any reviewer note that may have snuck in
-    var cleanText = text.replace(/\n*\*?\*?REVIEWER NOTE\*?\*?[:\s][\s\S]*/i, '');
-    cleanText = cleanText.replace(/\n*\*?\*?VERIFICATION NOTE\*?\*?[:\s][\s\S]*/i, '');
+    if (!text || !text.trim()) return;
 
-    // Extract score for badge
-    var scoreMatch = cleanText.match(/SCORE[:\s]*(\d+)/i);
+    // Walk lines and bucket into sections
+    var SECTION_RE = /^\*{0,2}(SCORE|ESTIMATED CALORIES|MACRO BREAKDOWN|STRENGTHS|GAPS|SUGGESTIONS)\*{0,2}[:\s]/i;
+    var buckets = { main: [], strengths: [], gaps: [], suggestions: [] };
+    var current = 'main';
+    text.split('\n').forEach(function(line) {
+        var m = line.match(SECTION_RE);
+        if (m) {
+            var key = m[1].toUpperCase();
+            if (key === 'STRENGTHS') current = 'strengths';
+            else if (key === 'GAPS') current = 'gaps';
+            else if (key === 'SUGGESTIONS') current = 'suggestions';
+            else current = 'main';
+        }
+        buckets[current].push(line);
+    });
+
+    var mainText = buckets.main.join('\n').trim();
+    var scoreMatch = mainText.match(/SCORE[:\s]+(\d+)/i);
     var score = scoreMatch ? parseInt(scoreMatch[1]) : null;
     var scoreBadge = '';
     if (score !== null) {
@@ -442,22 +473,42 @@ function renderNutritionResult(text) {
         var scoreLabel = score >= 7 ? 'Great' : score >= 5 ? 'Okay' : 'Needs Work';
         scoreBadge = '<span class="nutrition-score ' + scoreClass + '">' + score + '/10 — ' + scoreLabel + '</span>';
     }
-    var html = formatNutritionText(cleanText);
+
+    var strengthsText = buckets.strengths.join('\n').replace(/\*{0,2}STRENGTHS\*{0,2}[:\s]*/gi, '').trim();
+    var improvementsText = buckets.gaps.concat(buckets.suggestions).join('\n')
+        .replace(/\*{0,2}(?:GAPS|SUGGESTIONS)\*{0,2}[:\s]*/gi, '').trim();
+
+    var strengthsHtml = strengthsText ? (
+        '<div style="margin-top:16px;padding:14px 16px;background:rgba(74,138,74,0.1);border-left:3px solid #4a8a4a;border-radius:8px;">' +
+        '<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#4a8a4a;margin-bottom:6px;">Strengths</div>' +
+        '<div class="nutrition-text" style="font-size:0.85rem;">' + formatNutritionText(strengthsText) + '</div>' +
+        '</div>'
+    ) : '';
+
+    var improvementsHtml = improvementsText ? (
+        '<div style="margin-top:10px;padding:14px 16px;background:rgba(232,160,64,0.1);border-left:3px solid #e8a040;border-radius:8px;">' +
+        '<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#b08030;margin-bottom:6px;">Improvements</div>' +
+        '<div class="nutrition-text" style="font-size:0.85rem;">' + formatNutritionText(improvementsText) + '</div>' +
+        '</div>'
+    ) : '';
+
     resultEl.innerHTML = '<div class="nutrition-card">' +
         '<h3>Nutrition Review</h3>' +
         scoreBadge +
-        '<div class="nutrition-text">' + html + '</div>' +
+        '<div class="nutrition-text">' + formatNutritionText(mainText) + '</div>' +
+        strengthsHtml +
+        improvementsHtml +
         DISCLAIMER_NOTE +
     '</div>';
 }
 
 function formatNutritionText(text) {
     return text
+        .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/^### (.+)$/gm, '<strong style="display:block;margin-top:12px;margin-bottom:4px;">$1</strong>')
-        .replace(/^## (.+)$/gm, '<strong style="display:block;margin-top:12px;margin-bottom:4px;">$1</strong>')
-        .replace(/^# (.+)$/gm, '<strong style="display:block;margin-top:12px;margin-bottom:4px;">$1</strong>')
-        .replace(/^[•\-\*] (.+)$/gm, '<span style="display:block;padding-left:16px;">&#8226; $1</span>')
+        .replace(/\*\*/g, '')
+        .replace(/^#{1,3} (.+)$/gm, '<strong style="display:block;margin-top:12px;margin-bottom:4px;">$1</strong>')
+        .replace(/^[•\-] (.+)$/gm, '<span style="display:block;padding-left:16px;">&#8226; $1</span>')
         .replace(/\n{2,}/g, '<br><br>')
         .replace(/\n/g, '<br>');
 }
@@ -544,44 +595,31 @@ function reviewFullWeek() {
         '7. TOP 3 IMPROVEMENTS: Most impactful changes to make\n\n' +
         'Be specific, actionable, and honest. Do not add any reviewer notes.';
 
-    fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_API_KEY },
-        body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ],
-            temperature: 0.3,
-            max_tokens: 2000
-        })
-    }).then(function(r) { return r.json(); }).then(function(data) {
-        if (data.error) throw new Error(data.error.message);
-        trackTokenUsage('week_review', data);
-        var analysis = data.choices[0].message.content;
+    overallEl.innerHTML = '<div class="overall-nutrition"><h3>Weekly Nutrition Analysis</h3>' +
+        '<div class="nutrition-text" id="week-stream-text" style="white-space:pre-wrap;font-size:0.88rem;line-height:1.7;color:rgba(255,255,255,0.9);"></div></div>';
 
-        // Verify with second call
-        return fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_API_KEY },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [
-                    { role: 'system', content: 'You are a senior nutrition reviewer verifying a weekly meal plan analysis. Check all numbers, claims, and suggestions for accuracy. Only confirm what is verifiably correct. All estimates assume normal portions for one person. Do NOT include any "Reviewer Note" or "Verification Note" in your output.' },
-                    { role: 'user', content: 'Meals:\n' + mealsText + '\n\nAnalysis to verify:\n' + analysis + '\n\nReturn the corrected/confirmed analysis in the same format. Do NOT add any reviewer note.' }
-                ],
-                temperature: 0.2,
-                max_tokens: 2000
-            })
-        }).then(function(r) { return r.json(); }).then(function(vData) {
-            trackTokenUsage('week_verify', vData);
-            var verified = vData.choices[0].message.content;
-            // Strip any reviewer note
-            verified = verified.replace(/\n*\*?\*?REVIEWER NOTE\*?\*?[:\s][\s\S]*/i, '');
-            verified = verified.replace(/\n*\*?\*?VERIFICATION NOTE\*?\*?[:\s][\s\S]*/i, '');
+    streamLLM(
+        [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+        document.getElementById('week-stream-text'),
+        function(fullText) {
+            // Re-render with styled sections when done
+            var SECTION_RE = /^\*{0,2}(OVERALL SCORE|SCORE|DAILY CALORIE RANGE|WEEKLY BALANCE|VARIETY|WHAT'S GREAT|WHAT'S MISSING|TOP 3 IMPROVEMENTS)\*{0,2}[:\s]/i;
+            var buckets = { main: [], great: [], missing: [], improvements: [] };
+            var current = 'main';
+            fullText.split('\n').forEach(function(line) {
+                var m = line.match(SECTION_RE);
+                if (m) {
+                    var key = m[1].toUpperCase();
+                    if (key.indexOf('GREAT') !== -1) current = 'great';
+                    else if (key.indexOf('MISSING') !== -1) current = 'missing';
+                    else if (key.indexOf('IMPROVEMENT') !== -1) current = 'improvements';
+                    else current = 'main';
+                }
+                buckets[current].push(line);
+            });
 
-            var scoreMatch = verified.match(/OVERALL SCORE[:\s]*(\d+)/i) || verified.match(/SCORE[:\s]*(\d+)/i);
+            var mainText = buckets.main.join('\n').trim();
+            var scoreMatch = mainText.match(/(?:OVERALL )?SCORE[:\s]+(\d+)/i);
             var score = scoreMatch ? parseInt(scoreMatch[1]) : null;
             var scoreBadge = '';
             if (score !== null) {
@@ -589,17 +627,35 @@ function reviewFullWeek() {
                 var scoreLabel = score >= 7 ? 'Great Week' : score >= 5 ? 'Decent Week' : 'Room to Improve';
                 scoreBadge = '<span class="nutrition-score ' + scoreClass + '">' + score + '/10 — ' + scoreLabel + '</span>';
             }
+
+            var greatText = buckets.great.join('\n').replace(/^.*(?:WHAT'S GREAT).*\n?/i, '').trim();
+            var improvText = buckets.missing.concat(buckets.improvements).join('\n')
+                .replace(/^.*(?:WHAT'S MISSING|TOP 3 IMPROVEMENTS).*\n?/im, '').trim();
+
+            var strengthsHtml = greatText ? (
+                '<div style="margin-top:16px;padding:14px 16px;background:rgba(163,212,154,0.15);border-left:3px solid #a3d49a;border-radius:8px;">' +
+                '<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#a3d49a;margin-bottom:6px;">Strengths</div>' +
+                '<div class="nutrition-text" style="font-size:0.85rem;color:rgba(255,255,255,0.9);">' + formatNutritionText(greatText) + '</div></div>'
+            ) : '';
+
+            var improvementsHtml = improvText ? (
+                '<div style="margin-top:10px;padding:14px 16px;background:rgba(232,160,64,0.15);border-left:3px solid #e8a040;border-radius:8px;">' +
+                '<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#e8a040;margin-bottom:6px;">Improvements</div>' +
+                '<div class="nutrition-text" style="font-size:0.85rem;color:rgba(255,255,255,0.9);">' + formatNutritionText(improvText) + '</div></div>'
+            ) : '';
+
             overallEl.innerHTML = '<div class="overall-nutrition">' +
-                '<h3>Weekly Nutrition Analysis</h3>' +
-                scoreBadge +
-                '<div class="nutrition-text">' + formatNutritionText(verified) + '</div>' +
+                '<h3>Weekly Nutrition Analysis</h3>' + scoreBadge +
+                '<div class="nutrition-text">' + formatNutritionText(mainText) + '</div>' +
+                strengthsHtml + improvementsHtml +
                 '<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.15);font-size:0.78rem;color:rgba(255,255,255,0.5);line-height:1.5;">' +
-                    '<strong style="color:rgba(255,255,255,0.65);">Note:</strong> Analysis assumes normal portions for one person. ' +
-                    'Estimates are based on standard USDA nutritional data, analyzed and validated by AI models. ' +
-                    'Consult a registered dietitian for personalized advice.</div>' +
-            '</div>';
-        });
-    }).catch(function(err) {
+                '<strong style="color:rgba(255,255,255,0.65);">Note:</strong> Analysis assumes normal portions for one person. ' +
+                'Estimates are based on standard USDA nutritional data, analyzed and validated by AI models. ' +
+                'Consult a registered dietitian for personalized advice.</div></div>';
+        },
+        'week_review',
+        800
+    ).catch(function(err) {
         overallEl.innerHTML = '<div class="nutrition-card"><div class="nutrition-text">Could not analyze. ' + esc(err.message) + '</div></div>';
     });
 }

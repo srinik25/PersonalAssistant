@@ -5,3 +5,4 @@ node_modules/
 site/
 .herenow/
 secrets.js
+*/js/secrets.js

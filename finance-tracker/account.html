@@ -170,6 +170,7 @@
             <div class="card-title">AI Analysis</div>
             <div class="btn-row" style="margin-top:0;">
                 <button class="btn btn-success" onclick="runAnalysis()">Generate Analysis</button>
+                <button class="btn btn-secondary" onclick="downloadPDF()">Download PDF</button>
                 <a href="accounts.html" class="btn btn-secondary" style="text-decoration:none;text-align:center;">Back to Accounts</a>
             </div>
             <div id="analysis-result"></div>
@@ -196,10 +197,11 @@
     });
     var db = firebase.firestore();
     </script>
-    <script src="js/auth.js?v=1"></script>
-    <script src="../secrets.js"></script>
+    <script src="js/auth.js?v=2"></script>
+    <script src="js/secrets.js"></script>
     <script src="js/config.js?v=1"></script>
-    <script src="js/app.js?v=1"></script>
+    <script src="js/pii.js?v=1"></script>
+    <script src="js/app.js?v=2"></script>
     <script>
     var account = null;
     var accountId = new URLSearchParams(window.location.search).get('id');
@@ -344,13 +346,13 @@
         db.collection('finance_analyses')
             .where('userId', '==', currentUser.uid)
             .where('scope', '==', accountId)
-            .orderBy('generatedAt', 'desc')
-            .limit(1)
             .get()
             .then(function(snap) {
                 if (snap.empty) return;
-                var data = snap.docs[0].data();
-                renderAnalysis(data.analysis, data.generatedAt);
+                var docs = [];
+                snap.forEach(function(d) { docs.push(d.data()); });
+                docs.sort(function(a, b) { return (b.generatedAt || '').localeCompare(a.generatedAt || ''); });
+                renderAnalysis(docs[0].analysis, docs[0].generatedAt);
             }).catch(function() {});
     }
 
@@ -371,6 +373,75 @@
         }).catch(function(err) {
             resultEl.innerHTML = '<div style="color:#c0392b;padding:12px;">Error: ' + esc(err.message) + '</div>';
         });
+    }
+
+    function downloadPDF() {
+        var total = formatCurrency(sumFunds(account.funds));
+        var date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+            '<title>' + esc(account.name) + '</title>' +
+            '<style>' +
+            'body{font-family:Helvetica,Arial,sans-serif;max-width:700px;margin:40px auto;padding:0 30px;color:#1e2430;font-size:13px;line-height:1.6;}' +
+            'h1{font-size:22px;margin-bottom:2px;}' +
+            'h2{font-size:16px;margin:24px 0 8px;padding-bottom:4px;border-bottom:1px solid #ccc;}' +
+            '.meta{color:#666;font-size:12px;margin-bottom:20px;}' +
+            'table{width:100%;border-collapse:collapse;margin:8px 0 16px;}' +
+            'th{text-align:left;font-size:11px;text-transform:uppercase;color:#666;padding:6px 8px;border-bottom:2px solid #ddd;}' +
+            'td{padding:6px 8px;border-bottom:1px solid #eee;}' +
+            '.total{font-size:18px;font-weight:bold;margin:8px 0 16px;}' +
+            '.gain{color:#27ae60;font-weight:600;}' +
+            '.loss{color:#c0392b;font-weight:600;}' +
+            '.notes{background:#f5f5f5;padding:12px 16px;border-radius:8px;margin:8px 0;white-space:pre-wrap;}' +
+            '.analysis{background:#f0f4f8;padding:16px;border-radius:8px;margin:8px 0;line-height:1.7;}' +
+            '.disclaimer{font-size:10px;color:#999;margin-top:20px;font-style:italic;}' +
+            '</style></head><body>';
+
+        html += '<h1>' + esc(account.name) + '</h1>';
+        html += '<div class="meta">' + getAccountTypeLabel(account.type) + ' &bull; ' + date + '</div>';
+        html += '<div class="total">Total: ' + total + '</div>';
+
+        // Holdings table
+        if (account.funds && account.funds.length) {
+            html += '<h2>Holdings</h2><table><tr><th>Name</th><th>Value</th><th>Cost Basis</th><th>Gain/Loss</th></tr>';
+            account.funds.forEach(function(f) {
+                var gl = calculateGainLoss(f.amount, f.costBasis);
+                var glText = '—';
+                if (gl) {
+                    glText = '<span class="' + (gl.isGain ? 'gain' : 'loss') + '">' +
+                        (gl.isGain ? '+' : '') + formatCurrency(gl.value) + ' (' + gl.percentage.toFixed(1) + '%)</span>';
+                }
+                html += '<tr><td><strong>' + esc(f.name) + '</strong>' +
+                    (f.description ? '<br><span style="color:#666;font-size:11px;">' + esc(f.description) + '</span>' : '') +
+                    '</td><td>' + formatCurrency(f.amount) + '</td><td>' +
+                    (f.costBasis ? formatCurrency(f.costBasis) : '—') + '</td><td>' + glText + '</td></tr>';
+            });
+            html += '</table>';
+        }
+
+        // Notes
+        if (account.notes) {
+            html += '<h2>Notes &amp; Plans</h2><div class="notes">' + esc(account.notes) + '</div>';
+        }
+
+        // Analysis
+        var analysisEl = document.getElementById('analysis-result');
+        var analysisCard = analysisEl.querySelector('.analysis-card');
+        if (analysisCard) {
+            var analysisText = analysisCard.querySelector('.analysis-text');
+            var analysisDate = analysisCard.querySelector('.analysis-date');
+            html += '<h2>AI Analysis</h2>';
+            if (analysisDate) html += '<div style="color:#666;font-size:11px;margin-bottom:6px;">' + analysisDate.textContent + '</div>';
+            if (analysisText) html += '<div class="analysis">' + analysisText.innerHTML + '</div>';
+        }
+
+        html += '<div class="disclaimer">Generated by Finance Tracker. AI analysis is educational only, not financial advice.</div>';
+        html += '</body></html>';
+
+        var win = window.open('', '_blank');
+        win.document.write(html);
+        win.document.close();
+        win.onload = function() { win.print(); };
     }
 
     function renderAnalysis(text, dateStr) {

@@ -1,7 +1,10 @@
+config/keys.txt
+config/firebase_config.json
+config/bash
+output/
 __pycache__/
 *.pyc
-.herenow/
-config/keys.txt
 cron.log
+.herenow/
 .DS_Store
 .claude/

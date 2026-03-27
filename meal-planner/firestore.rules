@@ -18,21 +18,32 @@ service cloud.firestore {
     match /token_usage/{docId} {
       allow create: if request.auth != null;
     }
-    // Finance tracker collections
+    // Finance tracker collections - open access (local-only personal app)
     match /finance_accounts/{docId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, write: if true;
     }
     match /finance_profiles/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if true;
     }
     match /finance_snapshots/{docId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, write: if true;
     }
     match /finance_analyses/{docId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, write: if true;
+    }
+    // Travel site inquiries - anyone can submit
+    match /travel_inquiries/{docId} {
+      allow create: if true;
+    }
+    // Health tracker collections - open access (local-only personal app)
+    match /health_entries/{docId} {
+      allow read, write: if true;
+    }
+    match /health_profiles/{userId} {
+      allow read, write: if true;
+    }
+    match /health_analyses/{docId} {
+      allow read, write: if true;
     }
   }
 }
