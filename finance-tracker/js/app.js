@@ -175,7 +175,10 @@ function callFinanceLLM(systemPrompt, userPrompt, action, maxTokens) {
     }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.error) throw new Error(data.error.message);
         trackTokenUsage(action || 'finance_analysis', data);
-        return data.choices[0].message.content;
+        // Lesson 3: validate content non-empty before returning
+        var content = data.choices && data.choices[0] && data.choices[0].message.content;
+        if (!content || !content.trim()) throw new Error('LLM returned empty analysis');
+        return content;
     });
 }
 

@@ -100,6 +100,16 @@ function loadExistingPlan(planId) {
                 showStep('step-review');
                 updateProgress(2);
                 renderWeekReview();
+                // Restore saved weekly analysis if present
+                if (plan.weekNutritionReview) {
+                    var overallEl = document.getElementById('overall-nutrition');
+                    if (overallEl) {
+                        overallEl.innerHTML = '<div class="overall-nutrition"><h3>Weekly Nutrition Analysis</h3>' +
+                            '<div class="nutrition-text" style="white-space:pre-wrap;font-size:0.88rem;line-height:1.7;color:rgba(255,255,255,0.9);">' +
+                            formatNutritionText(plan.weekNutritionReview) + '</div>' +
+                            '<div style="margin-top:8px;font-size:0.75rem;color:rgba(255,255,255,0.4);">Saved analysis — click Full Week Nutrition Review to refresh.</div></div>';
+                    }
+                }
             }
         }
     });
@@ -265,6 +275,18 @@ function saveCurrentDayFields() {
 // ========== SAVE DRAFT ==========
 function saveDraft() {
     saveCurrentDayFields();
+
+    // Lesson 1: no data = no save
+    var statusEl = document.getElementById('day-status');
+    if (!plan.startDate) {
+        statusEl.innerHTML = '<span class="error">Cannot save: missing start date.</span>';
+        return;
+    }
+    if (!plan.days || plan.days.length === 0) {
+        statusEl.innerHTML = '<span class="error">Cannot save: no days in plan.</span>';
+        return;
+    }
+
     plan.status = 'draft';
     plan.updatedAt = new Date().toISOString();
     if (!plan.createdAt) plan.createdAt = plan.updatedAt;
@@ -273,15 +295,19 @@ function saveDraft() {
     var data = JSON.parse(JSON.stringify(plan));
     delete data.id;
 
-    var statusEl = document.getElementById('day-status');
     if (plan.id) {
+        // Lesson 9: update only changed fields, don't overwrite entire document
         db.collection('meal_plans').doc(plan.id).update(data).then(function() {
             statusEl.innerHTML = '<span class="success">Draft saved!</span>';
+        }).catch(function(err) {
+            statusEl.innerHTML = '<span class="error">Save failed: ' + esc(err.message) + '</span>';
         });
     } else {
         db.collection('meal_plans').add(data).then(function(ref) {
             plan.id = ref.id;
             statusEl.innerHTML = '<span class="success">Draft saved!</span>';
+        }).catch(function(err) {
+            statusEl.innerHTML = '<span class="error">Save failed: ' + esc(err.message) + '</span>';
         });
     }
 }
@@ -322,12 +348,29 @@ function reviewDay() {
     var resultEl = document.getElementById('nutrition-result');
     resultEl.innerHTML = '<div class="nutrition-loading"><span class="spinner"></span> Analyzing nutrition...</div>';
 
+    // Disable button to prevent double-clicks during stream
+    var reviewBtn = document.getElementById('review-day-btn');
+    if (reviewBtn) { reviewBtn.disabled = true; reviewBtn.textContent = 'Analyzing...'; }
+
     var mealsText = meals.join('\n');
 
     callNutritionLLM(mealsText, day.dayName).then(function(result) {
+        if (reviewBtn) { reviewBtn.disabled = false; reviewBtn.textContent = 'Review Nutrition'; }
+        // Lesson 3: don't save empty LLM result to Firestore
+        if (!result || !result.trim()) {
+            resultEl.innerHTML = '<div class="nutrition-card"><div class="nutrition-text">Analysis returned empty. Please try again.</div></div>';
+            return;
+        }
         day.nutritionReview = result;
         renderNutritionResult(result);
+        // Auto-save so nutrition review isn't lost if user navigates away
+        if (plan.id && currentUser) {
+            var patch = {};
+            patch['days'] = plan.days;
+            db.collection('meal_plans').doc(plan.id).update(patch).catch(function() {});
+        }
     }).catch(function(err) {
+        if (reviewBtn) { reviewBtn.disabled = false; reviewBtn.textContent = 'Review Nutrition'; }
         resultEl.innerHTML = '<div class="nutrition-card"><div class="nutrition-text">Could not analyze nutrition. ' + esc(err.message) + '</div></div>';
     });
 }
@@ -598,6 +641,10 @@ function reviewFullWeek() {
     overallEl.innerHTML = '<div class="overall-nutrition"><h3>Weekly Nutrition Analysis</h3>' +
         '<div class="nutrition-text" id="week-stream-text" style="white-space:pre-wrap;font-size:0.88rem;line-height:1.7;color:rgba(255,255,255,0.9);"></div></div>';
 
+    // Disable button to prevent double-clicks during stream
+    var weekBtn = document.getElementById('review-week-btn');
+    if (weekBtn) { weekBtn.disabled = true; weekBtn.textContent = 'Analyzing...'; }
+
     streamLLM(
         [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
         document.getElementById('week-stream-text'),
@@ -652,10 +699,21 @@ function reviewFullWeek() {
                 '<strong style="color:rgba(255,255,255,0.65);">Note:</strong> Analysis assumes normal portions for one person. ' +
                 'Estimates are based on standard USDA nutritional data, analyzed and validated by AI models. ' +
                 'Consult a registered dietitian for personalized advice.</div></div>';
+
+            if (weekBtn) { weekBtn.disabled = false; weekBtn.textContent = 'Full Week Nutrition Review'; }
+
+            // Auto-save weekly analysis so it's not lost on page close
+            if (fullText && fullText.trim()) {
+                plan.weekNutritionReview = fullText;
+                if (plan.id && currentUser) {
+                    db.collection('meal_plans').doc(plan.id).update({ weekNutritionReview: fullText }).catch(function() {});
+                }
+            }
         },
         'week_review',
         800
     ).catch(function(err) {
+        if (weekBtn) { weekBtn.disabled = false; weekBtn.textContent = 'Full Week Nutrition Review'; }
         overallEl.innerHTML = '<div class="nutrition-card"><div class="nutrition-text">Could not analyze. ' + esc(err.message) + '</div></div>';
     });
 }

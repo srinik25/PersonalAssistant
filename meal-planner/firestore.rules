@@ -35,6 +35,22 @@ service cloud.firestore {
     match /travel_inquiries/{docId} {
       allow create: if true;
     }
+    // Reading list - open access (personal app)
+    match /reading_links/{docId} {
+      allow read, write: if true;
+    }
+    // What's Happening items
+    match /whatshappening_items/{docId} {
+      allow read, write: if true;
+    }
+    // Travel places - open access (personal app)
+    match /travel_places/{docId} {
+      allow read, write: if true;
+    }
+    // Visited countries - open access (personal app)
+    match /visited_countries/{docId} {
+      allow read, write: if true;
+    }
     // Health tracker collections - open access (local-only personal app)
     match /health_entries/{docId} {
       allow read, write: if true;

@@ -5,6 +5,7 @@ const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 const OpenAI = require("openai");
+const https = require("https");
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -14,6 +15,117 @@ const gmailEmail = defineSecret("GMAIL_EMAIL");
 const gmailAppPassword = defineSecret("GMAIL_APP_PASSWORD");
 const notifyEmail = defineSecret("NOTIFY_EMAIL");
 const openaiKey = defineSecret("OPENAI_API_KEY");
+
+// ========== VALIDATION HELPERS ==========
+
+/**
+ * Lesson 3: Validate LLM-generated nutrition profile structure before use.
+ * Returns { valid: true } or { valid: false, reason: string }
+ */
+function validateNutritionData(data) {
+    if (!data || typeof data !== 'object') return { valid: false, reason: 'Not an object' };
+    const required = ['name', 'history', 'nutrition_profile', 'recipe'];
+    const missing = required.filter(f => !data[f]);
+    if (missing.length > 0) return { valid: false, reason: 'Missing fields: ' + missing.join(', ') };
+    const np = data.nutrition_profile;
+    if (!np || !np.calories || !np.serving_size || !np.protein) {
+        return { valid: false, reason: 'Incomplete nutrition_profile (missing calories, serving_size, or protein)' };
+    }
+    const r = data.recipe;
+    if (!r || !r.name || !Array.isArray(r.ingredients) || r.ingredients.length === 0 ||
+        !Array.isArray(r.instructions) || r.instructions.length === 0) {
+        return { valid: false, reason: 'Incomplete recipe (missing name, ingredients, or instructions)' };
+    }
+    return { valid: true };
+}
+
+// Exported for test harness
+if (typeof module !== 'undefined') module.exports = module.exports || {};
+if (typeof module !== 'undefined') module.exports.validateNutritionData = validateNutritionData;
+
+// ========== IMAGE HELPERS ==========
+const IMAGE_BAD_WORDS = [
+    "illustration","drawing","botanical","diagram","map","coat","stamp",
+    "logo","icon","tree","leaf","leaves","plant","flower","mill","brand","package",
+    "bag","box","product","label","flour","powder","company","store","market","flag","svg",
+    "pasta","pizza","soup","salad","dish","plate","bowl","sauce","cooked","recipe",
+    "meal","cuisine","prepared","caprese","stew","curry","casserole","sandwich","bread",
+    "cake","cookie","smoothie","juice","drink","cocktail","dessert","spread","dip",
+    "ingredienti","busiate","anelletti","pesto",
+    "hand","hands","held","holding","person","people","vendor","farmer","child",
+    "field","farm","harvest","scene","market","stall","pile","basket","crowd","group"
+];
+
+function hasBadWord(str) {
+    const s = str.toLowerCase();
+    return IMAGE_BAD_WORDS.some(w => s.includes(w));
+}
+
+function fetchJson(url) {
+    return new Promise((resolve, reject) => {
+        https.get(url, { headers: { "User-Agent": "NutritionApp/1.0" } }, res => {
+            let body = "";
+            res.on("data", chunk => { body += chunk; });
+            res.on("end", () => { try { resolve(JSON.parse(body)); } catch(e) { reject(e); } });
+        }).on("error", reject);
+    });
+}
+
+function fetchBuffer(url) {
+    return new Promise((resolve, reject) => {
+        https.get(url, { headers: { "User-Agent": "NutritionApp/1.0" } }, res => {
+            const chunks = [];
+            res.on("data", chunk => chunks.push(chunk));
+            res.on("end", () => resolve(Buffer.concat(chunks)));
+        }).on("error", reject);
+    });
+}
+
+async function findWikimediaImage(foodName, client) {
+    const query = encodeURIComponent(foodName + " food ingredient");
+    const apiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${query}&gsrlimit=20&prop=imageinfo&iiprop=url|mime|size&format=json&origin=*`;
+    try {
+        const data = await fetchJson(apiUrl);
+        const pages = Object.values((data.query || {}).pages || {});
+        const candidates = pages
+            .filter(p => !hasBadWord(p.title || ""))
+            .map(p => ({ title: p.title, info: (p.imageinfo || [{}])[0] }))
+            .filter(({ info }) => ["image/jpeg", "image/jpg"].includes(info.mime || ""))
+            .filter(({ info }) => !hasBadWord(info.url || ""))
+            .filter(({ info }) => (info.width || 0) >= 400)
+            .sort((a, b) => (b.info.width || 0) - (a.info.width || 0))
+            .slice(0, 5);
+        for (const { info } of candidates) {
+            const valid = await validateImageWithGPT(info.url, foodName, client);
+            if (valid) return info.url;
+        }
+    } catch (e) {
+        console.warn("Image search failed:", e.message);
+    }
+    return null;
+}
+
+async function validateImageWithGPT(imageUrl, foodName, client) {
+    try {
+        const buffer = await fetchBuffer(imageUrl);
+        const b64 = buffer.toString("base64");
+        const response = await client.chat.completions.create({
+            model: "gpt-4o",
+            max_tokens: 50,
+            messages: [{
+                role: "user",
+                content: [
+                    { type: "text", text: `Does this image show ${foodName} clearly as a raw/whole food item or ingredient — close-up, filling most of the frame, not held in hands, not part of a larger scene, not a prepared dish, not packaged, not a plant illustration? Reply with only YES or NO.` },
+                    { type: "image_url", image_url: { url: `data:image/jpeg;base64,${b64}` } }
+                ]
+            }]
+        });
+        return response.choices[0].message.content.trim().toUpperCase().startsWith("YES");
+    } catch (e) {
+        console.warn("Image validation failed:", e.message);
+        return false;
+    }
+}
 
 // ========== 0. NUTRITION PROFILE GENERATOR (Nourish & Know app) ==========
 const NUTRITION_SYSTEM_PROMPT = {
@@ -42,7 +154,7 @@ const NUTRITION_OUTPUT_FIELDS = {
 };
 
 exports.generateNutritionProfile = onRequest(
-    { secrets: [openaiKey], timeoutSeconds: 60, memory: "256MiB", cors: true },
+    { secrets: [openaiKey], timeoutSeconds: 120, memory: "512MiB", cors: true },
     async (req, res) => {
         if (req.method !== "POST") { res.status(405).json({ error: "Method not allowed" }); return; }
         const food = (req.body.food || "").trim();
@@ -64,7 +176,14 @@ exports.generateNutritionProfile = onRequest(
             "Include history, native country, full nutrition profile with serving size,",
             "daily intake, best time to eat, meal incorporation suggestions,",
             "and a vegetarian recipe using this food item.",
-            "Prefer Indian, Middle Eastern, or Asian-style recipes (e.g., dal, biryani, curry, stir-fry, chai).",
+            "Choose a well-known, widely recognized recipe where this food is the star ingredient.",
+            "The recipe MUST be a real, established dish that people actually cook — not an invented fusion or generic 'stir-fry'.",
+            "For fruits: classic desserts, smoothies, or salads (e.g. strawberry shortcake, mango lassi).",
+            "For grains and legumes: iconic dishes (e.g. dal tadka, chana masala, hummus, biryani).",
+            "For spices and roots: traditional preparations where that spice is central.",
+            "For vegetables: the most popular classic preparation (e.g. corn → elote or corn chowder, not invented tikka).",
+            "Do NOT invent fusion dishes. Do NOT force Indian flavors onto foods where they do not belong.",
+            "The recipe should be something a home cook would recognize by name and find in a cookbook.",
             "Vegetarian means dairy like ghee, yogurt, milk, and paneer are fine — do NOT restrict to vegan.",
             "Tailor everything for a vegetarian diet.",
             "CRITICAL for daily_intake: tsp, tbsp, and cup values MUST be equivalent conversions of the SAME amount.",
@@ -84,6 +203,37 @@ exports.generateNutritionProfile = onRequest(
         try {
             let data;
             try { data = await callOpenAI(0.3); } catch { data = await callOpenAI(0.1); }
+
+            // Lesson 3: Validate LLM output structure before using it
+            const validation = validateNutritionData(data);
+            if (!validation.valid) {
+                console.error("LLM returned incomplete nutrition data:", validation.reason);
+                res.status(422).json({ error: "Incomplete nutrition data from AI", detail: validation.reason });
+                return;
+            }
+
+            // Lesson 10: Fallback chain — Wikimedia → DALL-E → hard abort
+            let imageUrl = await findWikimediaImage(food, client);
+            if (!imageUrl) {
+                try {
+                    const imageResponse = await client.images.generate({
+                        model: "dall-e-3",
+                        prompt: `Professional food photography of ${food} as a raw whole ingredient on a white background. No text, no labels, no packaging.`,
+                        size: "1024x1024",
+                        n: 1
+                    });
+                    imageUrl = imageResponse.data[0].url;
+                } catch (e) {
+                    console.warn("DALL-E fallback failed:", e.message);
+                }
+            }
+            // Lesson 1: No image after all tiers = 422, don't publish incomplete record
+            if (!imageUrl) {
+                console.error("No valid image found for:", food, "(Wikimedia + DALL-E both failed)");
+                res.status(422).json({ error: "No valid image found", detail: "Both Wikimedia and DALL-E image sources failed" });
+                return;
+            }
+            data.image_url = imageUrl;
             res.status(200).json(data);
         } catch (err) {
             console.error("generateNutritionProfile error:", err);
@@ -382,5 +532,101 @@ exports.weeklyTokenReport = onSchedule(
         });
 
         console.log("Weekly token report sent. Total calls:", grandTotal.calls);
+    }
+);
+
+// ========== READING LIST — CLASSIFY ARTICLE ==========
+// Proxies OpenAI classification so the API key never reaches the browser.
+exports.classifyArticle = onRequest(
+    { secrets: [openaiKey], timeoutSeconds: 30, memory: "256MiB", cors: true },
+    async (req, res) => {
+        if (req.method !== "POST") { res.status(405).json({ error: "Method not allowed" }); return; }
+        let url = (req.body.url || "").trim();
+        if (!url) { res.status(400).json({ error: "url required" }); return; }
+
+        // Auto-convert known paywalled domains to archive.ph links
+        const PAYWALL_DOMAINS = [
+            "ft.com", "newyorker.com", "nytimes.com", "theatlantic.com",
+            "nautil.us", "wsj.com", "economist.com", "bloomberg.com",
+            "lrb.co.uk", "hbr.org", "washingtonpost.com", "harpers.org", "theverge.com"
+        ];
+        const isPaywalled = PAYWALL_DOMAINS.some(d => url.includes(d));
+        if (isPaywalled && !url.startsWith("https://archive.ph")) {
+            url = "https://archive.ph/newest/" + url;
+        }
+
+        const client = new OpenAI({ apiKey: openaiKey.value() });
+
+        // Best-effort: fetch page title from URL
+        let fetchedTitle = "", fetchedDesc = "";
+        const SKIP_FETCH = /^https?:\/\/(archive\.ph|archive\.is|archive\.today|web\.archive\.org)/i;
+        try {
+            if (SKIP_FETCH.test(url)) throw new Error("skip");
+            const fetchPage = new Promise((resolve, reject) => {
+                const mod = url.startsWith("https") ? require("https") : require("http");
+                const req = mod.get(url, { headers: { "User-Agent": "Mozilla/5.0" } }, res => {
+                    let body = "";
+                    res.on("data", c => { body += c; if (body.length > 20000) res.destroy(); });
+                    res.on("end", () => resolve(body));
+                });
+                req.on("error", reject);
+                req.on("timeout", () => { req.destroy(); reject(new Error("timeout")); });
+                req.setTimeout(5000);
+            });
+            const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 5000));
+            const pageHtml = await Promise.race([fetchPage, timeout]);
+            const titleM = pageHtml.match(/<title[^>]*>([^<]+)<\/title>/i);
+            const descM  = pageHtml.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']{10,})/i)
+                        || pageHtml.match(/<meta[^>]+content=["']([^"']{10,})["'][^>]+name=["']description/i);
+            if (titleM) fetchedTitle = titleM[1].trim().replace(/\s+/g, " ").slice(0, 200);
+            if (descM)  fetchedDesc  = descM[1].trim().slice(0, 400);
+        } catch (_) {}
+
+        const CATEGORIES = [
+            "physics_cosmos", "biology_life", "technology",
+            "artificial_intelligence", "human_stories",
+            "health_wellness", "exercises", "philosophy", "personal_growth",
+            "economics_society", "travel", "personal_finance", "links", "other"
+        ];
+
+        const prompt = `Categorize this article for a personal reading list.\n` +
+            `URL: ${url}\n` +
+            (fetchedTitle ? `Page title: ${fetchedTitle}\n` : "") +
+            (fetchedDesc  ? `Description: ${fetchedDesc}\n`  : "") +
+            `\nCategories:\n` +
+            `- physics_cosmos: physics, quantum, space, black holes, time, energy, climate, solar\n` +
+            `- biology_life: biology, microbiome, cells, evolution, aging, fungi, genetics, nature\n` +
+            `- technology: internet infrastructure, chips, batteries, EVs, cables, manufacturing\n` +
+            `- artificial_intelligence: AI, machine learning, ChatGPT, LLMs, automation\n` +
+            `- human_stories: personal essays, biography, longform journalism, death, relationships\n` +
+            `- health_wellness: health, medicine, wellness, nutrition, supplements, disease prevention\n` +
+            `- exercises: workout routines, fitness programs, strength training, yoga, running, mobility\n` +
+            `- philosophy: philosophy, cognition, thinking, stoicism, consciousness, meaning\n` +
+            `- economics_society: economics, finance, society, politics, culture\n` +
+            `- travel: travel destinations, trip guides, travel essays, exploring places\n` +
+            `- personal_growth: self-improvement, habits, mindset, productivity, life lessons\n` +
+            `- personal_finance: budgeting, investing, retirement, saving, money management\n` +
+            `- links: useful tools, reference pages, resources, directories\n` +
+            `- other: anything that doesn't fit the above categories\n` +
+            `\nReturn JSON: {"title": "clean title", "description": "1-2 sentence summary", "category": "one_of_above"}`;
+
+        try {
+            const completion = await client.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [{ role: "user", content: prompt }],
+                response_format: { type: "json_object" },
+                temperature: 0.2,
+            });
+            const parsed = JSON.parse(completion.choices[0].message.content);
+            const category = CATEGORIES.includes(parsed.category) ? parsed.category : "economics_society";
+            res.status(200).json({
+                title:       parsed.title       || fetchedTitle || url,
+                description: parsed.description || fetchedDesc  || "",
+                category,
+            });
+        } catch (err) {
+            console.error("classifyArticle error:", err);
+            res.status(500).json({ error: err.message });
+        }
     }
 );

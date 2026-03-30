@@ -55,6 +55,13 @@ function loadEntries(category) {
 }
 
 function saveEntry(entry) {
+    // Lesson 1: validate required fields before write
+    if (!entry.category || !CATEGORIES[entry.category]) {
+        return Promise.reject(new Error('Invalid or missing category'));
+    }
+    if (!entry.date || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) {
+        return Promise.reject(new Error('Invalid or missing date (expected YYYY-MM-DD)'));
+    }
     var data = {
         userId: currentUser.uid,
         category: entry.category,
@@ -64,7 +71,9 @@ function saveEntry(entry) {
         createdAt: Date.now()
     };
     if (entry.id) {
-        return db.collection('health_entries').doc(entry.id).update(data);
+        // Lesson 9: update only — don't overwrite createdAt on updates
+        var updateData = { userId: data.userId, category: data.category, date: data.date, values: data.values, notes: data.notes, updatedAt: Date.now() };
+        return db.collection('health_entries').doc(entry.id).update(updateData);
     } else {
         return db.collection('health_entries').add(data);
     }
@@ -150,6 +159,10 @@ function loadAnalysis(scope) {
 }
 
 function saveAnalysis(scope, analysisText) {
+    // Lesson 1: never save empty analysis to Firestore
+    if (!analysisText || !analysisText.trim()) {
+        return Promise.reject(new Error('Cannot save empty analysis'));
+    }
     var data = {
         userId: currentUser.uid,
         scope: scope,
@@ -211,13 +224,15 @@ function callHealthLLM(prompt, maxTokens) {
         if (data.usage) {
             trackTokenUsage('health-tracker', data.usage);
         }
-        if (data.choices && data.choices[0]) {
-            return data.choices[0].message.content;
-        }
         if (data.error) {
             throw new Error(data.error.message || 'LLM error');
         }
-        return '';
+        var content = data.choices && data.choices[0] && data.choices[0].message.content;
+        // Lesson 3: treat empty/missing content as error, not silent empty string
+        if (!content || !content.trim()) {
+            throw new Error('LLM returned no content');
+        }
+        return content;
     });
 }
 

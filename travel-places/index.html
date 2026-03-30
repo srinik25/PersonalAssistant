@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Places</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f0ece6; color: #1e1e1e; min-height: 100vh; }
+
+    /* Header — light */
+    header { background: #ffffff; color: #1e1e1e; padding: 10px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e2ddd7; }
+    header h1 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 800; white-space: nowrap; color: #3d2b1a; }
+    .search-wrap { position: relative; flex: 1; max-width: 300px; }
+    .search-wrap input { width: 100%; padding: 7px 30px 7px 12px; border-radius: 50px; border: 1px solid #d4cfc9; background: #f9f6f2; color: #1e1e1e; font-size: 0.8rem; outline: none; font-family: 'Inter', sans-serif; transition: border 0.2s, background 0.2s; }
+    .search-wrap input::placeholder { color: #aaa; }
+    .search-wrap input:focus { border-color: #c8905a; background: #fff; }
+    .search-clear { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #aaa; cursor: pointer; font-size: 0.85rem; padding: 0; line-height: 1; }
+    .search-clear:hover { color: #555; }
+    .add-btn { background: #c8905a; color: white; border: none; padding: 8px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+    .add-btn:hover { background: #b07848; }
+
+    /* Tabs */
+    .tabs { background: white; border-bottom: 2px solid #ede8e1; display: flex; flex-wrap: wrap; padding: 0 14px; gap: 2px; }
+    .tab { background: none; border: none; padding: 10px 11px; font-size: 0.82rem; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: all 0.15s; }
+    .tab:hover { color: #555; }
+    .tab.active { color: #3d2b1a; border-bottom-color: #c8905a; }
+    .tab-cnt { display: inline-block; background: #f0ece6; color: #aaa; border-radius: 50px; padding: 0 5px; font-size: 0.66rem; font-weight: 600; margin-left: 3px; min-width: 16px; text-align: center; }
+    .tab.active .tab-cnt { background: #f5e6d5; color: #c8905a; }
+
+    /* Panels */
+    .panel { max-width: 880px; margin: 0 auto; padding: 16px 20px; }
+    .empty { text-align: center; padding: 48px; color: #bbb; font-size: 0.9rem; font-style: italic; }
+
+    /* Country / State / City hierarchy */
+    .country-section { margin-bottom: 28px; }
+    .country-header { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: #3d2b1a; padding: 8px 0 6px; border-bottom: 2px solid #c8905a; margin-bottom: 12px; display: flex; align-items: center; }
+    .btn-del-country { background: none; border: none; color: #ddd; font-size: 0.82rem; cursor: pointer; margin-left: auto; padding: 2px 4px; line-height: 1; transition: color 0.15s; flex-shrink: 0; }
+    .btn-del-country:hover { color: #b94040; }
+    .state-section { margin-bottom: 18px; }
+    .state-header { font-size: 0.82rem; font-weight: 700; color: #7a6050; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; padding: 3px 0 3px 10px; border-left: 3px solid #c8905a; }
+    .state-section .city-section { padding-left: 16px; }
+    .city-section { margin-bottom: 14px; padding-left: 6px; }
+    .city-header { font-size: 0.79rem; font-weight: 700; color: #9a7050; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 7px; cursor: pointer; user-select: none; display: flex; align-items: center; }
+    .city-header::after { content: ' ▾'; font-size: 0.65em; color: #ccc; margin-left: 3px; }
+    .city-section.collapsed .city-header::after { content: ' ▸'; }
+    .city-section.collapsed .card { display: none; }
+
+    /* Filter bar */
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 0 14px; }
+    .filter-btn { background: #faf7f3; border: 1px solid #e0dbd3; color: #888; padding: 5px 12px; border-radius: 50px; font-size: 0.76rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+    .filter-btn:hover { background: #f0ebe3; color: #555; border-color: #c8bfb5; }
+    .filter-btn.active { background: #3d2b1a; color: white; border-color: #3d2b1a; }
+    .filter-btn.visited-filter.active { background: #2d7a4f; border-color: #2d7a4f; }
+    .filter-cnt { font-size: 0.75em; opacity: 0.7; margin-left: 3px; }
+
+    /* Section counts */
+    .section-cnt { font-size: 0.67rem; font-weight: 400; color: #c0b8ae; margin-left: 5px; }
+
+    /* Cards */
+    .card { background: white; border-radius: 8px; padding: 9px 12px; margin-bottom: 5px;
+            border: 1px solid #ece7e0; border-left: 3px solid transparent;
+            display: flex; align-items: flex-start; gap: 10px;
+            transition: box-shadow 0.15s; position: relative; }
+    .card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+    .card.visited-card { border-left-color: #2d7a4f; background: #f8fdf9; opacity: 0.75; }
+    .card-body { flex: 1; min-width: 0; }
+    .card-title { display: flex; align-items: center; gap: 6px; }
+    .type-icon { font-size: 0.92rem; flex-shrink: 0; }
+    .item-name { font-size: 0.87rem; font-weight: 600; color: #2a1e14; }
+    .visited-card .item-name { text-decoration: line-through; color: #aaa; }
+    .card-desc { font-size: 0.75rem; color: #aaa; margin-top: 3px; line-height: 1.45; }
+    .card-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .btn-maps { background: none; border: 1px solid #ddd; color: #4285f4; padding: 3px 7px; border-radius: 50px; font-size: 0.7rem; font-weight: 600; text-decoration: none; transition: all 0.15s; white-space: nowrap; }
+    .btn-maps:hover { background: #e8f0fe; border-color: #4285f4; }
+    .btn-google { background: none; border: 1px solid #ddd; color: #ea4335; padding: 3px 7px; border-radius: 50px; font-size: 0.7rem; font-weight: 600; text-decoration: none; transition: all 0.15s; white-space: nowrap; }
+    .btn-google:hover { background: #fce8e6; border-color: #ea4335; }
+    .btn-visit { background: none; border: 1px solid #ece7e0; color: #ccc; padding: 3px 7px; border-radius: 50px; font-size: 0.76rem; cursor: pointer; transition: all 0.15s; }
+    .btn-visit:hover, .btn-visit.visited { background: #eaf4ee; color: #2d7a4f; border-color: #b5dfc5; }
+    .btn-edit { background: none; border: 1px solid #ece7e0; color: #ccc; padding: 4px 8px; border-radius: 50px; font-size: 0.76rem; cursor: pointer; transition: all 0.15s; }
+    .btn-edit:hover { background: #f5f0ea; color: #666; border-color: #c8c0b5; }
+    .btn-delete { background: none; border: none; color: #ddd; padding: 4px 5px; font-size: 0.95rem; line-height: 1; cursor: pointer; transition: color 0.15s; }
+    .btn-delete:hover { color: #b94040; }
+
+    /* Search results */
+    .search-count { font-size: 0.78rem; color: #aaa; padding: 4px 0 12px; }
+    .search-breadcrumb { font-size: 0.67rem; color: #bbb; margin-bottom: 2px; letter-spacing: 0.02em; }
+
+    /* Modals */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: white; border-radius: 14px; padding: 24px; width: 100%; max-width: 490px; margin: 16px; }
+    .modal-box h3 { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 800; color: #3d2b1a; margin-bottom: 16px; }
+    .form-row { margin-bottom: 10px; }
+    .form-row label { display: block; font-size: 0.72rem; font-weight: 600; color: #999; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid #d8d3cd; border-radius: 7px;
+      font-size: 0.87rem; font-family: 'Inter', sans-serif; outline: none; transition: border 0.2s;
+      background: #fdfcfa; color: #1e1e1e;
+    }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: #c8905a; background: #fff; }
+    .form-row textarea { resize: vertical; min-height: 60px; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .modal-status { font-size: 0.77rem; color: #b94040; margin: 6px 0 0; min-height: 16px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+    .modal-cancel  { background: none; border: 1px solid #d8d3cd; color: #777; padding: 8px 18px; border-radius: 50px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+    .modal-confirm { background: #3d2b1a; color: white; border: none; padding: 8px 20px; border-radius: 50px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+    .modal-confirm:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Visited Countries */
+    .vc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .vc-total { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 800; color: #3d2b1a; }
+    .vc-total span { font-size: 0.85rem; font-weight: 400; color: #aaa; font-family: 'Inter', sans-serif; margin-left: 6px; }
+    .vc-add-btn { background: #c8905a; color: white; border: none; padding: 8px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .vc-add-btn:hover { background: #b07848; }
+    .vc-region { margin-bottom: 22px; }
+    .vc-region-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #c8905a; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #ede8e1; display: flex; align-items: center; gap: 6px; }
+    .vc-region-cnt { background: #f5e6d5; color: #c8905a; border-radius: 50px; padding: 1px 8px; font-size: 0.72rem; font-weight: 700; }
+    .vc-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .vc-chip { display: flex; align-items: center; gap: 5px; background: white; border: 1px solid #ece7e0; border-radius: 50px; padding: 5px 12px 5px 14px; font-size: 0.82rem; font-weight: 500; color: #2a1e14; transition: box-shadow 0.15s; }
+    .vc-chip:hover { box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+    .vc-chip-del { background: none; border: none; color: #ddd; cursor: pointer; font-size: 0.75rem; padding: 0; line-height: 1; transition: color 0.15s; }
+    .vc-chip-del:hover { color: #b94040; }
+
+    /* Bulk entry */
+    .bulk-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width:700px) { .bulk-layout { grid-template-columns: 1fr; } }
+    .bulk-hint { font-size: 0.78rem; color: #aaa; margin-bottom: 8px; line-height: 1.5; }
+    .bulk-hint code { background: #f5f0ea; padding: 1px 5px; border-radius: 4px; color: #7a5c40; font-size: 0.85em; }
+    #bulk-textarea { width: 100%; height: 230px; padding: 10px 12px; border: 1px solid #d8d3cd; border-radius: 8px; font-size: 0.83rem; font-family: 'Inter', sans-serif; resize: vertical; background: #fdfcfa; color: #1e1e1e; outline: none; line-height: 1.6; }
+    #bulk-textarea:focus { border-color: #c8905a; background: #fff; }
+    .bulk-parse-btn { margin-top: 10px; background: #c8905a; color: white; border: none; padding: 9px 20px; border-radius: 50px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .bulk-parse-btn:hover { background: #b07848; }
+    .bulk-count { font-size: 0.78rem; color: #aaa; margin-bottom: 10px; }
+    .bulk-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    .bulk-table th { text-align: left; padding: 5px 6px; color: #aaa; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #ece7e0; }
+    .bulk-table td { padding: 4px 4px; border-bottom: 1px solid #f5f0ea; vertical-align: middle; }
+    .bulk-table input, .bulk-table select { width: 100%; padding: 4px 7px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.76rem; font-family: 'Inter', sans-serif; background: #fdfcfa; outline: none; }
+    .bulk-table input:focus, .bulk-table select:focus { border-color: #c8905a; background: #fff; }
+    .bulk-row-del { background: none; border: none; color: #ddd; cursor: pointer; font-size: 0.82rem; padding: 2px 4px; }
+    .bulk-row-del:hover { color: #b94040; }
+    .bulk-import-btn { margin-top: 14px; background: #2d6a4f; color: white; border: none; padding: 9px 22px; border-radius: 50px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .bulk-import-btn:hover { background: #245a42; }
+    .bulk-import-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .bulk-status { font-size: 0.78rem; color: #2d6a4f; margin-top: 8px; min-height: 18px; }
+
+    @media (max-width: 600px) {
+      .card { flex-wrap: wrap; } .card-actions { margin-top: 6px; }
+      .form-row-2 { grid-template-columns: 1fr; }
+      .search-wrap { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Travel Places</h1>
+  <div class="search-wrap">
+    <input type="text" id="search-input" placeholder="Search… (⌘K)" autocomplete="off">
+    <button id="search-clear" class="search-clear" style="display:none">✕</button>
+  </div>
+  <button class="add-btn" id="open-modal">+ Add</button>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="tab" data-tab="africa">Africa <span class="tab-cnt" id="tcnt-africa"></span></button>
+  <button class="tab" data-tab="north-america">N. America <span class="tab-cnt" id="tcnt-north-america"></span></button>
+  <button class="tab" data-tab="mexico-ca">Mexico &amp; C. America <span class="tab-cnt" id="tcnt-mexico-ca"></span></button>
+  <button class="tab" data-tab="south-america">S. America &amp; Caribbean <span class="tab-cnt" id="tcnt-south-america"></span></button>
+  <button class="tab active" data-tab="europe">Europe <span class="tab-cnt" id="tcnt-europe"></span></button>
+  <button class="tab" data-tab="asia">Asia <span class="tab-cnt" id="tcnt-asia"></span></button>
+  <button class="tab" data-tab="middle_east">Middle East <span class="tab-cnt" id="tcnt-middle_east"></span></button>
+  <button class="tab" data-tab="oceania">Oceania <span class="tab-cnt" id="tcnt-oceania"></span></button>
+  <button class="tab" data-tab="visited-countries">🌍 Visited <span class="tab-cnt" id="tcnt-visited-countries"></span></button>
+  <button class="tab" data-tab="bulk">✚ Bulk Add</button>
+</div>
+
+<div id="panel-africa"        class="panel" style="display:none"></div>
+<div id="panel-north-america" class="panel" style="display:none"></div>
+<div id="panel-mexico-ca"     class="panel" style="display:none"></div>
+<div id="panel-south-america" class="panel" style="display:none"></div>
+<div id="panel-europe"        class="panel"></div>
+<div id="panel-asia"          class="panel" style="display:none"></div>
+<div id="panel-middle_east"   class="panel" style="display:none"></div>
+<div id="panel-oceania"       class="panel" style="display:none"></div>
+<div id="search-panel"        class="panel" style="display:none"></div>
+
+<div id="panel-visited-countries" class="panel" style="display:none"></div>
+
+<!-- Bulk Add Panel -->
+<div id="panel-bulk" class="panel" style="display:none">
+  <div class="bulk-layout">
+    <div>
+      <p class="bulk-hint">
+        One item per line. Formats:<br>
+        <code>1. Razza Pizza, Jersey City</code><br>
+        <code>Name, City, Country</code><br>
+        <code>Name -- accommodation</code><br>
+        Types: place · food · experience · accommodation · other
+      </p>
+      <textarea id="bulk-textarea" placeholder="1. Razza Pizza, Jersey City&#10;2. Izza Riad, Marrakesh&#10;3. Tia Sophia, Santa Fe&#10;4. The Grand Egyptian Museum, Cairo&#10;5. Birding in Colombia -- experience"></textarea>
+      <button id="bulk-parse" class="bulk-parse-btn">Parse →</button>
+    </div>
+    <div id="bulk-preview"></div>
+  </div>
+</div>
+
+<!-- Datalists -->
+<datalist id="dl-countries-africa"></datalist>
+<datalist id="dl-countries-north-america"></datalist>
+<datalist id="dl-countries-mexico-ca"></datalist>
+<datalist id="dl-countries-south-america"></datalist>
+<datalist id="dl-countries-asia"></datalist>
+<datalist id="dl-countries-europe"></datalist>
+<datalist id="dl-countries-middle_east"></datalist>
+<datalist id="dl-countries-oceania"></datalist>
+<datalist id="dl-states"></datalist>
+<datalist id="dl-cities"></datalist>
+
+<!-- Add Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <h3>Add Place</h3>
+    <div class="form-row">
+      <label>Continent / Region</label>
+      <select id="f-continent">
+        <option value="africa">Africa</option>
+        <option value="north-america">North America (USA &amp; Canada)</option>
+        <option value="mexico-ca">Mexico &amp; Central America</option>
+        <option value="south-america">South America &amp; Caribbean</option>
+        <option value="asia">Asia</option>
+        <option value="europe" selected>Europe</option>
+        <option value="middle_east">Middle East</option>
+        <option value="oceania">Oceania</option>
+      </select>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0">
+        <label>Country</label>
+        <input type="text" id="f-country" placeholder="e.g. France" list="dl-countries-europe" autocomplete="off">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label>State <span style="color:#ccc;font-weight:400">(US only)</span></label>
+        <input type="text" id="f-state" placeholder="e.g. California" list="dl-states" autocomplete="off">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>City <span style="color:#ccc;font-weight:400">(optional)</span></label>
+      <input type="text" id="f-city" placeholder="e.g. Paris" list="dl-cities" autocomplete="off">
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0">
+        <label>Name</label>
+        <input type="text" id="f-name" placeholder="e.g. Le Marais" autocomplete="off">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label>Type</label>
+        <select id="f-type">
+          <option value="place">📍 Place</option>
+          <option value="food">🍽 Food &amp; Drink</option>
+          <option value="experience">✨ Experience</option>
+          <option value="accommodation">🏨 Accommodation</option>
+          <option value="other">🔖 Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Description <span style="color:#ccc;font-weight:400">(optional)</span></label>
+      <textarea id="f-desc" placeholder="A short note…"></textarea>
+    </div>
+    <div class="modal-status" id="modal-status"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="close-modal">Cancel</button>
+      <button class="modal-confirm" id="confirm-add">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <h3>Edit Place</h3>
+    <div class="form-row">
+      <label>Continent / Region</label>
+      <select id="e-continent">
+        <option value="africa">Africa</option>
+        <option value="north-america">North America (USA &amp; Canada)</option>
+        <option value="mexico-ca">Mexico &amp; Central America</option>
+        <option value="south-america">South America &amp; Caribbean</option>
+        <option value="asia">Asia</option>
+        <option value="europe">Europe</option>
+        <option value="middle_east">Middle East</option>
+        <option value="oceania">Oceania</option>
+      </select>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0">
+        <label>Country</label>
+        <input type="text" id="e-country" autocomplete="off">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label>State</label>
+        <input type="text" id="e-state" autocomplete="off">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>City</label>
+      <input type="text" id="e-city" autocomplete="off">
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0">
+        <label>Name</label>
+        <input type="text" id="e-name" autocomplete="off">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label>Type</label>
+        <select id="e-type">
+          <option value="place">📍 Place</option>
+          <option value="food">🍽 Food &amp; Drink</option>
+          <option value="experience">✨ Experience</option>
+          <option value="accommodation">🏨 Accommodation</option>
+          <option value="other">🔖 Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Description</label>
+      <textarea id="e-desc"></textarea>
+    </div>
+    <div class="modal-status" id="edit-status"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="edit-close">Cancel</button>
+      <button class="modal-confirm" id="edit-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Country Modal -->
+<div class="modal-overlay" id="vc-modal">
+  <div class="modal-box">
+    <h3>Add Visited Country</h3>
+    <div class="form-row">
+      <label>Country Name</label>
+      <input type="text" id="vc-country" placeholder="e.g. Portugal" autocomplete="off">
+    </div>
+    <div class="form-row">
+      <label>Region</label>
+      <select id="vc-region">
+        <option value="North America">North America</option>
+        <option value="Caribbean">Caribbean</option>
+        <option value="South America">South America</option>
+        <option value="Europe">Europe</option>
+        <option value="Asia & Pacific">Asia &amp; Pacific</option>
+        <option value="Middle East">Middle East</option>
+        <option value="Africa">Africa</option>
+        <option value="Oceania">Oceania</option>
+      </select>
+    </div>
+    <div class="modal-status" id="vc-status"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="vc-close">Cancel</button>
+      <button class="modal-confirm" id="vc-save">Add</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+  authDomain: "nutrition-198dd.firebaseapp.com",
+  projectId: "nutrition-198dd",
+  storageBucket: "nutrition-198dd.firebasestorage.app",
+  messagingSenderId: "851241392706",
+  appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+});
+var db = firebase.firestore();
+</script>
+<script src="js/app.js"></script>
+</body>
+</html>

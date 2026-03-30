@@ -397,6 +397,24 @@
         status: 'new'
       };
 
+      // Lesson 2: validate before write — give specific errors per field
+      var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!data.name || data.name.length < 2) {
+        status.textContent = 'Please enter your full name.';
+        status.className = 'form-status error';
+        btn.disabled = false; btn.textContent = 'Send Inquiry'; return;
+      }
+      if (!emailRegex.test(data.email)) {
+        status.textContent = 'Please enter a valid email address.';
+        status.className = 'form-status error';
+        btn.disabled = false; btn.textContent = 'Send Inquiry'; return;
+      }
+      if (!data.message || data.message.length < 10) {
+        status.textContent = 'Please enter a message (at least 10 characters).';
+        status.className = 'form-status error';
+        btn.disabled = false; btn.textContent = 'Send Inquiry'; return;
+      }
+
       try {
         await db.collection('travel_inquiries').add(data);
         status.textContent = 'Thank you! We\'ll be in touch within 48 hours.';

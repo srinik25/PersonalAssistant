@@ -70,7 +70,20 @@
         .footer strong { color: #a3c8e8; font-weight: 600; }
         .footer .footer-divider { width: 40px; height: 2px; background: rgba(122,176,212,0.4); margin: 12px auto; }
 
-        @media (max-width: 768px) { .hero { padding: 48px 24px 40px; } .hero h1 { font-size: 2.2rem; } .portfolio-total .big-num { font-size: 2.4rem; } .stats-bar { flex-wrap: wrap; gap: 24px; } .alloc-grid { grid-template-columns: 1fr 1fr; } .recent-grid { grid-template-columns: 1fr; } }
+        .market-bar { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        .market-widget { background: white; border-radius: 14px; padding: 16px 24px; margin: 20px 0 0; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+        .market-label { font-size: 0.78rem; color: #6a7a8e; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .market-price { font-family: 'Playfair Display', Georgia, serif; font-size: 1.4rem; font-weight: 800; color: #1e2d4a; }
+        .market-ytd { font-size: 0.9rem; font-weight: 700; padding: 3px 10px; border-radius: 50px; }
+        .market-ytd.up { background: rgba(39,174,96,0.12); color: #27ae60; }
+        .market-ytd.down { background: rgba(192,57,43,0.1); color: #c0392b; }
+        .market-dip-alert { font-size: 0.82rem; font-weight: 700; padding: 4px 12px; border-radius: 50px; margin-left: auto; }
+        .market-dip-alert.watch { background: rgba(241,196,15,0.15); color: #b8860b; }
+        .market-dip-alert.buy { background: rgba(39,174,96,0.15); color: #1a7a40; border: 1px solid rgba(39,174,96,0.3); }
+        .market-loading { color: #6a7a8e; font-size: 0.85rem; }
+        .market-sub { font-size: 0.75rem; color: #9aadbe; }
+
+        @media (max-width: 768px) { .hero { padding: 48px 24px 40px; } .hero h1 { font-size: 2.2rem; } .portfolio-total .big-num { font-size: 2.4rem; } .stats-bar { flex-wrap: wrap; gap: 24px; } .alloc-grid { grid-template-columns: 1fr 1fr; } .recent-grid { grid-template-columns: 1fr; } .market-widget { gap: 16px; } }
     </style>
 </head>
 <body>
@@ -87,6 +100,12 @@
             <h1>Your Financial Overview</h1>
             <p class="subtitle">Track your portfolio, analyze performance, and get AI-powered insights across all your accounts.</p>
             <a href="accounts.html" class="cta-btn">Manage Accounts</a>
+        </div>
+    </div>
+
+    <div class="market-bar">
+        <div class="market-widget" id="market-widget">
+            <span class="market-loading">Loading market data…</span>
         </div>
     </div>
 
@@ -152,6 +171,33 @@
         loadDashboard();
     });
     window.onerror = function(msg, url, line) { document.title = 'ERR: ' + msg; console.error(msg, url, line); };
+
+    // ── S&P 500 market widget ──────────────────────────────────────
+    (function loadMarket() {
+        fetch('/api/sp500')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                var ytdSign  = d.ytd_pct >= 0 ? '+' : '';
+                var ytdClass = d.ytd_pct >= 0 ? 'up' : 'down';
+                var alertHtml = '';
+                if (d.dip_pct <= -10) {
+                    alertHtml = '<span class="market-dip-alert buy">▼ ' + Math.abs(d.dip_pct).toFixed(1) + '% from high — Buy zone</span>';
+                } else if (d.dip_pct <= -7) {
+                    alertHtml = '<span class="market-dip-alert watch">▼ ' + Math.abs(d.dip_pct).toFixed(1) + '% from high — Approaching buy zone</span>';
+                }
+                document.getElementById('market-widget').innerHTML =
+                    '<span class="market-label">S&amp;P 500</span>' +
+                    '<span class="market-price">' + d.price.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</span>' +
+                    '<span class="market-ytd ' + ytdClass + '">' + ytdSign + d.ytd_pct.toFixed(1) + '% YTD</span>' +
+                    '<span class="market-sub">52w high ' + d.high52w.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</span>' +
+                    alertHtml;
+            })
+            .catch(function() {
+                document.getElementById('market-widget').innerHTML =
+                    '<span class="market-label">S&amp;P 500</span>' +
+                    '<span class="market-loading">Market data unavailable</span>';
+            });
+    })();
 
     function loadDashboard() {
         loadAccounts().then(function(accounts) {

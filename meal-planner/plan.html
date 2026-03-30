@@ -334,7 +334,7 @@
                 <div id="meal-fields"></div>
                 <div class="btn-row">
                     <button class="btn btn-secondary" onclick="saveDraft()">Save Draft</button>
-                    <button class="btn btn-success" onclick="reviewDay()">Review Nutrition</button>
+                    <button id="review-day-btn" class="btn btn-success" onclick="reviewDay()">Review Nutrition</button>
                     <button class="btn btn-primary" id="next-day-btn" onclick="nextDay()">Next Day</button>
                 </div>
                 <div id="day-status" class="status-msg"></div>
@@ -350,7 +350,7 @@
                 <div id="overall-nutrition"></div>
                 <div class="btn-row">
                     <button class="btn btn-secondary" onclick="goBackToDays()">Edit Meals</button>
-                    <button class="btn btn-success" onclick="reviewFullWeek()">Full Week Nutrition Review</button>
+                    <button id="review-week-btn" class="btn btn-success" onclick="reviewFullWeek()">Full Week Nutrition Review</button>
                     <button class="btn btn-primary" onclick="saveToFirebase()">Save Plan</button>
                 </div>
                 <div class="btn-row">

@@ -12,7 +12,9 @@ A multi-app personal productivity suite for Srini Katta. Six apps sharing a sing
 | `finance-tracker/` | Portfolio tracking + AI analysis | localhost:8080 (local only) |
 | `health-tracker/` | Health records across 11 categories | localhost:8081 (local only) |
 | `travel-site/` | Travel inspiration + inquiry form | https://golden-halo-8f6k.here.now/ |
-| `site/` | Event/food/reads curation for DC Metro area | https://stellar-orbit-dhwf.here.now/ |
+| `site/` | Event/food curation for DC Metro area | https://stellar-orbit-dhwf.here.now/ |
+| `reading-links/` | Personal reading list with Science/Human Stories/Other tabs | https://silver-essence-gpqt.here.now/ |
+| `travel-places/` | Travel bucket list — continents → countries → cities → food/places | https://jovial-bugle-zkby.here.now/ |
 | `nutrition/` | Daily Python-generated nutrition profiles | Published daily via cron |
 
 ## Deploying
@@ -29,6 +31,14 @@ HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scr
 
 # Site (What's Happening)
 HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh site --slug stellar-orbit-dhwf
+
+# Reading List (secrets.js must be included)
+rm -rf /tmp/rl-deploy && mkdir /tmp/rl-deploy
+cp reading-links/index.html /tmp/rl-deploy/ && cp -r reading-links/js /tmp/rl-deploy/ && cp secrets.js /tmp/rl-deploy/
+HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh /tmp/rl-deploy --slug silver-essence-gpqt
+
+# Travel Places (Firebase config inlined — no secrets.js needed)
+HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh travel-places --slug jovial-bugle-zkby
 ```
 
 **Firebase Cloud Functions (meal-planner/functions/):**
