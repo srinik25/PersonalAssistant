@@ -10,43 +10,55 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: #f0ece6; color: #1e1e1e; min-height: 100vh; }
 
-    /* Header — light */
-    header { background: #ffffff; color: #1e1e1e; padding: 10px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e2ddd7; }
-    header h1 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 800; white-space: nowrap; color: #3d2b1a; }
+    /* Header */
+    header { background: #ffffff; color: #1e1e1e; padding: 12px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #e2ddd7; }
+    header h1 { font-family: 'Playfair Display', serif; font-size: 1.45rem; font-weight: 800; white-space: nowrap; color: #3d2b1a; }
     .search-wrap { position: relative; flex: 1; max-width: 300px; }
     .search-wrap input { width: 100%; padding: 7px 30px 7px 12px; border-radius: 50px; border: 1px solid #d4cfc9; background: #f9f6f2; color: #1e1e1e; font-size: 0.8rem; outline: none; font-family: 'Inter', sans-serif; transition: border 0.2s, background 0.2s; }
     .search-wrap input::placeholder { color: #aaa; }
     .search-wrap input:focus { border-color: #c8905a; background: #fff; }
     .search-clear { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #aaa; cursor: pointer; font-size: 0.85rem; padding: 0; line-height: 1; }
     .search-clear:hover { color: #555; }
-    .add-btn { background: #c8905a; color: white; border: none; padding: 8px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+    .add-btn { background: #c8905a; color: white; border: none; padding: 8px 16px; border-radius: 50px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
     .add-btn:hover { background: #b07848; }
 
-    /* Tabs */
-    .tabs { background: white; border-bottom: 2px solid #ede8e1; display: flex; flex-wrap: wrap; padding: 0 14px; gap: 2px; }
-    .tab { background: none; border: none; padding: 10px 11px; font-size: 0.82rem; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: all 0.15s; }
-    .tab:hover { color: #555; }
+    /* Tabs banner */
+    .tabs { background: #fdf0e2; border-bottom: 2px solid #e8d5bc; display: flex; flex-wrap: wrap; padding: 0 14px; gap: 2px; }
+    .tab { background: none; border: none; padding: 11px 13px; font-size: 0.9rem; font-weight: 600; color: #b08060; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: all 0.15s; }
+    .tab:hover { color: #7a4f2a; }
     .tab.active { color: #3d2b1a; border-bottom-color: #c8905a; }
-    .tab-cnt { display: inline-block; background: #f0ece6; color: #aaa; border-radius: 50px; padding: 0 5px; font-size: 0.66rem; font-weight: 600; margin-left: 3px; min-width: 16px; text-align: center; }
-    .tab.active .tab-cnt { background: #f5e6d5; color: #c8905a; }
+    .tab-cnt { display: inline-block; background: #f5e2c8; color: #b08060; border-radius: 50px; padding: 0 5px; font-size: 0.68rem; font-weight: 600; margin-left: 3px; min-width: 16px; text-align: center; }
+    .tab.active .tab-cnt { background: #f5dcc0; color: #c8905a; }
 
     /* Panels */
-    .panel { max-width: 880px; margin: 0 auto; padding: 16px 20px; }
+    .panel { max-width: 900px; margin: 0 auto; padding: 16px 20px; }
     .empty { text-align: center; padding: 48px; color: #bbb; font-size: 0.9rem; font-style: italic; }
 
     /* Country / State / City hierarchy */
     .country-section { margin-bottom: 28px; }
-    .country-header { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: #3d2b1a; padding: 8px 0 6px; border-bottom: 2px solid #c8905a; margin-bottom: 12px; display: flex; align-items: center; }
-    .btn-del-country { background: none; border: none; color: #ddd; font-size: 0.82rem; cursor: pointer; margin-left: auto; padding: 2px 4px; line-height: 1; transition: color 0.15s; flex-shrink: 0; }
+    .country-header { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: #3d2b1a; padding: 8px 0 6px; border-bottom: 2px solid #c8905a; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; user-select: none; }
+    .country-header::after { content: ' ▾'; font-size: 0.65em; color: #ccc; margin-left: 3px; font-family: sans-serif; }
+    .country-section.collapsed .country-header::after { content: ' ▸'; }
+    .country-section.collapsed .state-section,
+    .country-section.collapsed .city-section { display: none; }
+    .btn-export-country { background: none; border: 1px solid #ddd; border-radius: 8px; color: #aaa; font-size: 0.7rem; cursor: pointer; margin-left: 6px; padding: 2px 7px; line-height: 1.4; transition: all 0.15s; flex-shrink: 0; }
+    .btn-export-country:hover { border-color: #c8905a; color: #c8905a; }
+    .btn-del-country { background: none; border: none; color: #ddd; font-size: 0.82rem; cursor: pointer; margin-left: 4px; padding: 2px 4px; line-height: 1; transition: color 0.15s; flex-shrink: 0; }
     .btn-del-country:hover { color: #b94040; }
+    .btn-quick-add { background: none; border: 1.5px solid #c8905a; color: #c8905a; font-size: 0.78rem; font-weight: 700; cursor: pointer; padding: 1px 6px; border-radius: 10px; line-height: 1.4; transition: background 0.15s, color 0.15s; flex-shrink: 0; margin-left: auto; }
+    .btn-quick-add:hover { background: #c8905a; color: #fff; }
+    .state-header .btn-quick-add, .city-header .btn-quick-add { margin-left: auto; font-size: 0.72rem; }
     .state-section { margin-bottom: 18px; }
-    .state-header { font-size: 0.82rem; font-weight: 700; color: #7a6050; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; padding: 3px 0 3px 10px; border-left: 3px solid #c8905a; }
+    .state-header { font-size: 0.82rem; font-weight: 700; color: #7a6050; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; padding: 3px 0 3px 10px; border-left: 3px solid #c8905a; display: flex; align-items: center; }
     .state-section .city-section { padding-left: 16px; }
     .city-section { margin-bottom: 14px; padding-left: 6px; }
     .city-header { font-size: 0.79rem; font-weight: 700; color: #9a7050; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 7px; cursor: pointer; user-select: none; display: flex; align-items: center; }
     .city-header::after { content: ' ▾'; font-size: 0.65em; color: #ccc; margin-left: 3px; }
     .city-section.collapsed .city-header::after { content: ' ▸'; }
     .city-section.collapsed .card { display: none; }
+    .city-name-text { cursor: text; }
+    .city-name-text:hover { color: #c8905a; }
+    .city-name-inp { font-size: 0.79rem; font-weight: 700; color: #9a7050; text-transform: uppercase; letter-spacing: 0.06em; border: none; border-bottom: 1.5px solid #c8905a; background: transparent; outline: none; width: auto; min-width: 80px; font-family: inherit; padding: 0; }
 
     /* Filter bar */
     .filter-bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 0 14px; }
@@ -55,8 +67,6 @@
     .filter-btn.active { background: #3d2b1a; color: white; border-color: #3d2b1a; }
     .filter-btn.visited-filter.active { background: #2d7a4f; border-color: #2d7a4f; }
     .filter-cnt { font-size: 0.75em; opacity: 0.7; margin-left: 3px; }
-
-    /* Section counts */
     .section-cnt { font-size: 0.67rem; font-weight: 400; color: #c0b8ae; margin-left: 5px; }
 
     /* Cards */
@@ -66,6 +76,7 @@
             transition: box-shadow 0.15s; position: relative; }
     .card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
     .card.visited-card { border-left-color: #2d7a4f; background: #f8fdf9; opacity: 0.75; }
+    .card.highlighted-card { border-left-color: #e53935 !important; background: #fff8f8; }
     .card-body { flex: 1; min-width: 0; }
     .card-title { display: flex; align-items: center; gap: 6px; }
     .type-icon { font-size: 0.92rem; flex-shrink: 0; }
@@ -73,18 +84,20 @@
     .visited-card .item-name { text-decoration: line-through; color: #aaa; }
     .card-desc { font-size: 0.75rem; color: #aaa; margin-top: 3px; line-height: 1.45; }
     .card-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
-    .btn-maps { background: none; border: 1px solid #ddd; color: #4285f4; padding: 3px 7px; border-radius: 50px; font-size: 0.7rem; font-weight: 600; text-decoration: none; transition: all 0.15s; white-space: nowrap; }
-    .btn-maps:hover { background: #e8f0fe; border-color: #4285f4; }
+    .btn-maps   { background: none; border: 1px solid #ddd; color: #4285f4; padding: 3px 7px; border-radius: 50px; font-size: 0.7rem; font-weight: 600; text-decoration: none; transition: all 0.15s; white-space: nowrap; }
+    .btn-maps:hover   { background: #e8f0fe; border-color: #4285f4; }
     .btn-google { background: none; border: 1px solid #ddd; color: #ea4335; padding: 3px 7px; border-radius: 50px; font-size: 0.7rem; font-weight: 600; text-decoration: none; transition: all 0.15s; white-space: nowrap; }
     .btn-google:hover { background: #fce8e6; border-color: #ea4335; }
-    .btn-visit { background: none; border: 1px solid #ece7e0; color: #ccc; padding: 3px 7px; border-radius: 50px; font-size: 0.76rem; cursor: pointer; transition: all 0.15s; }
+    .btn-highlight { background: none; border: 1px solid #ece7e0; color: #ddd; padding: 3px 7px; border-radius: 50px; font-size: 0.76rem; cursor: pointer; transition: all 0.15s; }
+    .btn-highlight:hover, .btn-highlight.on { color: #e53935; border-color: #f5b0ad; background: #fff0f0; }
+    .btn-visit  { background: none; border: 1px solid #ece7e0; color: #ccc; padding: 3px 7px; border-radius: 50px; font-size: 0.76rem; cursor: pointer; transition: all 0.15s; }
     .btn-visit:hover, .btn-visit.visited { background: #eaf4ee; color: #2d7a4f; border-color: #b5dfc5; }
-    .btn-edit { background: none; border: 1px solid #ece7e0; color: #ccc; padding: 4px 8px; border-radius: 50px; font-size: 0.76rem; cursor: pointer; transition: all 0.15s; }
-    .btn-edit:hover { background: #f5f0ea; color: #666; border-color: #c8c0b5; }
+    .btn-edit   { background: none; border: 1px solid #ece7e0; color: #ccc; padding: 4px 8px; border-radius: 50px; font-size: 0.76rem; cursor: pointer; transition: all 0.15s; }
+    .btn-edit:hover   { background: #f5f0ea; color: #666; border-color: #c8c0b5; }
     .btn-delete { background: none; border: none; color: #ddd; padding: 4px 5px; font-size: 0.95rem; line-height: 1; cursor: pointer; transition: color 0.15s; }
     .btn-delete:hover { color: #b94040; }
 
-    /* Search results */
+    /* Search */
     .search-count { font-size: 0.78rem; color: #aaa; padding: 4px 0 12px; }
     .search-breadcrumb { font-size: 0.67rem; color: #bbb; margin-bottom: 2px; letter-spacing: 0.02em; }
 
@@ -101,7 +114,7 @@
       background: #fdfcfa; color: #1e1e1e;
     }
     .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: #c8905a; background: #fff; }
-    .form-row textarea { resize: vertical; min-height: 60px; }
+    .form-row textarea { resize: vertical; min-height: 70px; }
     .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .modal-status { font-size: 0.77rem; color: #b94040; margin: 6px 0 0; min-height: 16px; }
     .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
@@ -123,6 +136,35 @@
     .vc-chip:hover { box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
     .vc-chip-del { background: none; border: none; color: #ddd; cursor: pointer; font-size: 0.75rem; padding: 0; line-height: 1; transition: color 0.15s; }
     .vc-chip-del:hover { color: #b94040; }
+
+    /* Bucket List */
+    .bl-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .bl-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 800; color: #3d2b1a; }
+    .bl-add-btn { background: #c8905a; color: white; border: none; padding: 8px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .bl-add-btn:hover { background: #b07848; }
+    .bl-table { width: 100%; border-collapse: collapse; }
+    .bl-row { display: grid; grid-template-columns: 200px 1fr; border: 1px solid #ece7e0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; background: white; }
+    .bl-country-cell { padding: 14px 16px; border-right: 1px solid #ece7e0; background: #fdfaf6; }
+    .bl-country-name { font-weight: 700; font-size: 0.9rem; color: #3d2b1a; margin-bottom: 2px; }
+    .bl-country-region { font-size: 0.72rem; color: #bbb; }
+    .bl-country-actions { display: flex; gap: 4px; margin-top: 8px; }
+    .bl-del-country { background: none; border: none; color: #ddd; cursor: pointer; font-size: 0.78rem; padding: 0; transition: color 0.15s; }
+    .bl-del-country:hover { color: #b94040; }
+    .bl-items-cell { padding: 10px 14px; }
+    .bl-items-list { list-style: none; margin-bottom: 8px; }
+    .bl-item { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 0.83rem; color: #2a1e14; }
+    .bl-item::before { content: '•'; color: #c8905a; flex-shrink: 0; }
+    .bl-item-del { background: none; border: none; color: #ddd; cursor: pointer; font-size: 0.72rem; padding: 0; line-height: 1; margin-left: auto; transition: color 0.15s; flex-shrink: 0; }
+    .bl-item-del:hover { color: #b94040; }
+    .bl-item-edit { background: none; border: none; color: #ccc; cursor: pointer; font-size: 0.72rem; padding: 0; line-height: 1; transition: color 0.15s; flex-shrink: 0; }
+    .bl-item-edit:hover { color: #c8905a; }
+    .bl-item-save { background: none; border: none; color: #5a9a5a; cursor: pointer; font-size: 0.72rem; padding: 0; line-height: 1; flex-shrink: 0; }
+    .bl-item-edit-inp { flex: 1; font-size: 0.83rem; border: 1px solid #c8905a; border-radius: 4px; padding: 1px 5px; outline: none; min-width: 0; }
+    .bl-add-item { display: flex; gap: 6px; margin-top: 4px; }
+    .bl-add-item input { flex: 1; padding: 5px 9px; border: 1px solid #d8d3cd; border-radius: 6px; font-size: 0.8rem; font-family: 'Inter', sans-serif; outline: none; background: #fdfcfa; }
+    .bl-add-item input:focus { border-color: #c8905a; }
+    .bl-add-item button { background: #c8905a; color: white; border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .bl-add-item button:hover { background: #b07848; }
 
     /* Bulk entry */
     .bulk-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -150,6 +192,8 @@
       .card { flex-wrap: wrap; } .card-actions { margin-top: 6px; }
       .form-row-2 { grid-template-columns: 1fr; }
       .search-wrap { max-width: none; }
+      .bl-row { grid-template-columns: 1fr; }
+      .bl-country-cell { border-right: none; border-bottom: 1px solid #ece7e0; }
     }
   </style>
 </head>
@@ -174,20 +218,21 @@
   <button class="tab" data-tab="middle_east">Middle East <span class="tab-cnt" id="tcnt-middle_east"></span></button>
   <button class="tab" data-tab="oceania">Oceania <span class="tab-cnt" id="tcnt-oceania"></span></button>
   <button class="tab" data-tab="visited-countries">🌍 Visited <span class="tab-cnt" id="tcnt-visited-countries"></span></button>
-  <button class="tab" data-tab="bulk">✚ Bulk Add</button>
+  <button class="tab" data-tab="bucket-list">🗺 Bucket List</button>
+  <button class="tab" data-tab="bulk">✚ Add Places</button>
 </div>
 
-<div id="panel-africa"        class="panel" style="display:none"></div>
-<div id="panel-north-america" class="panel" style="display:none"></div>
-<div id="panel-mexico-ca"     class="panel" style="display:none"></div>
-<div id="panel-south-america" class="panel" style="display:none"></div>
-<div id="panel-europe"        class="panel"></div>
-<div id="panel-asia"          class="panel" style="display:none"></div>
-<div id="panel-middle_east"   class="panel" style="display:none"></div>
-<div id="panel-oceania"       class="panel" style="display:none"></div>
-<div id="search-panel"        class="panel" style="display:none"></div>
-
+<div id="panel-africa"           class="panel" style="display:none"></div>
+<div id="panel-north-america"    class="panel" style="display:none"></div>
+<div id="panel-mexico-ca"        class="panel" style="display:none"></div>
+<div id="panel-south-america"    class="panel" style="display:none"></div>
+<div id="panel-europe"           class="panel"></div>
+<div id="panel-asia"             class="panel" style="display:none"></div>
+<div id="panel-middle_east"      class="panel" style="display:none"></div>
+<div id="panel-oceania"          class="panel" style="display:none"></div>
 <div id="panel-visited-countries" class="panel" style="display:none"></div>
+<div id="panel-bucket-list"      class="panel" style="display:none"></div>
+<div id="search-panel"           class="panel" style="display:none"></div>
 
 <!-- Bulk Add Panel -->
 <div id="panel-bulk" class="panel" style="display:none">
@@ -219,7 +264,7 @@
 <datalist id="dl-states"></datalist>
 <datalist id="dl-cities"></datalist>
 
-<!-- Add Modal -->
+<!-- Add Place Modal -->
 <div class="modal-overlay" id="modal">
   <div class="modal-box">
     <h3>Add Place</h3>
@@ -278,7 +323,7 @@
   </div>
 </div>
 
-<!-- Edit Modal -->
+<!-- Edit Place Modal -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
     <h3>Edit Place</h3>
@@ -337,7 +382,7 @@
   </div>
 </div>
 
-<!-- Add Country Modal -->
+<!-- Add Visited Country Modal -->
 <div class="modal-overlay" id="vc-modal">
   <div class="modal-box">
     <h3>Add Visited Country</h3>
@@ -362,6 +407,41 @@
     <div class="modal-actions">
       <button class="modal-cancel" id="vc-close">Cancel</button>
       <button class="modal-confirm" id="vc-save">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Bucket List Country Modal -->
+<div class="modal-overlay" id="bl-modal">
+  <div class="modal-box">
+    <h3>Add to Bucket List</h3>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0">
+        <label>Country</label>
+        <input type="text" id="bl-country" placeholder="e.g. Peru" autocomplete="off">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label>Region</label>
+        <select id="bl-region">
+          <option value="North America">North America</option>
+          <option value="Caribbean">Caribbean</option>
+          <option value="South America">South America</option>
+          <option value="Europe">Europe</option>
+          <option value="Asia & Pacific">Asia &amp; Pacific</option>
+          <option value="Middle East">Middle East</option>
+          <option value="Africa">Africa</option>
+          <option value="Oceania">Oceania</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Places / Things to Do <span style="color:#ccc;font-weight:400">(one per line)</span></label>
+      <textarea id="bl-items" placeholder="Machu Picchu&#10;Huacachina oasis&#10;Lake Titicaca"></textarea>
+    </div>
+    <div class="modal-status" id="bl-status"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="bl-close">Cancel</button>
+      <button class="modal-confirm" id="bl-save">Add</button>
     </div>
   </div>
 </div>

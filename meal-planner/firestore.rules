@@ -51,6 +51,10 @@ service cloud.firestore {
     match /visited_countries/{docId} {
       allow read, write: if true;
     }
+    // Bucket list - open access (personal app)
+    match /bucket_list/{docId} {
+      allow read, write: if true;
+    }
     // Health tracker collections - open access (local-only personal app)
     match /health_entries/{docId} {
       allow read, write: if true;
@@ -59,6 +63,10 @@ service cloud.firestore {
       allow read, write: if true;
     }
     match /health_analyses/{docId} {
+      allow read, write: if true;
+    }
+    // Todo tasks - open access (personal app)
+    match /todo_tasks/{docId} {
       allow read, write: if true;
     }
   }

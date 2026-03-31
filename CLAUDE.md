@@ -15,6 +15,7 @@ A multi-app personal productivity suite for Srini Katta. Six apps sharing a sing
 | `site/` | Event/food curation for DC Metro area | https://stellar-orbit-dhwf.here.now/ |
 | `reading-links/` | Personal reading list with Science/Human Stories/Other tabs | https://silver-essence-gpqt.here.now/ |
 | `travel-places/` | Travel bucket list — continents → countries → cities → food/places | https://jovial-bugle-zkby.here.now/ |
+| `todo-site/` | Task manager — year → month → week hierarchy with types & backlog | https://witty-kayak-7n57.here.now/ |
 | `nutrition/` | Daily Python-generated nutrition profiles | Published daily via cron |
 
 ## Deploying
@@ -39,6 +40,9 @@ HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scr
 
 # Travel Places (Firebase config inlined — no secrets.js needed)
 HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh travel-places --slug jovial-bugle-zkby
+
+# Todo Site (Firebase config inlined — no secrets.js needed)
+HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh todo-site --slug witty-kayak-7n57
 ```
 
 **Firebase Cloud Functions (meal-planner/functions/):**

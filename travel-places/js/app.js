@@ -16,8 +16,28 @@ var activeTab = 'europe';
 var allItems  = {};
 var filters   = {};
 
-var NA_STRICT     = new Set(['usa','canada']);
+var NA_STRICT     = new Set(['usa','canada','united states','united states of america','u.s.','u.s.a.','us']);
 var MEXICO_CA     = new Set(['mexico','guatemala','belize','honduras','el salvador','nicaragua','costa rica','panama']);
+
+// Canonical country names — maps alternate spellings to stored canonical form
+var COUNTRY_ALIASES = {
+  'united states of america': 'USA',
+  'united states':            'USA',
+  'u.s.a.':                   'USA',
+  'u.s.':                     'USA',
+  'us':                       'USA',
+  'great britain':            'United Kingdom',
+  'gb':                       'United Kingdom',
+  'england':                  'United Kingdom',
+  'uae':                      'UAE',
+  'united arab emirates':     'UAE',
+};
+
+function normalizeCountry(name) {
+  if (!name) return name;
+  var lower = name.trim().toLowerCase();
+  return COUNTRY_ALIASES[lower] || name.trim();
+}
 
 function itemTab(item) {
   var c = (item.continent || '').toLowerCase();
@@ -25,15 +45,24 @@ function itemTab(item) {
     var country = (item.country || '').toLowerCase();
     if (NA_STRICT.has(country))  return 'north-america';
     if (MEXICO_CA.has(country))  return 'mexico-ca';
+    // Fall back to COUNTRY_GEO if available
+    var geoEntry = COUNTRY_GEO[country];
+    if (geoEntry) return geoEntry.continent;
     return 'south-america';
   }
   if (c === 'mexico-ca') return 'mexico-ca';
+  // If continent is missing or unrecognized, try COUNTRY_GEO
+  if (!c || c === 'unknown') {
+    var geo = COUNTRY_GEO[(item.country || '').toLowerCase()];
+    if (geo) return geo.continent;
+  }
   return c;
 }
 
 // ── Firestore ──────────────────────────────────────────────────────────────
 
 var visitedCountries = {}; // id → {country, region, addedAt}
+var bucketList       = {}; // id → {country, region, items[]}
 
 function load() {
   db.collection('travel_places').onSnapshot(function(snap) {
@@ -48,12 +77,18 @@ function load() {
     snap.forEach(function(doc) { visitedCountries[doc.id] = Object.assign({ id: doc.id }, doc.data()); });
     renderVisitedCountries();
   });
+  db.collection('bucket_list').onSnapshot(function(snap) {
+    bucketList = {};
+    snap.forEach(function(doc) { bucketList[doc.id] = Object.assign({ id: doc.id }, doc.data()); });
+    renderBucketList();
+  });
 }
 
-function addItem(item)          { return db.collection('travel_places').add(item); }
-function deleteItem(id)         { db.collection('travel_places').doc(id).delete(); }
-function updateItem(id, data)   { return db.collection('travel_places').doc(id).update(data); }
-function toggleVisited(id, cur) { db.collection('travel_places').doc(id).update({ visited: !cur }); }
+function addItem(item)               { return db.collection('travel_places').add(item); }
+function deleteItem(id)              { db.collection('travel_places').doc(id).delete(); }
+function updateItem(id, data)        { return db.collection('travel_places').doc(id).update(data); }
+function toggleVisited(id, cur)      { db.collection('travel_places').doc(id).update({ visited: !cur }); }
+function toggleHighlight(id, cur)    { db.collection('travel_places').doc(id).update({ highlighted: !cur }); }
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -135,6 +170,8 @@ function renderAll() {
       html += '<div class="country-section">' +
         '<div class="country-header">' + esc(country) +
         ' <span class="section-cnt">' + countryTotal + '</span>' +
+        '<button class="btn-quick-add" data-cont="' + esc(tab) + '" data-country="' + esc(country) + '" data-state="" data-city="" data-focus="state" title="Add city / place">+</button>' +
+        '<button class="btn-export-country" data-country="' + esc(country) + '" data-cont="' + esc(tab) + '" title="Export for Claude">↓ txt</button>' +
         '<button class="btn-del-country" data-country="' + esc(country) + '" data-cont="' + esc(tab) + '">🗑</button></div>';
 
       var stateKeys = Object.keys(byCountry[country]).sort(function(a, b) {
@@ -148,12 +185,17 @@ function renderAll() {
         if (hasState) {
           var stateTotal = Object.values(byCountry[country][state]).reduce(function(n,a){ return n+a.length; },0);
           html += '<div class="state-section"><div class="state-header">' + esc(state) +
-            ' <span class="section-cnt">' + stateTotal + '</span></div>';
+            ' <span class="section-cnt">' + stateTotal + '</span>' +
+            '<button class="btn-quick-add" data-cont="' + esc(tab) + '" data-country="' + esc(country) + '" data-state="' + esc(state) + '" data-city="" data-focus="city" title="Add city / place">+</button>' +
+            '</div>';
         }
         Object.keys(byCountry[country][state]).sort().forEach(function(city) {
           var cityItems = byCountry[country][state][city];
-          html += '<div class="city-section"><div class="city-header">' + esc(city) +
-            ' <span class="section-cnt">' + cityItems.length + '</span></div>';
+          html += '<div class="city-section"><div class="city-header">' +
+            '<span class="city-name-text" data-city="' + esc(city) + '" data-country="' + esc(country) + '" data-state="' + esc(state) + '">' + esc(city) + '</span>' +
+            ' <span class="section-cnt">' + cityItems.length + '</span>' +
+            '<button class="btn-quick-add" data-cont="' + esc(tab) + '" data-country="' + esc(country) + '" data-state="' + esc(state) + '" data-city="' + esc(city) + '" data-focus="name" title="Add place">+</button>' +
+            '</div>';
           cityItems.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); })
             .forEach(function(item) { html += renderCard(item); });
           html += '</div>';
@@ -180,9 +222,11 @@ function googleUrl(item) {
 }
 
 function renderCard(item, breadcrumb) {
-  var icon = TYPE_ICON[item.type] || '📍';
-  var isVisited = !!item.visited;
-  return '<div class="card' + (isVisited ? ' visited-card' : '') + '" data-id="' + esc(item.id) + '">' +
+  var icon        = TYPE_ICON[item.type] || '📍';
+  var isVisited   = !!item.visited;
+  var isHighlight = !!item.highlighted;
+  var cardCls = 'card' + (isVisited ? ' visited-card' : '') + (isHighlight ? ' highlighted-card' : '');
+  return '<div class="' + cardCls + '" data-id="' + esc(item.id) + '">' +
     '<div class="card-body">' +
       (breadcrumb ? '<div class="search-breadcrumb">' + esc(breadcrumb) + '</div>' : '') +
       '<div class="card-title"><span class="type-icon">' + icon + '</span>' +
@@ -192,6 +236,7 @@ function renderCard(item, breadcrumb) {
     '<div class="card-actions">' +
       '<a class="btn-maps" href="' + mapsUrl(item) + '" target="_blank" rel="noopener">Maps</a>' +
       '<a class="btn-google" href="' + googleUrl(item) + '" target="_blank" rel="noopener">Google</a>' +
+      '<button class="btn-highlight' + (isHighlight ? ' on' : '') + '" data-id="' + esc(item.id) + '" data-hl="' + isHighlight + '" title="Highlight">🔴</button>' +
       '<button class="btn-visit' + (isVisited ? ' visited' : '') + '" data-id="' + esc(item.id) + '" data-visited="' + isVisited + '">' + (isVisited ? '✓' : '☐') + '</button>' +
       '<button class="btn-edit" data-id="' + esc(item.id) + '">✎</button>' +
       '<button class="btn-delete" data-id="' + esc(item.id) + '">🗑</button>' +
@@ -206,20 +251,100 @@ function bindActions() {
   document.querySelectorAll('.btn-edit').forEach(function(b) {
     b.onclick = function() { openEditModal(this.dataset.id); };
   });
+  document.querySelectorAll('.btn-highlight').forEach(function(b) {
+    b.onclick = function() { toggleHighlight(this.dataset.id, this.dataset.hl === 'true'); };
+  });
   document.querySelectorAll('.btn-visit').forEach(function(b) {
     b.onclick = function() { toggleVisited(this.dataset.id, this.dataset.visited === 'true'); };
+  });
+  document.querySelectorAll('.btn-export-country').forEach(function(b) {
+    b.onclick = function(e) {
+      e.stopPropagation();
+      exportCountry(this.dataset.country, this.dataset.cont);
+    };
   });
   document.querySelectorAll('.btn-del-country').forEach(function(b) {
     b.onclick = function(e) {
       e.stopPropagation();
       var country = this.dataset.country, tab = this.dataset.cont;
-      Object.values(allItems).filter(function(i) {
+      var toDelete = Object.values(allItems).filter(function(i) {
         return i.country === country && itemTab(i) === tab;
-      }).forEach(function(i) { deleteItem(i.id); });
+      });
+      if (!confirm('Delete all ' + toDelete.length + ' place(s) under ' + country + '? This cannot be undone.')) return;
+      toDelete.forEach(function(i) { deleteItem(i.id); });
     };
   });
+  // Country collapse
+  document.querySelectorAll('.country-header').forEach(function(h) {
+    h.onclick = function(e) {
+      if (e.target.closest('.btn-quick-add, .btn-del-country, .btn-export-country')) return;
+      this.parentElement.classList.toggle('collapsed');
+    };
+  });
+
+  // City collapse
   document.querySelectorAll('.city-header').forEach(function(h) {
-    h.onclick = function() { this.parentElement.classList.toggle('collapsed'); };
+    h.onclick = function(e) {
+      if (e.target.closest('.btn-quick-add, .city-name-text')) return;
+      this.parentElement.classList.toggle('collapsed');
+    };
+  });
+
+  // Inline city rename
+  document.querySelectorAll('.city-name-text').forEach(function(span) {
+    span.onclick = function(e) {
+      e.stopPropagation();
+      var oldCity = this.dataset.city;
+      var country = this.dataset.country;
+      var state   = this.dataset.state;
+      var inp = document.createElement('input');
+      inp.className = 'city-name-inp';
+      inp.value = oldCity;
+      var parent = this.parentNode;
+      parent.replaceChild(inp, this);
+      inp.focus();
+      inp.select();
+
+      function save() {
+        var newCity = inp.value.trim();
+        if (!newCity || newCity === oldCity) { renderAll(); return; }
+        // Batch update all items in this city atomically
+        var toUpdate = Object.values(allItems).filter(function(i) {
+          return i.country === country && (i.state || '') === state && i.city === oldCity;
+        });
+        var batch = db.batch();
+        toUpdate.forEach(function(i) {
+          batch.update(db.collection('travel_places').doc(i.id), { city: newCity });
+        });
+        batch.commit().catch(function(err) { console.error('city rename error', err); });
+      }
+      inp.addEventListener('blur', save);
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { inp.blur(); }
+        if (e.key === 'Escape') { oldCity = inp.value; inp.blur(); }
+      });
+    };
+  });
+  document.querySelectorAll('.btn-quick-add').forEach(function(b) {
+    b.onclick = function(e) {
+      e.stopPropagation();
+      var d = this.dataset;
+      fContinent.value = d.cont;
+      fCountry.value   = d.country;
+      fState.value     = d.state;
+      fCity.value      = d.city;
+      fName.value      = '';
+      fDesc.value      = '';
+      fType.value      = 'place';
+      statusEl.textContent = '';
+      confirmBtn.disabled  = false;
+      updateCityDatalist(d.country);
+      updateStateDatalist(d.country);
+      fCountry.setAttribute('list', 'dl-countries-' + d.cont);
+      modal.classList.add('open');
+      var focusField = { state: fState, city: fCity, name: fName }[d.focus] || fName;
+      setTimeout(function() { focusField.focus(); }, 80);
+    };
   });
 }
 
@@ -247,6 +372,7 @@ function doSearch(q) {
   CONTINENTS.forEach(function(c) { document.getElementById('panel-' + c).style.display = 'none'; });
   document.getElementById('panel-bulk').style.display = 'none';
   document.getElementById('panel-visited-countries').style.display = 'none';
+  document.getElementById('panel-bucket-list').style.display = 'none';
   tabsEl.style.opacity = '0.35';
   tabsEl.style.pointerEvents = 'none';
   searchPanel.style.display = '';
@@ -278,9 +404,10 @@ function doSearch(q) {
       return renderCard(item, parts.filter(Boolean).join(' › '));
     }).join('');
 
-  searchPanel.querySelectorAll('.btn-delete').forEach(function(b) { b.onclick = function() { deleteItem(this.dataset.id); }; });
-  searchPanel.querySelectorAll('.btn-edit').forEach(function(b)   { b.onclick = function() { openEditModal(this.dataset.id); }; });
-  searchPanel.querySelectorAll('.btn-visit').forEach(function(b)  { b.onclick = function() { toggleVisited(this.dataset.id, this.dataset.visited === 'true'); }; });
+  searchPanel.querySelectorAll('.btn-delete').forEach(function(b)    { b.onclick = function() { deleteItem(this.dataset.id); }; });
+  searchPanel.querySelectorAll('.btn-edit').forEach(function(b)      { b.onclick = function() { openEditModal(this.dataset.id); }; });
+  searchPanel.querySelectorAll('.btn-highlight').forEach(function(b) { b.onclick = function() { toggleHighlight(this.dataset.id, this.dataset.hl === 'true'); }; });
+  searchPanel.querySelectorAll('.btn-visit').forEach(function(b)     { b.onclick = function() { toggleVisited(this.dataset.id, this.dataset.visited === 'true'); }; });
 }
 
 function clearSearch() {
@@ -316,6 +443,7 @@ document.querySelectorAll('.tab').forEach(function(tab) {
     });
     document.getElementById('panel-bulk').style.display = (activeTab === 'bulk') ? '' : 'none';
     document.getElementById('panel-visited-countries').style.display = (activeTab === 'visited-countries') ? '' : 'none';
+    document.getElementById('panel-bucket-list').style.display = (activeTab === 'bucket-list') ? '' : 'none';
   });
 });
 
@@ -397,8 +525,9 @@ confirmBtn.onclick = function() {
   var continent = fContinent.value.trim(), country = fCountry.value.trim(), state = fState.value.trim();
   var city = fCity.value.trim(), name = fName.value.trim(), type = fType.value, desc = fDesc.value.trim();
   if (!continent || !country || !name) { statusEl.textContent = 'Continent, country and name are required.'; return; }
+  country = normalizeCountry(country);
   confirmBtn.disabled = true;
-  addItem({ continent: continent, country, state: state||'', city: city||'General', name, type, description: desc, visited: false, addedAt: new Date().toISOString() })
+  addItem({ continent: continent, country: country, state: state||'', city: city||'General', name, type, description: desc, visited: false, addedAt: new Date().toISOString() })
     .then(function() {
       closeModal();
       var tabBtn = document.querySelector('.tab[data-tab="' + continent + '"]');
@@ -448,10 +577,195 @@ editSaveBtn.onclick = function() {
   editSaveBtn.disabled = true;
   updateItem(editingId, {
     name: name, type: eType.value, description: eDesc.value.trim(),
-    country: eCountry.value.trim(), state: eState.value.trim(), city: eCity.value.trim(),
+    country: normalizeCountry(eCountry.value.trim()), state: eState.value.trim(), city: eCity.value.trim(),
     continent: eContinent.value
   }).then(function() { editModal.classList.remove('open'); editSaveBtn.disabled = false; })
     .catch(function(err) { document.getElementById('edit-status').textContent = 'Error: ' + err.message; editSaveBtn.disabled = false; });
+};
+
+// ── Bucket List ────────────────────────────────────────────────────────────
+
+var BL_REGION_ORDER = ['North America','Caribbean','South America','Europe','Asia & Pacific','Middle East','Africa','Oceania'];
+
+function renderBucketList() {
+  var panel = document.getElementById('panel-bucket-list');
+  if (!panel) return;
+
+  var items = Object.values(bucketList);
+
+  // Group by region then sort by country within each region
+  var byRegion = {};
+  BL_REGION_ORDER.forEach(function(r) { byRegion[r] = []; });
+  items.forEach(function(item) {
+    var r = item.region || 'Other';
+    if (!byRegion[r]) byRegion[r] = [];
+    byRegion[r].push(item);
+  });
+  Object.keys(byRegion).forEach(function(r) {
+    byRegion[r].sort(function(a,b){ return (a.country||'').localeCompare(b.country||''); });
+  });
+
+  var html = '<div class="bl-header">' +
+    '<div class="bl-title">Bucket List</div>' +
+    '<button class="bl-add-btn" id="bl-open">+ Add Country</button>' +
+  '</div>';
+
+  var hasAny = false;
+  BL_REGION_ORDER.forEach(function(region) {
+    var rows = byRegion[region] || [];
+    if (!rows.length) return;
+    hasAny = true;
+    html += '<div class="vc-region"><div class="vc-region-title">' + esc(region) +
+      ' <span class="vc-region-cnt">' + rows.length + '</span></div>';
+
+    rows.forEach(function(entry) {
+      var items = entry.items || [];
+      var itemsHtml = items.map(function(it, idx) {
+        return '<li class="bl-item">' +
+          '<span class="bl-item-text">' + esc(it) + '</span>' +
+          '<input class="bl-item-edit-inp" type="text" value="' + esc(it) + '" style="display:none" data-id="' + esc(entry.id) + '" data-item="' + esc(it) + '">' +
+          '<button class="bl-item-edit" data-id="' + esc(entry.id) + '" data-item="' + esc(it) + '" title="Edit">✏️</button>' +
+          '<button class="bl-item-save" data-id="' + esc(entry.id) + '" data-item="' + esc(it) + '" style="display:none" title="Save">💾</button>' +
+          '<button class="bl-item-del" data-id="' + esc(entry.id) + '" data-item="' + esc(it) + '" title="Delete">✕</button>' +
+          '</li>';
+      }).join('');
+
+      html += '<div class="bl-row">' +
+        '<div class="bl-country-cell">' +
+          '<div class="bl-country-name">' + esc(entry.country) + '</div>' +
+          '<div class="bl-country-region">' + esc(entry.region) + '</div>' +
+          '<div class="bl-country-actions">' +
+            '<button class="bl-del-country" data-id="' + esc(entry.id) + '">🗑 Remove</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="bl-items-cell">' +
+          '<ul class="bl-items-list">' + (itemsHtml || '<li class="bl-item" style="color:#ccc;font-style:italic">No items yet</li>') + '</ul>' +
+          '<div class="bl-add-item">' +
+            '<input type="text" placeholder="Add a place or thing to do…" data-id="' + esc(entry.id) + '">' +
+            '<button data-id="' + esc(entry.id) + '">Add</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+  });
+
+  if (!hasAny) html += '<p class="empty">No bucket list countries yet. Click + Add Country to start.</p>';
+
+  panel.innerHTML = html;
+
+  // Bind open button
+  var openBtn = document.getElementById('bl-open');
+  if (openBtn) openBtn.onclick = openBlModal;
+
+  // Delete country
+  panel.querySelectorAll('.bl-del-country').forEach(function(b) {
+    b.onclick = function() { db.collection('bucket_list').doc(this.dataset.id).delete(); };
+  });
+
+  // Edit item — toggle inline edit mode
+  panel.querySelectorAll('.bl-item-edit').forEach(function(b) {
+    b.onclick = function() {
+      var li = this.closest('li');
+      li.querySelector('.bl-item-text').style.display = 'none';
+      li.querySelector('.bl-item-edit-inp').style.display = '';
+      li.querySelector('.bl-item-edit-inp').focus();
+      this.style.display = 'none';
+      li.querySelector('.bl-item-save').style.display = '';
+    };
+  });
+
+  // Save item — replace old value with new
+  panel.querySelectorAll('.bl-item-save').forEach(function(b) {
+    b.onclick = function() {
+      var li = this.closest('li');
+      var inp = li.querySelector('.bl-item-edit-inp');
+      var newVal = inp.value.trim();
+      var oldVal = this.dataset.item;
+      var docId = this.dataset.id;
+      if (!newVal || newVal === oldVal) {
+        // cancel: restore display
+        li.querySelector('.bl-item-text').style.display = '';
+        inp.style.display = 'none';
+        li.querySelector('.bl-item-edit').style.display = '';
+        this.style.display = 'none';
+        return;
+      }
+      var ref = db.collection('bucket_list').doc(docId);
+      db.runTransaction(function(t) {
+        return t.get(ref).then(function(doc) {
+          var items = (doc.data().items || []).filter(function(i) { return i !== oldVal; });
+          if (items.indexOf(newVal) === -1) items.push(newVal);
+          t.update(ref, { items: items });
+        });
+      });
+    };
+  });
+
+  // Remove item
+  panel.querySelectorAll('.bl-item-del').forEach(function(b) {
+    b.onclick = function() {
+      db.collection('bucket_list').doc(this.dataset.id).update({
+        items: firebase.firestore.FieldValue.arrayRemove(this.dataset.item)
+      });
+    };
+  });
+
+  // Add item inline
+  panel.querySelectorAll('.bl-add-item button').forEach(function(btn) {
+    btn.onclick = function() {
+      var inp = this.previousElementSibling;
+      var val = inp.value.trim();
+      if (!val) return;
+      db.collection('bucket_list').doc(this.dataset.id).update({
+        items: firebase.firestore.FieldValue.arrayUnion(val)
+      }).then(function() { inp.value = ''; });
+    };
+  });
+
+  // Enter key on inline input
+  panel.querySelectorAll('.bl-add-item input').forEach(function(inp) {
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') this.nextElementSibling.click();
+    });
+  });
+}
+
+// Bucket List modal
+var blModal   = document.getElementById('bl-modal');
+var blCountry = document.getElementById('bl-country');
+var blRegion  = document.getElementById('bl-region');
+var blItems   = document.getElementById('bl-items');
+var blStatus  = document.getElementById('bl-status');
+var blSaveBtn = document.getElementById('bl-save');
+
+function openBlModal() {
+  blCountry.value = ''; blItems.value = ''; blStatus.textContent = ''; blSaveBtn.disabled = false;
+  blModal.classList.add('open');
+  setTimeout(function() { blCountry.focus(); }, 80);
+}
+
+document.getElementById('bl-close').onclick = function() { blModal.classList.remove('open'); };
+blModal.addEventListener('click', function(e) { if (e.target === blModal) blModal.classList.remove('open'); });
+
+blSaveBtn.onclick = function() {
+  var country = blCountry.value.trim();
+  var region  = blRegion.value;
+  var items   = blItems.value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+  if (!country) { blStatus.textContent = 'Country name required.'; return; }
+  blSaveBtn.disabled = true;
+  db.collection('bucket_list').add({
+    country: country, region: region, items: items, addedAt: new Date().toISOString()
+  }).then(function() {
+    blModal.classList.remove('open');
+    blSaveBtn.disabled = false;
+    // Switch to bucket-list tab
+    var tab = document.querySelector('.tab[data-tab="bucket-list"]');
+    if (tab) tab.click();
+  }).catch(function(err) {
+    blStatus.textContent = 'Error: ' + err.message;
+    blSaveBtn.disabled = false;
+  });
 };
 
 // ── Bulk Entry ─────────────────────────────────────────────────────────────
@@ -663,9 +977,33 @@ function parseBulkLine(line) {
   }
 
   var parts = line.split(',').map(function(p){ return p.trim(); });
-  var name = parts[0];
-  var city = parts[1] || '';
-  var countryOverride = parts[2] || '';
+  var name, city, countryOverride;
+
+  if (parts.length >= 3) {
+    // Work from the right: last token is country or city, second-to-last may be city
+    var last   = parts[parts.length - 1];
+    var second = parts[parts.length - 2];
+    if (COUNTRY_GEO[last.toLowerCase()]) {
+      // Last is a known country — use it; second-to-last is city; rest is name
+      countryOverride = last;
+      city = second;
+      name = parts.slice(0, parts.length - 2).join(', ');
+    } else if (CITY_GEO[last.toLowerCase()]) {
+      // Last is a known city — everything before is the name
+      city = last;
+      countryOverride = '';
+      name = parts.slice(0, parts.length - 1).join(', ');
+    } else {
+      // Fallback: original behavior
+      name = parts[0];
+      city = parts[1];
+      countryOverride = parts[2] || '';
+    }
+  } else {
+    name = parts[0];
+    city = parts[1] || '';
+    countryOverride = '';
+  }
 
   var geo = city ? (CITY_GEO[city.toLowerCase()] || {}) : {};
 
@@ -896,6 +1234,83 @@ vcSaveBtn.onclick = function() {
 
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Export for Claude ──────────────────────────────────────────────────────
+
+var TYPE_LABEL = { place: '📍 Place', food: '🍽 Food & Drink', experience: '✨ Experience', accommodation: '🏨 Stay', other: '🔖 Other' };
+
+function exportCountry(country, tab) {
+  var contLabel = CONT_LABELS[tab] || tab;
+  var lines = [];
+
+  lines.push('TRAVEL NOTES: ' + country + ' (' + contLabel + ')');
+  lines.push('Generated: ' + new Date().toLocaleDateString());
+
+  // Visited status
+  var isVisited = Object.values(visitedCountries).some(function(v) {
+    return v.country.toLowerCase() === country.toLowerCase();
+  });
+  lines.push('Status: ' + (isVisited ? 'Visited ✓' : 'Not yet visited — bucket list'));
+  lines.push('');
+
+  // Bucket list
+  var blEntries = Object.values(bucketList).filter(function(b) {
+    return b.country.toLowerCase().indexOf(country.toLowerCase()) !== -1;
+  });
+  if (blEntries.length) {
+    lines.push('━━━ BUCKET LIST ━━━');
+    blEntries.forEach(function(entry) {
+      lines.push(entry.country + ':');
+      (entry.items || []).forEach(function(it) { lines.push('  • ' + it); });
+    });
+    lines.push('');
+  }
+
+  // Travel places grouped by state → city
+  var countryItems = Object.values(allItems).filter(function(i) {
+    return i.country === country;
+  });
+
+  if (countryItems.length) {
+    lines.push('━━━ PLACES & NOTES ━━━');
+    var byState = {};
+    countryItems.forEach(function(i) {
+      var s = i.state || '';
+      var c = i.city || 'General';
+      if (!byState[s]) byState[s] = {};
+      if (!byState[s][c]) byState[s][c] = [];
+      byState[s][c].push(i);
+    });
+    Object.keys(byState).sort().forEach(function(state) {
+      if (state) lines.push('\n— ' + state + ' —');
+      Object.keys(byState[state]).sort().forEach(function(city) {
+        lines.push('\n' + city);
+        byState[state][city].sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); }).forEach(function(item) {
+          var label = TYPE_LABEL[item.type] || '📍 Place';
+          var visited = item.visited ? ' [visited]' : '';
+          var desc = item.description ? '\n      Notes: ' + item.description : '';
+          lines.push('  ' + label + ': ' + (item.name || '') + visited + desc);
+        });
+      });
+    });
+    lines.push('');
+  }
+
+  if (!blEntries.length && !countryItems.length) {
+    lines.push('No data saved yet for this country.');
+  }
+
+  lines.push('━━━ END ━━━');
+  lines.push('Prompt suggestion: Using the above as context, help me plan a trip to ' + country + '. I prefer cultural immersion, local food, and scenic experiences over typical tourist routes.');
+
+  var text = lines.join('\n');
+  var blob = new Blob([text], { type: 'text/plain' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = country.replace(/[^a-z0-9]/gi, '_') + '_travel_notes.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
