@@ -623,6 +623,7 @@ exports.classifyArticle = onRequest(
                 title:       parsed.title       || fetchedTitle || url,
                 description: parsed.description || fetchedDesc  || "",
                 category,
+                url,  // returns archive.ph version for paywalled domains
             });
         } catch (err) {
             console.error("classifyArticle error:", err);

@@ -222,7 +222,7 @@ confirmBtn.onclick = function() {
     if (data.error) throw new Error(data.error);
     var manualTitle = titleInput.value.trim();
     return addItem({
-      url: url, title: manualTitle || data.title, description: data.description,
+      url: data.url || url, title: manualTitle || data.title, description: data.description,
       category: data.category, status: 'active',
       addedAt: new Date().toISOString()
     });
