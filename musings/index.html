@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f7f5f2;
+      --surface:   #ffffff;
+      --border:    #e8e4df;
+      --text:      #1c1917;
+      --muted:     #78716c;
+      --light:     #a8a29e;
+      --accent:    #7c3aed;
+      --accent-bg: #f5f3ff;
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Header ── */
+    .site-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .site-header h1 {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .site-header h1 span { color: var(--accent); }
+    .btn-add-entry {
+      margin-left: auto;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+    .btn-add-entry:hover { background: #6d28d9; transform: translateY(-1px); }
+
+    /* ── Tabs ── */
+    .tab-nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      gap: 0;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2.5px solid transparent;
+      padding: 14px 22px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--light);
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--muted); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── Main content ── */
+    .main { max-width: 1080px; margin: 0 auto; padding: 40px 32px 80px; }
+
+    /* ── Count badge ── */
+    .section-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .section-label { font-family: 'Lora', serif; font-size: 1.4rem; font-weight: 600; color: var(--text); }
+    .section-count { font-size: 0.72rem; font-weight: 600; background: var(--accent-bg); color: var(--accent); padding: 3px 9px; border-radius: 10px; }
+
+    /* ── QUOTES ── */
+    .quotes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    .quote-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 28px 22px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .quote-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+    .quote-card::before {
+      content: '\201C';
+      font-family: 'Lora', serif;
+      font-size: 7rem;
+      line-height: 1;
+      color: var(--accent);
+      opacity: 0.07;
+      position: absolute;
+      top: -8px;
+      left: 12px;
+      pointer-events: none;
+    }
+    .quote-text {
+      font-family: 'Lora', serif;
+      font-size: 1rem;
+      font-style: italic;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .quote-author {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .quote-author::before { content: '— '; }
+    .card-actions { display: flex; gap: 4px; position: absolute; top: 12px; right: 12px; opacity: 0; transition: opacity 0.15s; }
+    .quote-card:hover .card-actions { opacity: 1; }
+
+    /* ── SYSTEMS & GUIDELINES ── */
+    .items-list { display: flex; flex-direction: column; gap: 14px; }
+    .item-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      transition: box-shadow 0.2s, transform 0.2s;
+      position: relative;
+    }
+    .item-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.07); transform: translateY(-1px); }
+    .item-number {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent);
+      opacity: 0.25;
+      line-height: 1;
+      flex-shrink: 0;
+      width: 28px;
+      text-align: right;
+    }
+    .item-body { flex: 1; min-width: 0; }
+    .item-title {
+      font-family: 'Lora', serif;
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .item-content {
+      font-size: 0.87rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .item-card .card-actions { top: 14px; right: 14px; }
+    .item-card:hover .card-actions { opacity: 1; }
+
+    /* ── Card action buttons ── */
+    .btn-card-action {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: 500;
+    }
+    .btn-card-action:hover { background: var(--accent-bg); color: var(--accent); border-color: #c4b5fd; }
+    .btn-card-action.del:hover { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 64px 32px;
+      color: var(--light);
+    }
+    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 25, 23, 0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--surface);
+      border-radius: 18px;
+      padding: 32px 32px 28px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    }
+    .modal-box h3 {
+      font-family: 'Lora', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 22px;
+      color: var(--text);
+    }
+    .form-row { margin-bottom: 16px; }
+    .form-row label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .form-row input, .form-row textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-row input:focus, .form-row textarea:focus {
+      border-color: var(--accent);
+      background: var(--surface);
+    }
+    .form-row textarea { height: 100px; resize: vertical; line-height: 1.6; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+    .modal-cancel {
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+      padding: 8px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .modal-cancel:hover { border-color: var(--muted); color: var(--text); }
+    .modal-confirm {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 8px 22px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+    .modal-confirm:hover { background: #6d28d9; }
+    .modal-status { font-size: 0.78rem; color: #ef4444; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>Mu<span>s</span>ings</h1>
+  <button class="btn-add-entry" id="btn-add">+ Add</button>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="quotes">Quotes</button>
+  <button class="tab-btn" data-tab="systems">Systems</button>
+  <button class="tab-btn" data-tab="guidelines">Guidelines</button>
+</nav>
+
+<main class="main" id="main-content"></main>
+
+<!-- ── Add / Edit Modal ── -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <h3 id="modal-title">Add Quote</h3>
+    <div class="form-row" id="row-title" style="display:none">
+      <label>Title</label>
+      <input type="text" id="f-title" placeholder="Short title or principle…">
+    </div>
+    <div class="form-row">
+      <label id="content-label">Quote</label>
+      <textarea id="f-content" placeholder="Enter the quote…"></textarea>
+    </div>
+    <div class="form-row" id="row-author">
+      <label>Author <span style="font-weight:400;text-transform:none;">(optional)</span></label>
+      <input type="text" id="f-author" placeholder="e.g. Marcus Aurelius">
+    </div>
+    <div class="modal-status" id="modal-status"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="modal-cancel">Cancel</button>
+      <button class="modal-confirm" id="modal-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+  authDomain: "nutrition-198dd.firebaseapp.com",
+  projectId: "nutrition-198dd",
+  storageBucket: "nutrition-198dd.firebasestorage.app",
+  messagingSenderId: "851241392706",
+  appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+});
+var db = firebase.firestore();
+</script>
+<script src="js/app.js"></script>
+</body>
+</html>

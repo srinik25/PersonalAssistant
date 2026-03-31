@@ -59,14 +59,22 @@ function markDone(id, done) {
 
 function copyTask(srcId, targetLevel, targetYear, targetMonth, targetWeek) {
   var src = tasks[srcId];
+  var tMonth  = targetMonth  || null;
+  var tWeek   = targetWeek   || null;
+  // Prevent duplicate: if an identical copy already exists at this destination, skip
+  var existing = Object.values(tasks).find(function(t) {
+    return t.parentId === srcId && t.level === targetLevel &&
+           t.year === targetYear && t.month === tMonth && t.weekNum === tWeek;
+  });
+  if (existing) return Promise.resolve({ duplicate: true });
   return addTask({
     title:       src.title,
     description: src.description || '',
     type:        src.type || 'other',
     level:       targetLevel,
     year:        targetYear,
-    month:       targetMonth || null,
-    weekNum:     targetWeek  || null,
+    month:       tMonth,
+    weekNum:     tWeek,
     status:      'pending',
     parentId:    srcId
   });
@@ -149,11 +157,12 @@ function renderMonthNav() {
 
 function renderMain() {
   var el = document.getElementById('main-content');
-  if (activeTab === 'backlog') { el.innerHTML = renderBacklogHTML(); bindMain(); return; }
+  if (activeTab === 'backlog') { el.innerHTML = renderBacklogHTML(); bindMain(); updateSidebar(); return; }
   var year = Number(activeTab);
-  if (activeView === 'year') { el.innerHTML = renderYearHTML(year); bindMain(); return; }
+  if (activeView === 'year') { el.innerHTML = renderYearHTML(year); bindMain(); updateSidebar(); return; }
   el.innerHTML = renderMonthHTML(year, Number(activeView));
   bindMain();
+  updateSidebar();
 }
 
 // ── Year view ──────────────────────────────────────────────────────────────
@@ -166,7 +175,6 @@ function renderYearHTML(year) {
     '</div>';
   if (prog) html += progressBarHTML(prog.pct);
   html += renderGroupedTasks(byType, 'year', year, null, null);
-  html += addRowHTML('year', year, null, null);
   return html;
 }
 
@@ -174,31 +182,36 @@ function renderYearHTML(year) {
 function renderMonthHTML(year, month) {
   var monthTasks = tasksFor('month', year, month);
   var prog = progress(monthTasks);
-  var byType = groupByType(monthTasks);
-  var html = '<div class="section-title"><span>' + MONTHS[month-1] + ' ' + year + ' Tasks</span>' +
-    (prog ? '<span class="cnt">' + prog.done + ' / ' + prog.total + '</span>' : '') +
-    '</div>';
-  if (prog) html += progressBarHTML(prog.pct);
-  html += renderGroupedTasks(byType, 'month', year, month, null);
-  html += addRowHTML('month', year, month, null);
-  html += '<hr class="section-divider">';
 
-  // Weeks
+  // Left panel: month-level tasks
+  var leftHTML = '<div class="month-panel">' +
+    '<div class="month-panel-title">Monthly' +
+      (prog ? ' <span class="cnt">' + prog.done + '/' + prog.total + '</span>' : '') +
+    '</div>' +
+    (prog ? progressBarHTML(prog.pct) : '') +
+    renderGroupedTasks(groupByType(monthTasks), 'month', year, month, null) +
+  '</div>';
+
+  // Right panel: weeks
   var weeks = weekRanges(year, month);
-  weeks.forEach(function(w) {
+  var weeksHTML = weeks.map(function(w) {
     var weekTasks = tasksFor('week', year, month, w.num);
     var wp = progress(weekTasks);
-    var wByType = groupByType(weekTasks);
-    html += '<div class="week-section" id="week-' + w.num + '">' +
-      '<div class="week-header" data-week="' + w.num + '">' +
+    return '<div class="week-card" id="week-' + w.num + '">' +
+      '<div class="week-card-title" data-week="' + w.num + '">' +
         esc(w.label) +
-        (wp ? ' <span class="cnt">' + wp.done + '/' + wp.total + '</span>' : '') +
+        (wp ? '<span class="cnt">' + wp.done + '/' + wp.total + '</span>' : '') +
       '</div>' +
-      renderGroupedTasks(wByType, 'week', year, month, w.num) +
-      addRowHTML('week', year, month, w.num) +
-      '</div>';
-  });
-  return html;
+      '<div class="week-card-body">' +
+        renderGroupedTasks(groupByType(weekTasks), 'week', year, month, w.num) +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  var rightHTML = '<div class="weeks-panel">' + weeksHTML + '</div>';
+
+  return '<div class="section-title"><span>' + MONTHS[month-1] + ' ' + year + '</span></div>' +
+    '<div class="month-split">' + leftHTML + rightHTML + '</div>';
 }
 
 // ── Backlog view ───────────────────────────────────────────────────────────
@@ -209,7 +222,6 @@ function renderBacklogHTML() {
     (list.length ? '<span class="cnt">' + list.length + '</span>' : '') +
     '</div>';
   html += renderGroupedTasks(byType, 'backlog', null, null, null);
-  html += addRowHTML('backlog', null, null, null);
   return html;
 }
 
@@ -255,21 +267,26 @@ function renderTaskList(list, level) {
 }
 
 function renderTaskItem(t, level) {
-  var done     = t.status === 'done';
-  var cls      = 'task-item' + (done ? ' done' : '');
-  var chkCls   = 'task-check' + (done ? ' checked' : '');
+  var done      = t.status === 'done';
+  var important = !!t.important;
+  var cls       = 'task-item' + (done ? ' done' : '') + (important ? ' important' : '');
+  var chkCls    = 'task-check' + (done ? ' checked' : '');
   var color    = TYPE_COLOR[t.type || 'other'];
   var linked   = linkedCount(t.id);
   var linkBadge = linked ? '<span class="task-linked">↓ ' + linked + ' copied</span>' : '';
   var parentTask = t.parentId && tasks[t.parentId];
   var parentBadge = parentTask ? '<span class="task-linked" style="background:#eff6ff;color:#2563eb;border-color:#bfdbfe;">↑ from ' + esc(parentTask.title.slice(0,24)) + '</span>' : '';
 
-  var copyBtn = '<button class="btn-copy-down btn-copy" data-id="' + esc(t.id) + '" title="Copy to…">↓ copy</button>';
+  var copyBtn = '<button class="btn-copy-down btn-copy" data-id="' + esc(t.id) + '" title="Copy to month or week">↓ Copy to…</button>';
+
+  var doneBadge = done ? '<span class="task-done-badge">✓ Done</span>' : '';
+  var starBtn = '<button class="btn-star btn-toggle-star" data-id="' + esc(t.id) + '" data-important="' + important + '" title="Mark important">★</button>';
 
   return '<li class="' + cls + '" data-id="' + esc(t.id) + '">' +
+    starBtn +
     '<div class="' + chkCls + '" data-id="' + esc(t.id) + '" data-done="' + done + '"></div>' +
     '<div class="task-body">' +
-      '<div class="task-title" style="border-left:3px solid ' + color + ';padding-left:6px">' + esc(t.title) + '</div>' +
+      '<div class="task-title" style="border-left:3px solid ' + color + ';padding-left:6px">' + esc(t.title) + doneBadge + '</div>' +
       (t.description ? '<div class="task-desc">' + esc(t.description) + '</div>' : '') +
       '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">' + linkBadge + parentBadge + '</div>' +
     '</div>' +
@@ -285,29 +302,20 @@ function progressBarHTML(pct) {
   return '<div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:' + pct + '%"></div></div>';
 }
 
-function typeSelectHTML(cls) {
-  return '<select class="add-type-sel ' + cls + '">' +
-    TASK_TYPES.map(function(tp) {
-      return '<option value="' + tp + '">' + TYPE_LABEL[tp] + '</option>';
-    }).join('') +
-    '</select>';
-}
-
-function addRowHTML(level, year, month, weekNum) {
-  var dataAttrs = ' data-level="' + esc(level) + '" data-year="' + (year||'') + '" data-month="' + (month||'') + '" data-week="' + (weekNum||'') + '"';
-  return '<div class="add-task-row">' +
-    typeSelectHTML('add-type-inline') +
-    '<input class="add-task-inp" type="text" placeholder="Add task…" ' + dataAttrs + '>' +
-    '<button class="btn-add-task btn-add-quick"' + dataAttrs + '>Add</button>' +
-    '<button class="btn-copy-down btn-add-full"' + dataAttrs + '>+ Full</button>' +
-  '</div>';
-}
 
 // ── Bind events ────────────────────────────────────────────────────────────
 function bindMain() {
-  // Week collapse
-  document.querySelectorAll('.week-header').forEach(function(h) {
-    h.onclick = function() { this.parentElement.classList.toggle('collapsed'); };
+  // Week collapse (card layout)
+  document.querySelectorAll('.week-card-title').forEach(function(h) {
+    h.onclick = function() { this.closest('.week-card').classList.toggle('collapsed'); };
+  });
+
+  // Star / important
+  document.querySelectorAll('.btn-toggle-star').forEach(function(b) {
+    b.onclick = function() {
+      var isImportant = this.dataset.important === 'true';
+      saveTask(this.dataset.id, { important: !isImportant });
+    };
   });
 
   // Check / uncheck
@@ -336,47 +344,6 @@ function bindMain() {
     b.onclick = function() { openCopyModal(this.dataset.id); };
   });
 
-  // Quick add (Enter in input or Add button)
-  document.querySelectorAll('.add-task-inp').forEach(function(inp) {
-    inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') quickAdd(this); });
-  });
-  document.querySelectorAll('.btn-add-quick').forEach(function(b) {
-    b.onclick = function() {
-      var inp = this.previousElementSibling;
-      quickAdd(inp);
-    };
-  });
-
-  // Full add modal
-  document.querySelectorAll('.btn-add-full').forEach(function(b) {
-    b.onclick = function() {
-      var d = this.dataset;
-      openTaskModal('add', null, {
-        level:   d.level,
-        year:    d.year   ? Number(d.year)   : null,
-        month:   d.month  ? Number(d.month)  : null,
-        weekNum: d.week   ? Number(d.week)   : null
-      });
-    };
-  });
-}
-
-function quickAdd(inp) {
-  var title = inp.value.trim();
-  if (!title) return;
-  var d = inp.dataset;
-  var typeSel = inp.previousElementSibling; // the type select immediately before the input
-  var type = (typeSel && typeSel.classList.contains('add-type-inline')) ? typeSel.value : 'other';
-  addTask({
-    title:   title,
-    description: '',
-    type:    type,
-    level:   d.level,
-    year:    d.year   ? Number(d.year)   : null,
-    month:   d.month  ? Number(d.month)  : null,
-    weekNum: d.week   ? Number(d.week)   : null,
-    status:  'pending'
-  }).then(function() { inp.value = ''; });
 }
 
 // ── Add/Edit Modal ─────────────────────────────────────────────────────────
@@ -492,10 +459,18 @@ copyModalSave.onclick = function() {
   var month   = Number(copyMonth.value);
   var weekNum = level === 'week' ? Number(copyWeek.value) : null;
   copyModalSave.disabled = true;
-  copyTask(copyingSrcId, level, year, month, weekNum).then(function() {
-    copyModal.classList.remove('open');
+  copyTask(copyingSrcId, level, year, month, weekNum).then(function(result) {
     copyModalSave.disabled = false;
-    // Switch to the target view
+    if (result && result.duplicate) {
+      copyModalStatus.textContent = 'Already copied here — navigating to it.';
+      setTimeout(function() {
+        copyModal.classList.remove('open');
+        copyModalStatus.textContent = '';
+        activeTab = String(year); activeView = month; render();
+      }, 1200);
+      return;
+    }
+    copyModal.classList.remove('open');
     activeTab  = String(year);
     activeView = month;
     render();
@@ -504,6 +479,72 @@ copyModalSave.onclick = function() {
     copyModalSave.disabled = false;
   });
 };
+
+// ── Sidebar ────────────────────────────────────────────────────────────────
+var sbLevel   = document.getElementById('sb-level');
+var sbWeekRow = document.getElementById('sb-week-row');
+var sbWeek    = document.getElementById('sb-week');
+var sbType    = document.getElementById('sb-type');
+var sbTitle   = document.getElementById('sb-title');
+var sbAdd     = document.getElementById('sb-add');
+
+function updateSidebar() {
+  if (!sbLevel) return;
+  var opts = '';
+  if (activeTab === 'backlog') {
+    opts = '<option value="backlog">Backlog</option>';
+    sbLevel.innerHTML = opts;
+    sbWeekRow.style.display = 'none';
+  } else {
+    var year = Number(activeTab);
+    opts += '<option value="year">Year ' + year + '</option>';
+    yearMonths(year).forEach(function(m) {
+      opts += '<option value="month-' + m + '">' + MONTHS[m-1] + ' ' + year + '</option>';
+    });
+    sbLevel.innerHTML = opts;
+    // Pre-select current month view if applicable
+    if (activeView !== 'year') {
+      sbLevel.value = 'month-' + activeView;
+    }
+    // Show week row only when a month is selected
+    sbWeekRow.style.display = sbLevel.value.startsWith('month-') ? '' : 'none';
+  }
+}
+
+sbLevel.onchange = function() {
+  sbWeekRow.style.display = this.value.startsWith('month-') ? '' : 'none';
+};
+
+sbAdd.onclick = function() {
+  var title = sbTitle.value.trim();
+  if (!title) { sbTitle.focus(); return; }
+  var val = sbLevel.value;
+  var data = { title: title, type: sbType.value, description: '', status: 'pending', parentId: null };
+  if (val === 'backlog') {
+    data.level = 'backlog';
+    data.year = null; data.month = null; data.weekNum = null;
+  } else if (val === 'year') {
+    data.level = 'year';
+    data.year = Number(activeTab); data.month = null; data.weekNum = null;
+  } else {
+    // month-N
+    var month = Number(val.split('-')[1]);
+    var weekNum = Number(sbWeek.value);
+    data.year = Number(activeTab);
+    data.month = month;
+    // Check if week is selected
+    if (sbWeekRow.style.display !== 'none') {
+      data.level = 'week';
+      data.weekNum = weekNum;
+    } else {
+      data.level = 'month';
+      data.weekNum = null;
+    }
+  }
+  addTask(data).then(function() { sbTitle.value = ''; sbTitle.focus(); });
+};
+
+sbTitle.addEventListener('keydown', function(e) { if (e.key === 'Enter') sbAdd.click(); });
 
 // ── Add Year ───────────────────────────────────────────────────────────────
 document.getElementById('btn-add-year').onclick = function() {
@@ -517,6 +558,13 @@ document.getElementById('btn-add-year').onclick = function() {
   // Add the year to YEAR_START if it's not already there
   if (YEAR_START[year] === undefined) YEAR_START[year] = 0; // Jan for new years
   render();
+};
+
+// ── View / Edit mode toggle ────────────────────────────────────────────────
+document.getElementById('btn-mode-toggle').onclick = function() {
+  var isEdit = document.body.classList.toggle('edit-mode');
+  this.textContent = isEdit ? '👁 View Mode' : '✏️ Edit Mode';
+  if (isEdit) updateSidebar();
 };
 
 // ── Init ───────────────────────────────────────────────────────────────────

@@ -69,5 +69,9 @@ service cloud.firestore {
     match /todo_tasks/{docId} {
       allow read, write: if true;
     }
+    // Musings - open access (personal app)
+    match /musings_items/{docId} {
+      allow read, write: if true;
+    }
   }
 }

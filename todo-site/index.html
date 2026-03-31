@@ -12,8 +12,11 @@
     /* ── Header ── */
     .site-header { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 52px; position: sticky; top: 0; z-index: 100; }
     .site-header h1 { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: #1a2030; flex-shrink: 0; }
-    .btn-add-year { background: none; border: 1.5px solid #6366f1; color: #6366f1; font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; cursor: pointer; transition: all 0.15s; margin-left: auto; }
+    .btn-add-year { background: none; border: 1.5px solid #6366f1; color: #6366f1; font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; cursor: pointer; transition: all 0.15s; }
     .btn-add-year:hover { background: #6366f1; color: #fff; }
+    .btn-mode-toggle { margin-left: auto; background: #f1f5f9; border: 1.5px solid #e2e8f0; color: #475569; font-size: 0.8rem; font-weight: 700; padding: 5px 14px; border-radius: 12px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.01em; }
+    .btn-mode-toggle:hover { background: #e2e8f0; color: #1a2030; }
+    body.edit-mode .btn-mode-toggle { background: #6366f1; color: #fff; border-color: #6366f1; }
 
     /* ── Year tabs ── */
     .year-tabs { background: #fff; border-bottom: 2px solid #e2e8f0; padding: 0 20px; display: flex; gap: 2px; overflow-x: auto; }
@@ -29,8 +32,22 @@
     .mtab:hover { border-color: #c7d2fe; color: #6366f1; }
     .mtab.active { background: #6366f1; color: #fff; border-color: #6366f1; }
 
-    /* ── Main content ── */
-    .main { max-width: 860px; margin: 0 auto; padding: 24px 20px; }
+    /* ── Layout ── */
+    .page-wrap { display: flex; align-items: flex-start; max-width: 1160px; margin: 0 auto; padding: 0 16px; }
+    .main { flex: 1; min-width: 0; padding: 24px 20px 80px; }
+
+    /* ── Sidebar ── */
+    .sidebar-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 18px 20px; }
+    .sidebar-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #94a3b8; margin-bottom: 14px; }
+    .sb-row { margin-bottom: 10px; }
+    .sb-label { font-size: 0.72rem; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+    .sb-select { width: 100%; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; font-family: 'Inter', sans-serif; outline: none; background: #f8fafc; color: #1a2030; cursor: pointer; }
+    .sb-select:focus { border-color: #6366f1; }
+    .sb-input { width: 100%; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; font-family: 'Inter', sans-serif; outline: none; background: #f8fafc; }
+    .sb-input:focus { border-color: #6366f1; background: #fff; }
+    .sb-btn { width: 100%; background: #6366f1; color: #fff; border: none; border-radius: 9px; padding: 10px; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: background 0.15s; margin-top: 6px; }
+    .sb-btn:hover { background: #4f46e5; }
+    .sidebar-divider { border: none; border-top: 1px solid #f1f5f9; margin: 12px 0; }
 
     /* ── Section headers ── */
     .section-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #1a2030; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
@@ -50,8 +67,9 @@
     .task-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
     .task-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; display: flex; align-items: flex-start; gap: 10px; transition: box-shadow 0.15s; }
     .task-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-    .task-item.done { opacity: 0.55; }
-    .task-item.done .task-title { text-decoration: line-through; color: #94a3b8; }
+    .task-item.done { opacity: 0.6; background: #f8fafc; }
+    .task-item.done .task-title { color: #64748b; }
+    .task-done-badge { display: inline-block; font-size: 0.68rem; font-weight: 700; background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; border-radius: 5px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
 
     .task-check { width: 18px; height: 18px; border: 2px solid #c7d2fe; border-radius: 5px; cursor: pointer; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
     .task-check.checked { background: #6366f1; border-color: #6366f1; }
@@ -63,7 +81,19 @@
     .task-meta { font-size: 0.7rem; color: #94a3b8; margin-top: 3px; }
     .task-linked { display: inline-block; font-size: 0.68rem; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; border-radius: 5px; padding: 1px 5px; margin-top: 3px; }
 
-    .task-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: flex-start; }
+    /* ── Important ── */
+    .task-item.important { background: #fffbeb; border-color: #fcd34d; }
+    .task-item.important .task-title { color: #92400e; }
+    .btn-star { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 2px 4px; line-height: 1; flex-shrink: 0; color: #d1d5db; transition: color 0.15s, transform 0.12s; }
+    .btn-star:hover { color: #f59e0b; transform: scale(1.2); }
+    .task-item.important .btn-star { color: #f59e0b; }
+
+    /* View mode (default) — hide edit controls */
+    .task-actions { display: none; gap: 4px; flex-shrink: 0; align-items: flex-start; }
+    .sidebar { width: 300px; flex-shrink: 0; position: sticky; top: 110px; padding: 16px 0 16px 20px; display: none; }
+    /* Edit mode — show edit controls */
+    body.edit-mode .task-actions { display: flex; }
+    body.edit-mode .sidebar { display: block; }
     .btn-task { background: none; border: none; cursor: pointer; font-size: 0.75rem; color: #cbd5e1; padding: 2px 4px; border-radius: 5px; transition: color 0.15s; }
     .btn-task:hover { color: #6366f1; background: #f1f5f9; }
     .btn-task.del:hover { color: #ef4444; background: #fef2f2; }
@@ -76,14 +106,20 @@
     .type-group-header { font-size: 0.71rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 3px 0 6px; border-bottom: 2px solid; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
     .type-cnt { font-size: 0.68rem; font-weight: 600; background: #f1f5f9; color: #64748b; padding: 1px 5px; border-radius: 5px; }
 
-    /* ── Add task row ── */
-    .add-task-row { display: flex; gap: 8px; margin-top: 6px; align-items: center; }
-    .add-type-inline { padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.78rem; font-family: 'Inter', sans-serif; outline: none; background: #f8fafc; color: #475569; flex-shrink: 0; max-width: 140px; cursor: pointer; }
-    .add-type-inline:focus { border-color: #6366f1; }
-    .add-task-inp { flex: 1; padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.83rem; font-family: 'Inter', sans-serif; outline: none; background: #f8fafc; }
-    .add-task-inp:focus { border-color: #6366f1; background: #fff; }
-    .btn-add-task { background: #6366f1; color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.83rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
-    .btn-add-task:hover { background: #4f46e5; }
+
+    /* ── Month split layout ── */
+    .month-split { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: flex-start; }
+    .month-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 18px 18px; }
+    .month-panel-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #94a3b8; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; }
+    .month-panel-title .cnt { font-size: 0.68rem; font-weight: 600; background: #e0e7ff; color: #6366f1; padding: 1px 6px; border-radius: 5px; }
+    .weeks-panel { display: flex; flex-direction: column; gap: 12px; }
+    .week-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px 16px; }
+    .week-card-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+    .week-card-title:hover { color: #6366f1; }
+    .week-card-title .cnt { font-size: 0.68rem; background: #f1f5f9; color: #94a3b8; padding: 1px 5px; border-radius: 5px; font-weight: 600; }
+    .week-card-title::after { content: '▾'; font-size: 0.7em; margin-left: auto; }
+    .week-card.collapsed .week-card-title::after { content: '▸'; }
+    .week-card.collapsed .week-card-body { display: none; }
 
     /* ── Backlog ── */
     .backlog-section { margin-bottom: 20px; }
@@ -122,6 +158,7 @@
 
 <header class="site-header">
   <h1>Tasks</h1>
+  <button class="btn-mode-toggle" id="btn-mode-toggle">✏️ Edit Mode</button>
   <button class="btn-add-year" id="btn-add-year">+ Year</button>
 </header>
 
@@ -129,12 +166,47 @@
   <!-- rendered by JS -->
 </div>
 
-<div id="month-nav-wrap">
-  <!-- rendered by JS for non-backlog tabs -->
-</div>
+<div id="month-nav-wrap"></div>
 
-<div class="main" id="main-content">
-  <!-- rendered by JS -->
+<div class="page-wrap">
+  <div class="main" id="main-content"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title">Add Task</div>
+
+      <div class="sb-row">
+        <div class="sb-label">Add to</div>
+        <select class="sb-select" id="sb-level"></select>
+      </div>
+      <div class="sb-row" id="sb-week-row" style="display:none">
+        <div class="sb-label">Week</div>
+        <select class="sb-select" id="sb-week">
+          <option value="1">Week 1</option>
+          <option value="2">Week 2</option>
+          <option value="3">Week 3</option>
+          <option value="4">Week 4</option>
+        </select>
+      </div>
+      <div class="sb-row">
+        <div class="sb-label">Type</div>
+        <select class="sb-select" id="sb-type">
+          <option value="health">🏃 Health</option>
+          <option value="financial">💰 Financial</option>
+          <option value="travel">✈️ Travel</option>
+          <option value="house">🏠 House</option>
+          <option value="garden">🌿 Garden</option>
+          <option value="personal">🧘 Personal</option>
+          <option value="work">💼 Work</option>
+          <option value="other" selected>📌 Other</option>
+        </select>
+      </div>
+      <div class="sb-row">
+        <input class="sb-input" id="sb-title" type="text" placeholder="Task title…">
+      </div>
+      <button class="sb-btn" id="sb-add">+ Add Task</button>
+    </div>
+  </aside>
 </div>
 
 <!-- ── Add / Edit Task Modal ── -->
