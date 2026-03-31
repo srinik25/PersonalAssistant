@@ -31,8 +31,9 @@ function weekRanges(year, month) {
 // ── State ─────────────────────────────────────────────────────────────────
 var tasks        = {};
 var notes        = {};        // keyed by "year-month"
+var goals        = {};        // keyed by doc id
 var archivedYears= new Set(); // years moved to archive
-var activeTab    = '2026';    // year string, 'backlog', or 'archive'
+var activeTab    = '2026';    // year string, 'backlog', 'archive', or 'goals'
 var activeView   = 'year';    // 'year' or month number (1-12)
 var metaDocRef   = null;
 
@@ -56,11 +57,21 @@ function load() {
     snap.forEach(function(doc) { notes[doc.id] = doc.data().content || ''; });
     render();
   });
+  // Goals
+  db.collection('todo_goals').onSnapshot(function(snap) {
+    goals = {};
+    snap.forEach(function(doc) { goals[doc.id] = Object.assign({ id: doc.id }, doc.data()); });
+    render();
+  });
 }
 
 function addTask(data)         { return db.collection('todo_tasks').add(Object.assign({ createdAt: new Date().toISOString() }, data)); }
 function saveTask(id, data)    { return db.collection('todo_tasks').doc(id).update(Object.assign({ updatedAt: new Date().toISOString() }, data)); }
 function removeTask(id)        { return db.collection('todo_tasks').doc(id).delete(); }
+
+function addGoal(data)         { return db.collection('todo_goals').add(Object.assign({ createdAt: new Date().toISOString(), status: 'active' }, data)); }
+function saveGoal(id, data)    { return db.collection('todo_goals').doc(id).update(Object.assign({ updatedAt: new Date().toISOString() }, data)); }
+function removeGoal(id)        { return db.collection('todo_goals').doc(id).delete(); }
 
 function markDone(id, done) {
   var updates = [saveTask(id, { status: done ? 'done' : 'pending' })];
@@ -162,6 +173,7 @@ function renderYearTabs() {
     return '<button class="' + cls + '" data-year="' + y + '">' + y + '</button>';
   }).join('');
   html += '<button class="ytab backlog-tab' + (activeTab === 'backlog' ? ' active' : '') + '" data-year="backlog">📋 Backlog</button>';
+  html += '<button class="ytab goals-tab' + (activeTab === 'goals' ? ' active' : '') + '" data-year="goals">🎯 Goals</button>';
   if (archivedYears.size > 0) {
     html += '<button class="ytab archive-tab' + (activeTab === 'archive' ? ' active' : '') + '" data-year="archive">🗄 Archive</button>';
   }
@@ -177,7 +189,7 @@ function renderYearTabs() {
 
 function renderMonthNav() {
   var wrap = document.getElementById('month-nav-wrap');
-  if (activeTab === 'backlog' || activeTab === 'archive') { wrap.innerHTML = ''; return; }
+  if (activeTab === 'backlog' || activeTab === 'archive' || activeTab === 'goals') { wrap.innerHTML = ''; return; }
   var year = Number(activeTab);
   var months = yearMonths(year);
   var html = '<div class="month-nav"><button class="mtab' + (activeView === 'year' ? ' active' : '') + '" data-view="year">📅 Year</button>';
@@ -199,6 +211,7 @@ function renderMain() {
   var el = document.getElementById('main-content');
   if (activeTab === 'backlog') { el.innerHTML = renderBacklogHTML(); bindMain(); updateSidebar(); return; }
   if (activeTab === 'archive') { el.innerHTML = renderArchiveHTML(); bindMain(); updateSidebar(); return; }
+  if (activeTab === 'goals')   { el.innerHTML = renderGoalsHTML();   bindMain(); updateSidebar(); return; }
   var year = Number(activeTab);
   if (activeView === 'year') { el.innerHTML = renderYearHTML(year); bindMain(); updateSidebar(); return; }
   el.innerHTML = renderMonthHTML(year, Number(activeView));
@@ -273,8 +286,8 @@ function renderMonthHTML(year, month) {
 
   var savedNote = notes[noteKey(year, month)] || '';
   var notesHTML = '<div class="month-notes-wrap">' +
-    '<div class="month-notes-header">Notes</div>' +
-    '<textarea class="month-notes-area" id="month-notes-ta" placeholder="Books to read, things to try, reminders…">' + esc(savedNote) + '</textarea>' +
+    '<div class="month-notes-header">Comments &amp; Notes</div>' +
+    '<textarea class="month-notes-area" id="month-notes-ta" placeholder="Things to do, books to read, watch, try, reminders, free thoughts…">' + esc(savedNote) + '</textarea>' +
     '<div class="month-notes-saved" id="month-notes-saved"></div>' +
   '</div>';
 
@@ -308,6 +321,58 @@ function renderBacklogHTML() {
     (list.length ? '<span class="cnt">' + list.length + '</span>' : '') +
     '</div>';
   html += renderGroupedTasks(byType, 'backlog', null, null, null);
+  return html;
+}
+
+// ── Goals view ─────────────────────────────────────────────────────────────
+function renderGoalsHTML() {
+  var list = Object.values(goals).sort(function(a,b){ return (a.createdAt||'').localeCompare(b.createdAt||''); });
+  var doneCount = list.filter(function(g){ return g.status === 'done'; }).length;
+  var html = '<div class="section-title"><span>Goals</span>' +
+    (list.length ? '<span class="cnt">' + doneCount + ' / ' + list.length + ' done</span>' : '') +
+    '<button class="btn-add-goal">+ Add Goal</button>' +
+  '</div>';
+
+  if (!list.length) {
+    html += '<p class="empty">No goals yet. Add one to get started!</p>';
+    return html;
+  }
+
+  // Group by type
+  var byType = {};
+  list.forEach(function(g) {
+    var tp = g.type || 'other';
+    if (!byType[tp]) byType[tp] = [];
+    byType[tp].push(g);
+  });
+
+  TASK_TYPES.forEach(function(tp) {
+    if (!byType[tp] || !byType[tp].length) return;
+    var color = TYPE_COLOR[tp];
+    html += '<div class="type-group">' +
+      '<div class="type-group-header" style="color:' + color + ';border-bottom-color:' + color + '22">' +
+        TYPE_LABEL[tp] + ' <span class="type-cnt">' + byType[tp].length + '</span>' +
+      '</div><ul class="task-list">';
+    byType[tp].forEach(function(g) {
+      var done = g.status === 'done';
+      var cls  = 'task-item' + (done ? ' done' : '');
+      var chkCls = 'task-check' + (done ? ' checked' : '');
+      var typeColor = TYPE_COLOR[g.type || 'other'];
+      var doneBadge = done ? '<span class="goal-done-badge">✓ Done</span>' : '';
+      html += '<li class="' + cls + '" data-id="' + esc(g.id) + '">' +
+        '<div class="' + chkCls + ' goal-check" data-id="' + esc(g.id) + '" data-done="' + done + '"></div>' +
+        '<div class="task-body">' +
+          '<div class="task-title" style="border-left:3px solid ' + typeColor + ';padding-left:6px">' + esc(g.title) + doneBadge + '</div>' +
+          (g.description ? '<div class="task-desc">' + esc(g.description) + '</div>' : '') +
+        '</div>' +
+        '<div class="goal-actions">' +
+          '<button class="btn-task btn-edit-goal" data-id="' + esc(g.id) + '" title="Edit">✏️</button>' +
+          '<button class="btn-task del btn-del-goal" data-id="' + esc(g.id) + '" title="Delete">✕</button>' +
+        '</div>' +
+      '</li>';
+    });
+    html += '</ul></div>';
+  });
   return html;
 }
 
@@ -445,6 +510,32 @@ function bindMain() {
   // Copy
   document.querySelectorAll('.btn-copy').forEach(function(b) {
     b.onclick = function() { openCopyModal(this.dataset.id); };
+  });
+
+  // Goal: add
+  document.querySelectorAll('.btn-add-goal').forEach(function(b) {
+    b.onclick = function() { openGoalModal('add'); };
+  });
+
+  // Goal: check/uncheck
+  document.querySelectorAll('.goal-check').forEach(function(c) {
+    c.onclick = function() {
+      var done = this.dataset.done === 'true';
+      saveGoal(this.dataset.id, { status: done ? 'active' : 'done' });
+    };
+  });
+
+  // Goal: edit
+  document.querySelectorAll('.btn-edit-goal').forEach(function(b) {
+    b.onclick = function() { openGoalModal('edit', this.dataset.id); };
+  });
+
+  // Goal: delete
+  document.querySelectorAll('.btn-del-goal').forEach(function(b) {
+    b.onclick = function() {
+      if (!confirm('Delete this goal?')) return;
+      removeGoal(this.dataset.id);
+    };
   });
 
 }
@@ -594,7 +685,7 @@ var sbAdd     = document.getElementById('sb-add');
 function updateSidebar() {
   if (!sbLevel) return;
   var opts = '';
-  if (activeTab === 'backlog') {
+  if (activeTab === 'backlog' || activeTab === 'goals') {
     opts = '<option value="backlog">Backlog</option>';
     sbLevel.innerHTML = opts;
     sbWeekRow.style.display = 'none';
@@ -669,6 +760,56 @@ document.getElementById('btn-mode-toggle').onclick = function() {
   this.textContent = isEdit ? '👁 View Mode' : '✏️ Edit Mode';
   if (isEdit) updateSidebar();
 };
+
+// ── Goal Modal ─────────────────────────────────────────────────────────────
+var goalModal       = document.getElementById('goal-modal');
+var gTitle          = document.getElementById('g-title');
+var gDesc           = document.getElementById('g-desc');
+var goalModalSave   = document.getElementById('goal-modal-save');
+var goalModalStatus = document.getElementById('goal-modal-status');
+var editingGoalId   = null;
+
+function openGoalModal(mode, id) {
+  var gType = document.getElementById('g-type');
+  goalModalStatus.textContent = '';
+  if (mode === 'edit') {
+    var g = goals[id];
+    document.getElementById('goal-modal-title').textContent = 'Edit Goal';
+    gTitle.value = g.title || '';
+    gDesc.value  = g.description || '';
+    gType.value  = g.type || 'other';
+    editingGoalId = id;
+  } else {
+    document.getElementById('goal-modal-title').textContent = 'Add Goal';
+    gTitle.value = '';
+    gDesc.value  = '';
+    gType.value  = 'other';
+    editingGoalId = null;
+  }
+  goalModal.classList.add('open');
+  setTimeout(function() { gTitle.focus(); }, 60);
+}
+
+document.getElementById('goal-modal-cancel').onclick = function() { goalModal.classList.remove('open'); };
+goalModal.addEventListener('click', function(e) { if (e.target === goalModal) goalModal.classList.remove('open'); });
+
+goalModalSave.onclick = function() {
+  var title = gTitle.value.trim();
+  var gType = document.getElementById('g-type');
+  if (!title) { goalModalStatus.textContent = 'Title is required.'; return; }
+  goalModalSave.disabled = true;
+  var data = { title: title, description: gDesc.value.trim(), type: gType.value };
+  var p = editingGoalId ? saveGoal(editingGoalId, data) : addGoal(data);
+  p.then(function() {
+    goalModal.classList.remove('open');
+    goalModalSave.disabled = false;
+  }).catch(function(err) {
+    goalModalStatus.textContent = 'Error: ' + err.message;
+    goalModalSave.disabled = false;
+  });
+};
+
+gTitle.addEventListener('keydown', function(e) { if (e.key === 'Enter') goalModalSave.click(); });
 
 // ── Init ───────────────────────────────────────────────────────────────────
 load();
