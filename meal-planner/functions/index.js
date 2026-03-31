@@ -585,7 +585,7 @@ exports.classifyArticle = onRequest(
         const CATEGORIES = [
             "physics_cosmos", "biology_life", "technology",
             "artificial_intelligence", "human_stories",
-            "health_wellness", "exercises", "philosophy", "personal_growth",
+            "health_wellness", "exercises", "brain", "philosophy", "personal_growth",
             "economics_society", "travel", "personal_finance", "links", "other"
         ];
 
@@ -601,10 +601,11 @@ exports.classifyArticle = onRequest(
             `- human_stories: personal essays, biography, longform journalism, death, relationships\n` +
             `- health_wellness: health, medicine, wellness, nutrition, supplements, disease prevention\n` +
             `- exercises: workout routines, fitness programs, strength training, yoga, running, mobility\n` +
-            `- philosophy: philosophy, cognition, thinking, stoicism, consciousness, meaning\n` +
+            `- brain: neuroscience, psychology, cognitive science, memory, learning, decision-making, mental models, behavior, consciousness, emotions, attention, habits of mind\n` +
+            `- philosophy: philosophy, ethics, stoicism, meaning, metaphysics, existentialism\n` +
             `- economics_society: economics, finance, society, politics, culture\n` +
             `- travel: travel destinations, trip guides, travel essays, exploring places\n` +
-            `- personal_growth: self-improvement, habits, mindset, productivity, life lessons\n` +
+            `- personal_growth: self-improvement, productivity, life lessons, career, motivation\n` +
             `- personal_finance: budgeting, investing, retirement, saving, money management\n` +
             `- links: useful tools, reference pages, resources, directories\n` +
             `- other: anything that doesn't fit the above categories\n` +

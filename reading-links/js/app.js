@@ -5,7 +5,7 @@ var CLASSIFY_URL = 'https://us-central1-nutrition-198dd.cloudfunctions.net/class
 
 var TABS = [
   'physics_cosmos','biology_life','technology','artificial_intelligence',
-  'human_stories','health_wellness','exercises','philosophy','personal_growth',
+  'human_stories','health_wellness','exercises','brain','philosophy','personal_growth',
   'economics_society','travel','personal_finance','links','other','suggested','archive','favorites'
 ];
 
@@ -115,7 +115,7 @@ function bindActions() {
         physics_cosmos: 'Physics & Cosmos', biology_life: 'Biology & Life',
         technology: 'Technology', artificial_intelligence: 'AI',
         human_stories: 'Human Stories', health_wellness: 'Health',
-        exercises: 'Exercises', philosophy: 'Philosophy',
+        exercises: 'Exercises', brain: '🧠 Brain', philosophy: 'Philosophy',
         personal_growth: 'Personal Growth', economics_society: 'Economics',
         travel: 'Travel', personal_finance: 'Personal Finance', links: 'Links', other: 'Other'
       };
