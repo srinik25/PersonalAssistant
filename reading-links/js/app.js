@@ -115,7 +115,7 @@ function bindActions() {
         physics_cosmos: 'Physics & Cosmos', biology_life: 'Biology & Life',
         technology: 'Technology', artificial_intelligence: 'AI',
         human_stories: 'Human Stories', health_wellness: 'Health',
-        exercises: 'Exercises', brain: '🧠 Brain', philosophy: 'Philosophy',
+        exercises: 'Exercises', brain: 'Brain', philosophy: 'Philosophy',
         personal_growth: 'Personal Growth', economics_society: 'Economics',
         travel: 'Travel', personal_finance: 'Personal Finance', links: 'Links', other: 'Other'
       };
