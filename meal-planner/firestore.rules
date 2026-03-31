@@ -69,6 +69,14 @@ service cloud.firestore {
     match /todo_tasks/{docId} {
       allow read, write: if true;
     }
+    // Todo notes (monthly)
+    match /todo_notes/{docId} {
+      allow read, write: if true;
+    }
+    // Todo meta (archive config)
+    match /todo_meta/{docId} {
+      allow read, write: if true;
+    }
     // Musings - open access (personal app)
     match /musings_items/{docId} {
       allow read, write: if true;

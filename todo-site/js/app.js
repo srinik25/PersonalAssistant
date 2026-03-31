@@ -29,15 +29,31 @@ function weekRanges(year, month) {
 }
 
 // ── State ─────────────────────────────────────────────────────────────────
-var tasks      = {};
-var activeTab  = '2026';      // year string or 'backlog'
-var activeView = 'year';      // 'year' or month number (1-12)
+var tasks        = {};
+var notes        = {};        // keyed by "year-month"
+var archivedYears= new Set(); // years moved to archive
+var activeTab    = '2026';    // year string, 'backlog', or 'archive'
+var activeView   = 'year';    // 'year' or month number (1-12)
+var metaDocRef   = null;
 
 // ── Firestore ──────────────────────────────────────────────────────────────
 function load() {
+  // Meta doc (archived years)
+  metaDocRef = db.collection('todo_meta').doc('config');
+  metaDocRef.onSnapshot(function(doc) {
+    archivedYears = new Set(doc.exists ? (doc.data().archivedYears || []) : []);
+    render();
+  });
+  // Tasks
   db.collection('todo_tasks').onSnapshot(function(snap) {
     tasks = {};
     snap.forEach(function(doc) { tasks[doc.id] = Object.assign({ id: doc.id }, doc.data()); });
+    render();
+  });
+  // Notes
+  db.collection('todo_notes').onSnapshot(function(snap) {
+    notes = {};
+    snap.forEach(function(doc) { notes[doc.id] = doc.data().content || ''; });
     render();
   });
 }
@@ -86,7 +102,28 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 function allYears() {
   var set = new Set([2026]);
   Object.values(tasks).forEach(function(t) { if (t.year) set.add(Number(t.year)); });
-  return Array.from(set).sort();
+  // Include archived years in the set too so tasks aren't lost
+  archivedYears.forEach(function(y) { set.add(Number(y)); });
+  return Array.from(set).sort().filter(function(y) { return !archivedYears.has(y); });
+}
+
+function archiveYear(year) {
+  var newSet = new Set(archivedYears);
+  newSet.add(year);
+  return metaDocRef.set({ archivedYears: Array.from(newSet) }, { merge: true });
+}
+
+function unarchiveYear(year) {
+  var newSet = new Set(archivedYears);
+  newSet.delete(year);
+  return metaDocRef.set({ archivedYears: Array.from(newSet) }, { merge: true });
+}
+
+function noteKey(year, month) { return year + '-' + month; }
+
+function saveNote(year, month, content) {
+  var key = noteKey(year, month);
+  return db.collection('todo_notes').doc(key).set({ year: year, month: month, content: content, updatedAt: new Date().toISOString() });
 }
 
 function tasksFor(level, year, month, weekNum) {
@@ -125,11 +162,14 @@ function renderYearTabs() {
     return '<button class="' + cls + '" data-year="' + y + '">' + y + '</button>';
   }).join('');
   html += '<button class="ytab backlog-tab' + (activeTab === 'backlog' ? ' active' : '') + '" data-year="backlog">📋 Backlog</button>';
+  if (archivedYears.size > 0) {
+    html += '<button class="ytab archive-tab' + (activeTab === 'archive' ? ' active' : '') + '" data-year="archive">🗄 Archive</button>';
+  }
   document.getElementById('year-tabs').innerHTML = html;
   document.querySelectorAll('.ytab').forEach(function(b) {
     b.onclick = function() {
       activeTab = this.dataset.year;
-      if (activeTab !== 'backlog') activeView = 'year';
+      if (activeTab !== 'backlog' && activeTab !== 'archive') activeView = 'year';
       render();
     };
   });
@@ -137,7 +177,7 @@ function renderYearTabs() {
 
 function renderMonthNav() {
   var wrap = document.getElementById('month-nav-wrap');
-  if (activeTab === 'backlog') { wrap.innerHTML = ''; return; }
+  if (activeTab === 'backlog' || activeTab === 'archive') { wrap.innerHTML = ''; return; }
   var year = Number(activeTab);
   var months = yearMonths(year);
   var html = '<div class="month-nav"><button class="mtab' + (activeView === 'year' ? ' active' : '') + '" data-view="year">📅 Year</button>';
@@ -158,11 +198,13 @@ function renderMonthNav() {
 function renderMain() {
   var el = document.getElementById('main-content');
   if (activeTab === 'backlog') { el.innerHTML = renderBacklogHTML(); bindMain(); updateSidebar(); return; }
+  if (activeTab === 'archive') { el.innerHTML = renderArchiveHTML(); bindMain(); updateSidebar(); return; }
   var year = Number(activeTab);
   if (activeView === 'year') { el.innerHTML = renderYearHTML(year); bindMain(); updateSidebar(); return; }
   el.innerHTML = renderMonthHTML(year, Number(activeView));
   bindMain();
   updateSidebar();
+  bindNotes(year, Number(activeView));
 }
 
 // ── Year view ──────────────────────────────────────────────────────────────
@@ -175,6 +217,25 @@ function renderYearHTML(year) {
     '</div>';
   if (prog) html += progressBarHTML(prog.pct);
   html += renderGroupedTasks(byType, 'year', year, null, null);
+  html += '<button class="btn-archive-year" data-year="' + year + '">🗄 Archive ' + year + '</button>';
+  return html;
+}
+
+// ── Archive view ───────────────────────────────────────────────────────────
+function renderArchiveHTML() {
+  if (archivedYears.size === 0) return '<p class="empty" style="padding:20px">No archived years.</p>';
+  var html = '<div class="section-title"><span>Archive</span></div>';
+  Array.from(archivedYears).sort().forEach(function(year) {
+    var list = Object.values(tasks).filter(function(t) { return t.year === Number(year); });
+    var prog = progress(list);
+    html += '<div class="archive-year-section">' +
+      '<div class="archive-year-title">' + year +
+        (prog ? ' <span class="cnt" style="font-family:Inter;font-size:0.72rem;background:#fef3c7;color:#d97706;padding:2px 7px;border-radius:8px;">' + prog.done + '/' + prog.total + ' done</span>' : '') +
+        ' <button class="btn-unarchive" data-year="' + year + '">↩ Restore</button>' +
+      '</div>' +
+      (prog ? progressBarHTML(prog.pct) : '') +
+    '</div>';
+  });
   return html;
 }
 
@@ -210,8 +271,33 @@ function renderMonthHTML(year, month) {
 
   var rightHTML = '<div class="weeks-panel">' + weeksHTML + '</div>';
 
+  var savedNote = notes[noteKey(year, month)] || '';
+  var notesHTML = '<div class="month-notes-wrap">' +
+    '<div class="month-notes-header">Notes</div>' +
+    '<textarea class="month-notes-area" id="month-notes-ta" placeholder="Books to read, things to try, reminders…">' + esc(savedNote) + '</textarea>' +
+    '<div class="month-notes-saved" id="month-notes-saved"></div>' +
+  '</div>';
+
   return '<div class="section-title"><span>' + MONTHS[month-1] + ' ' + year + '</span></div>' +
-    '<div class="month-split">' + leftHTML + rightHTML + '</div>';
+    '<div class="month-split">' + leftHTML + rightHTML + '</div>' +
+    notesHTML;
+}
+
+function bindNotes(year, month) {
+  var ta = document.getElementById('month-notes-ta');
+  var saved = document.getElementById('month-notes-saved');
+  if (!ta) return;
+  var timer = null;
+  ta.addEventListener('input', function() {
+    clearTimeout(timer);
+    saved.textContent = '';
+    timer = setTimeout(function() {
+      saveNote(year, month, ta.value).then(function() {
+        saved.textContent = 'Saved';
+        setTimeout(function() { saved.textContent = ''; }, 2000);
+      });
+    }, 800);
+  });
 }
 
 // ── Backlog view ───────────────────────────────────────────────────────────
@@ -305,6 +391,23 @@ function progressBarHTML(pct) {
 
 // ── Bind events ────────────────────────────────────────────────────────────
 function bindMain() {
+  // Archive year
+  document.querySelectorAll('.btn-archive-year').forEach(function(b) {
+    b.onclick = function() {
+      var year = Number(this.dataset.year);
+      if (!confirm('Move ' + year + ' to the archive? You can restore it anytime.')) return;
+      archiveYear(year).then(function() { activeTab = 'archive'; render(); });
+    };
+  });
+
+  // Unarchive year
+  document.querySelectorAll('.btn-unarchive').forEach(function(b) {
+    b.onclick = function() {
+      var year = Number(this.dataset.year);
+      unarchiveYear(year).then(function() { activeTab = String(year); activeView = 'year'; render(); });
+    };
+  });
+
   // Week collapse (card layout)
   document.querySelectorAll('.week-card-title').forEach(function(h) {
     h.onclick = function() { this.closest('.week-card').classList.toggle('collapsed'); };
