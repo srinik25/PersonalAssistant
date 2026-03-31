@@ -60,6 +60,20 @@ SOURCES = [
     {'name': 'Knowable Magazine',   'url': 'https://knowablemagazine.org/feed'},
 ]
 
+PAYWALL_DOMAINS = [
+    "ft.com", "newyorker.com", "nytimes.com", "theatlantic.com",
+    "nautil.us", "wsj.com", "economist.com", "bloomberg.com",
+    "lrb.co.uk", "hbr.org", "washingtonpost.com", "harpers.org", "theverge.com"
+]
+
+def archive_url(url):
+    """Convert paywalled URLs to archive.ph links."""
+    if any(d in url for d in PAYWALL_DOMAINS):
+        # Strip UTM params before archiving
+        clean = url.split('?')[0]
+        return "https://archive.ph/newest/" + clean
+    return url
+
 VALID_CATEGORIES = [
     "physics_cosmos", "biology_life", "technology", "artificial_intelligence",
     "human_stories", "health_wellness", "exercises", "philosophy", "personal_growth",
@@ -162,7 +176,7 @@ def pick_suggestions(candidates, existing_urls):
 def write_suggestion(item):
     body = {
         "fields": {
-            "url":         {"stringValue": item["url"]},
+            "url":         {"stringValue": archive_url(item["url"])},
             "title":       {"stringValue": item["title"]},
             "description": {"stringValue": item.get("description", "")},
             "category":    {"stringValue": item.get("category", "other") if item.get("category") in VALID_CATEGORIES else "other"},
