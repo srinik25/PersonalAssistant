@@ -43,6 +43,10 @@ service cloud.firestore {
     match /whatshappening_items/{docId} {
       allow read, write: if true;
     }
+    // What's Happening feedback (thumbs up/down)
+    match /whatshappening_feedback/{docId} {
+      allow read, write: if true;
+    }
     // Travel places - open access (personal app)
     match /travel_places/{docId} {
       allow read, write: if true;
