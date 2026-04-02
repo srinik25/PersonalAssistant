@@ -7,35 +7,42 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #1c1917;
+      --card: #292524;
+      --border: #44403c;
+      --text: #fafaf9;
+      --text2: #a8a29e;
+      --accent: #22c55e;
+      --accent-dim: rgba(34,197,94,0.12);
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #0f0f0f;
-      color: #f0f0f0;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
     }
 
     /* ── TOP BAR ── */
     .topbar {
       background: #111;
-      border-bottom: 1px solid #222;
+      border-bottom: 1px solid var(--border);
       padding: 14px 20px;
       display: flex;
       align-items: center;
       gap: 16px;
     }
     .topbar-title {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 800;
       letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #22c55e, #10b981);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--accent);
     }
     .topbar-sub {
       font-size: 0.75rem;
-      color: #666;
+      color: var(--text2);
       margin-left: auto;
     }
 
@@ -44,7 +51,7 @@
       position: fixed;
       bottom: 0; left: 0; right: 0;
       background: #111;
-      border-top: 1px solid #222;
+      border-top: 1px solid var(--border);
       display: flex;
       z-index: 100;
       padding-bottom: env(safe-area-inset-bottom);
@@ -53,7 +60,7 @@
       flex: 1;
       background: none;
       border: none;
-      color: #666;
+      color: var(--text2);
       font-family: 'Inter', sans-serif;
       font-size: 0.72rem;
       font-weight: 600;
@@ -65,281 +72,245 @@
       gap: 3px;
       transition: color 0.2s;
     }
-    .nav-tab .tab-icon { font-size: 1.25rem; line-height: 1; }
-    .nav-tab:hover { color: #aaa; }
-    .nav-tab.active { color: #22c55e; }
+    .nav-tab .tab-icon { font-size: 1.2rem; line-height: 1; }
+    .nav-tab:hover { color: #ccc; }
+    .nav-tab.active { color: var(--accent); }
 
     /* ── PANELS ── */
     .tab-panel {
-      padding: 16px 16px 100px;
+      padding: 16px 16px 90px;
       max-width: 640px;
       margin: 0 auto;
     }
 
     /* ── CARDIAC NOTICE ── */
     .cardiac-notice {
-      background: #1a0000;
+      background: #280a0a;
       border: 1px solid #7f1d1d;
       border-left: 4px solid #ef4444;
       border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 0.82rem;
+      padding: 11px 14px;
+      font-size: 0.8rem;
       color: #fca5a5;
-      margin-bottom: 16px;
-      line-height: 1.55;
+      margin-bottom: 14px;
+      line-height: 1.5;
     }
     .cardiac-notice strong { color: #f87171; }
 
     /* ── TODAY HEADER ── */
     .today-header {
-      background: #1a1a1a;
+      background: var(--card);
+      border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 16px;
+      gap: 14px;
     }
-    .today-date { font-size: 0.78rem; color: #666; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
-    .today-plan-label { font-size: 1.25rem; font-weight: 800; color: #f0f0f0; line-height: 1.2; }
-    .today-focus { font-size: 0.8rem; color: #888; margin-top: 4px; }
+    .today-date { font-size: 0.72rem; color: var(--text2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .today-plan-label { font-size: 1.2rem; font-weight: 800; }
+    .today-focus { font-size: 0.78rem; color: var(--text2); margin-top: 3px; }
     .today-progress-wrap { text-align: right; flex-shrink: 0; }
-    .progress-ring-label { font-size: 1.4rem; font-weight: 800; color: #22c55e; }
-    .progress-bar-wrap {
-      width: 100px; height: 6px;
-      background: #2a2a2a; border-radius: 3px;
-      margin: 6px 0 4px;
-    }
-    .progress-bar { height: 100%; background: linear-gradient(90deg, #22c55e, #10b981); border-radius: 3px; transition: width 0.4s ease; }
-    .progress-pct { font-size: 0.7rem; color: #666; }
+    .progress-ring-label { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+    .progress-bar-wrap { width: 90px; height: 5px; background: var(--border); border-radius: 3px; margin: 5px 0 3px; }
+    .progress-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; }
+    .progress-pct { font-size: 0.68rem; color: var(--text2); }
 
     /* ── CARDIO CALLOUT ── */
     .cardio-callout {
-      background: #0a1f0a;
+      background: #0c2014;
       border: 1px solid #166534;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-size: 0.85rem;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.83rem;
       color: #86efac;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
     /* ── EXERCISE LIST ── */
-    .exercise-list { display: flex; flex-direction: column; gap: 10px; }
+    .exercise-list { display: flex; flex-direction: column; gap: 8px; }
 
     .exercise-card {
-      background: #1a1a1a;
-      border: 1px solid #252525;
+      background: var(--card);
+      border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 14px 16px;
+      padding: 13px 15px;
       display: flex;
-      gap: 14px;
+      gap: 12px;
       align-items: flex-start;
       transition: border-color 0.2s, opacity 0.3s;
     }
     .exercise-card.ex-done {
-      opacity: 0.55;
+      opacity: 0.5;
       border-color: #1a3a1a;
     }
-    .exercise-card.ex-done .ex-name { text-decoration: line-through; color: #666; }
+    .exercise-card.ex-done .ex-name { text-decoration: line-through; color: var(--text2); }
 
     /* Checkbox */
     .ex-check-wrap { cursor: pointer; flex-shrink: 0; margin-top: 2px; }
     .ex-check { display: none; }
     .ex-check-box {
       width: 22px; height: 22px;
-      border: 2px solid #333;
+      border: 2px solid var(--border);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
     }
-    .ex-check:checked + .ex-check-box {
-      background: #22c55e;
-      border-color: #22c55e;
-    }
-    .ex-check:checked + .ex-check-box::after {
-      content: '✓';
-      color: white;
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
+    .ex-check:checked + .ex-check-box { background: var(--accent); border-color: var(--accent); }
+    .ex-check:checked + .ex-check-box::after { content: '✓'; color: #fff; font-size: 0.8rem; font-weight: 700; }
 
-    /* Exercise body */
     .ex-body { flex: 1; min-width: 0; }
-    .ex-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
-    .ex-name { font-size: 0.95rem; font-weight: 700; color: #f0f0f0; }
-    .ex-sets { font-size: 0.8rem; color: #888; margin-bottom: 6px; }
+    .ex-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 3px; }
+    .ex-name { font-size: 0.95rem; font-weight: 700; }
+    .ex-sets { font-size: 0.78rem; color: var(--text2); margin-bottom: 5px; }
 
     /* ── BADGES ── */
     .badge-complexity {
-      font-size: 0.62rem; font-weight: 700;
-      padding: 2px 8px; border-radius: 50px;
+      font-size: 0.6rem; font-weight: 700;
+      padding: 2px 7px; border-radius: 50px;
       text-transform: uppercase; letter-spacing: 0.05em;
     }
     .badge-cat {
-      font-size: 0.62rem; font-weight: 600;
-      padding: 2px 8px; border-radius: 50px;
-      background: #222; color: #888;
+      font-size: 0.6rem; font-weight: 600;
+      padding: 2px 7px; border-radius: 50px;
+      background: var(--border); color: var(--text2);
     }
     .badge-hr {
-      font-size: 0.72rem; color: #fca5a5;
-      background: #1a0000; border: 1px solid #7f1d1d;
-      padding: 2px 10px; border-radius: 50px;
-      display: inline-block; margin-bottom: 6px;
+      font-size: 0.7rem; color: #fca5a5;
+      background: #280a0a; border: 1px solid #7f1d1d;
+      padding: 2px 9px; border-radius: 50px;
+      display: inline-block; margin-bottom: 5px;
     }
     .badge-custom {
       font-size: 0.6rem; font-weight: 700;
-      padding: 2px 8px; border-radius: 50px;
+      padding: 2px 7px; border-radius: 50px;
       background: #1e3a5f; color: #60a5fa;
       text-transform: uppercase;
     }
 
+    /* ── DIAGRAM ── */
+    .ex-diagram {
+      display: block;
+      width: 110px;
+      max-width: 100%;
+      margin: 10px auto 6px;
+      opacity: 0.9;
+    }
+
     /* ── DETAILS / FORM CUES ── */
-    .ex-details { margin-top: 8px; }
+    .ex-details { margin-top: 6px; }
     .ex-details summary {
-      font-size: 0.78rem; color: #22c55e;
-      cursor: pointer; list-style: none;
-      font-weight: 600;
+      font-size: 0.76rem; color: var(--accent);
+      cursor: pointer; list-style: none; font-weight: 600;
     }
     .ex-details summary::-webkit-details-marker { display: none; }
     .ex-details[open] summary::before { content: '▾ '; }
     .ex-details summary::before { content: '▸ '; }
-    .cue-list { margin: 8px 0 8px 16px; }
-    .cue-list li { font-size: 0.8rem; color: #bbb; margin-bottom: 4px; line-height: 1.5; }
-    .ex-desc { font-size: 0.8rem; color: #999; margin-top: 6px; line-height: 1.5; }
-    .ex-notes { font-size: 0.78rem; color: #6ee7b7; margin-top: 6px; line-height: 1.5; }
+    .cue-list { margin: 8px 0 6px 14px; }
+    .cue-list li { font-size: 0.79rem; color: #c4bdb8; margin-bottom: 4px; line-height: 1.5; }
+    .ex-notes { font-size: 0.76rem; color: #6ee7b7; margin-top: 6px; line-height: 1.5; }
     .btn-video {
-      display: inline-block; margin-top: 10px;
+      display: inline-block; margin-top: 8px;
       background: #1a1a2e; color: #818cf8;
       border: 1px solid #312e81;
-      border-radius: 8px; padding: 6px 14px;
-      font-size: 0.78rem; font-weight: 600;
-      text-decoration: none;
-      transition: background 0.2s;
+      border-radius: 8px; padding: 5px 12px;
+      font-size: 0.76rem; font-weight: 600;
+      text-decoration: none; transition: background 0.2s;
     }
     .btn-video:hover { background: #25254a; }
 
     /* ── LIBRARY ── */
     .lib-filters {
-      display: flex; gap: 8px; flex-wrap: wrap;
-      margin-bottom: 14px;
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
     }
     .lib-filters select, .lib-search-input {
-      background: #1a1a1a; color: #f0f0f0;
-      border: 1px solid #2a2a2a; border-radius: 8px;
+      background: var(--card); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px;
       padding: 8px 12px; font-family: 'Inter', sans-serif;
-      font-size: 0.83rem; outline: none;
+      font-size: 0.82rem; outline: none;
     }
-    .lib-search-input { flex: 1; min-width: 140px; }
-    .lib-filters select:focus, .lib-search-input:focus { border-color: #22c55e; }
-    .lib-count { font-size: 0.75rem; color: #666; margin-bottom: 12px; }
+    .lib-search-input { flex: 1; min-width: 130px; }
+    .lib-filters select:focus, .lib-search-input:focus { border-color: var(--accent); }
+    .lib-count { font-size: 0.72rem; color: var(--text2); margin-bottom: 10px; }
 
     .lib-grid { display: flex; flex-direction: column; gap: 10px; }
     .lib-card {
-      background: #1a1a1a; border: 1px solid #252525;
+      background: var(--card); border: 1px solid var(--border);
       border-radius: 14px; padding: 14px 16px;
     }
     .lib-card-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
-    .lib-ex-name { font-size: 1rem; font-weight: 700; color: #f0f0f0; }
+    .lib-ex-name { font-size: 1rem; font-weight: 700; }
     .lib-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
-    .lib-sets { font-size: 0.8rem; color: #888; margin-bottom: 6px; }
-    .lib-desc { font-size: 0.82rem; color: #999; line-height: 1.5; margin-bottom: 6px; }
+    .lib-sets { font-size: 0.78rem; color: var(--text2); margin-bottom: 6px; }
+    .lib-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; margin-bottom: 6px; }
     .btn-del-custom {
       background: none; border: 1px solid #7f1d1d;
       color: #f87171; border-radius: 8px; padding: 4px 12px;
-      font-size: 0.75rem; cursor: pointer; margin-top: 8px;
+      font-size: 0.74rem; cursor: pointer; margin-top: 8px;
       transition: background 0.15s;
     }
-    .btn-del-custom:hover { background: #1a0000; }
+    .btn-del-custom:hover { background: #280a0a; }
 
     /* ── ADD FORM ── */
     .add-form-card {
-      background: #1a1a1a; border: 1px solid #252525;
+      background: var(--card); border: 1px solid var(--border);
       border-radius: 16px; padding: 20px;
     }
-    .add-form-card h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; color: #f0f0f0; }
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; font-weight: 600; }
+    .add-form-card h2 { font-size: 1.05rem; font-weight: 800; margin-bottom: 16px; }
+    .form-group { margin-bottom: 13px; }
+    .form-group label { display: block; font-size: 0.78rem; color: var(--text2); margin-bottom: 4px; font-weight: 600; }
     .form-group input, .form-group select, .form-group textarea {
-      width: 100%; background: #111; color: #f0f0f0;
-      border: 1px solid #2a2a2a; border-radius: 10px;
-      padding: 10px 14px; font-family: 'Inter', sans-serif;
-      font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+      width: 100%; background: #111; color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 9px 13px; font-family: 'Inter', sans-serif;
+      font-size: 0.88rem; outline: none; transition: border-color 0.2s;
     }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      border-color: #22c55e;
-    }
-    .form-group textarea { min-height: 80px; resize: vertical; }
-    .form-group .hint { font-size: 0.72rem; color: #555; margin-top: 3px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .form-group textarea { min-height: 76px; resize: vertical; }
+    .form-group .hint { font-size: 0.7rem; color: #555; margin-top: 3px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .btn-save {
-      width: 100%; padding: 13px;
-      background: linear-gradient(135deg, #22c55e, #10b981);
-      color: white; font-family: 'Inter', sans-serif;
-      font-size: 0.95rem; font-weight: 700;
+      width: 100%; padding: 12px;
+      background: var(--accent); color: white;
+      font-family: 'Inter', sans-serif; font-size: 0.93rem; font-weight: 700;
       border: none; border-radius: 12px; cursor: pointer;
       transition: opacity 0.2s; margin-top: 4px;
     }
-    .btn-save:hover { opacity: 0.9; }
+    .btn-save:hover { opacity: 0.88; }
     .btn-save:disabled { opacity: 0.5; }
     .add-success {
-      background: #0a1f0a; border: 1px solid #166534;
-      color: #86efac; border-radius: 10px; padding: 10px 16px;
-      font-size: 0.85rem; text-align: center; margin-top: 12px;
-      display: none;
+      background: #0c2014; border: 1px solid #166534;
+      color: #86efac; border-radius: 10px; padding: 10px 14px;
+      font-size: 0.82rem; margin-top: 10px; display: none; line-height: 1.5;
     }
-
-    /* ── HR ZONES ── */
-    .hr-profile {
-      background: #1a1a1a; border-radius: 16px;
-      padding: 18px; margin-bottom: 16px;
+    .add-error {
+      background: #280a0a; border: 1px solid #7f1d1d;
+      color: #fca5a5; border-radius: 10px; padding: 10px 14px;
+      font-size: 0.82rem; margin-top: 10px; display: none;
     }
-    .hr-profile h3 { font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
-    .hr-stats { display: flex; gap: 16px; }
-    .hr-stat { text-align: center; flex: 1; }
-    .hr-num { display: block; font-size: 1.8rem; font-weight: 800; }
-    .hr-lbl { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-
-    .hr-zones-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-    .hr-zone-row { background: #1a1a1a; border-radius: 12px; padding: 14px 16px; }
-    .hz-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-    .hz-name { font-size: 0.88rem; font-weight: 700; }
-    .hz-range { font-size: 0.8rem; color: #888; }
-    .hz-bar-wrap { height: 6px; background: #2a2a2a; border-radius: 3px; margin-bottom: 6px; }
-    .hz-bar { height: 100%; border-radius: 3px; }
-    .hz-desc { font-size: 0.75rem; color: #888; }
-
-    .hr-tips {
-      background: #1a1a1a; border-radius: 16px; padding: 18px;
-    }
-    .hr-tips h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: #22c55e; }
-    .hr-tips ul { padding-left: 18px; }
-    .hr-tips li { font-size: 0.82rem; color: #bbb; margin-bottom: 8px; line-height: 1.5; }
-    .hr-tips strong { color: #f0f0f0; }
 
     /* ── MISC ── */
     .empty-state {
-      text-align: center; color: #555;
-      font-size: 0.95rem; padding: 40px 20px;
-      font-style: italic;
+      text-align: center; color: var(--text2);
+      font-size: 0.93rem; padding: 40px 20px; font-style: italic;
     }
     .section-title {
-      font-size: 0.72rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 2px;
-      color: #555; margin-bottom: 12px; margin-top: 20px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 2px; color: var(--text2); margin-bottom: 10px;
     }
-    .section-title:first-child { margin-top: 0; }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 420px) {
-      .today-plan-label { font-size: 1.1rem; }
+      .today-plan-label { font-size: 1.05rem; }
       .form-row { grid-template-columns: 1fr; }
+      .ex-diagram { width: 90px; }
     }
   </style>
 </head>
@@ -352,9 +323,7 @@
 
 <!-- ── TODAY PANEL ── -->
 <div id="panel-today" class="tab-panel">
-  <div id="today-content">
-    <p class="empty-state">Loading…</p>
-  </div>
+  <div id="today-content"><p class="empty-state">Loading…</p></div>
 </div>
 
 <!-- ── LIBRARY PANEL ── -->
@@ -378,9 +347,7 @@
       <option value="complex">Complex</option>
     </select>
   </div>
-  <div id="library-content">
-    <p class="empty-state">Loading…</p>
-  </div>
+  <div id="library-content"><p class="empty-state">Loading…</p></div>
 </div>
 
 <!-- ── ADD EXERCISE PANEL ── -->
@@ -390,7 +357,7 @@
     <form id="add-ex-form" autocomplete="off">
       <div class="form-group">
         <label for="ex-name">Exercise Name *</label>
-        <input type="text" id="ex-name" placeholder="e.g. Resistance Band Row" required>
+        <input type="text" id="ex-name" placeholder="e.g. Short-Lever Copenhagen Plank" required>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -435,15 +402,9 @@
         <textarea id="ex-notes-field" placeholder="Modifications for knee pain, shoulder, etc."></textarea>
       </div>
       <button type="submit" class="btn-save" id="btn-save-ex">Save Exercise</button>
-      <div class="add-success" id="add-success">✓ Exercise saved! Find it in the Library tab.</div>
+      <div class="add-success" id="add-success"></div>
+      <div class="add-error" id="add-error"></div>
     </form>
-  </div>
-</div>
-
-<!-- ── HEART RATE PANEL ── -->
-<div id="panel-hr" class="tab-panel" style="display:none">
-  <div id="hr-content">
-    <p class="empty-state">Loading…</p>
   </div>
 </div>
 
@@ -457,9 +418,6 @@
   </button>
   <button class="nav-tab" data-tab="add">
     <span class="tab-icon">➕</span>Add
-  </button>
-  <button class="nav-tab" data-tab="hr">
-    <span class="tab-icon">❤️</span>Heart Rate
   </button>
 </nav>
 
@@ -476,7 +434,8 @@
     appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
   });
 </script>
-<script src="js/exercises.js"></script>
-<script src="js/app.js"></script>
+<script src="js/diagrams.js?v=2"></script>
+<script src="js/exercises.js?v=2"></script>
+<script src="js/app.js?v=2"></script>
 </body>
 </html>

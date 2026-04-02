@@ -5,9 +5,8 @@ let libCategory = 'all';
 let libComplexity = 'all';
 let libSearch = '';
 let customExercises = [];
-let completions = {}; // { 'YYYY-MM-DD': Set of exerciseIds }
+let completions = {};
 
-// Firebase db reference (set after init)
 let _db = null;
 function getDb() {
   if (_db) return _db;
@@ -24,24 +23,15 @@ function todayKey() {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-function getDayName(offset = 0) {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()];
-}
-
-function getDayOfWeek(offset = 0) {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return d.getDay();
+function getDayOfWeek() {
+  return new Date().getDay();
 }
 
 // ── COMPLETIONS ───────────────────────────────────────────────────────────────
 
 function loadCompletions() {
-  try {
-    return JSON.parse(localStorage.getItem('ft_completions') || '{}');
-  } catch { return {}; }
+  try { return JSON.parse(localStorage.getItem('ft_completions') || '{}'); }
+  catch { return {}; }
 }
 
 function saveCompletions() {
@@ -55,11 +45,8 @@ function isCompleted(exId, dateKey) {
 function toggleCompletion(exId, dateKey) {
   if (!completions[dateKey]) completions[dateKey] = [];
   const idx = completions[dateKey].indexOf(exId);
-  if (idx >= 0) {
-    completions[dateKey].splice(idx, 1);
-  } else {
-    completions[dateKey].push(exId);
-  }
+  if (idx >= 0) completions[dateKey].splice(idx, 1);
+  else completions[dateKey].push(exId);
   saveCompletions();
 }
 
@@ -73,24 +60,30 @@ async function loadCustomExercises() {
       customExercises = [];
       snap.forEach(doc => customExercises.push({ id: doc.id, ...doc.data(), custom: true }));
       localStorage.setItem('ft_custom', JSON.stringify(customExercises));
-    } catch(e) {
-      customExercises = JSON.parse(localStorage.getItem('ft_custom') || '[]');
-    }
-  } else {
-    customExercises = JSON.parse(localStorage.getItem('ft_custom') || '[]');
+      return;
+    } catch(e) { console.warn('Firestore load failed:', e); }
   }
+  customExercises = JSON.parse(localStorage.getItem('ft_custom') || '[]');
 }
 
 async function saveCustomExercise(data) {
   const id = 'custom_' + Date.now();
   const item = { ...data, id, custom: true, createdAt: new Date().toISOString() };
+
   const db = getDb();
+  let savedToFirestore = false;
   if (db) {
-    try { await db.collection('fitness_custom_exercises').doc(id).set(item); } catch(e) { console.warn(e); }
+    try {
+      await db.collection('fitness_custom_exercises').doc(id).set(item);
+      savedToFirestore = true;
+    } catch(e) {
+      console.warn('Firestore write failed:', e);
+    }
   }
+
   customExercises.unshift(item);
   localStorage.setItem('ft_custom', JSON.stringify(customExercises));
-  return item;
+  return { item, savedToFirestore };
 }
 
 async function deleteCustomExercise(id) {
@@ -102,15 +95,10 @@ async function deleteCustomExercise(id) {
   localStorage.setItem('ft_custom', JSON.stringify(customExercises));
 }
 
-// ── ALL EXERCISES (built-in + custom) ────────────────────────────────────────
+// ── ALL EXERCISES ─────────────────────────────────────────────────────────────
 
-function allExercises() {
-  return [...EXERCISES, ...customExercises];
-}
-
-function getExercise(id) {
-  return allExercises().find(e => e.id === id);
-}
+function allExercises() { return [...EXERCISES, ...customExercises]; }
+function getExercise(id) { return allExercises().find(e => e.id === id); }
 
 // ── RENDERING HELPERS ─────────────────────────────────────────────────────────
 
@@ -127,7 +115,7 @@ function complexityBadge(c) {
 
 function hrBadge(hrZone) {
   if (!hrZone) return '';
-  return `<span class="badge-hr" title="Target HR: ${hrZone.min}–${hrZone.max} bpm">❤️ ${hrZone.label} ${hrZone.min}–${hrZone.max} bpm</span>`;
+  return `<span class="badge-hr">❤️ ${hrZone.label} ${hrZone.min}–${hrZone.max} bpm</span>`;
 }
 
 function catBadge(cat) {
@@ -140,6 +128,13 @@ function videoLink(url) {
   return `<a href="${url}" target="_blank" rel="noopener" class="btn-video">▶ Watch Form Video</a>`;
 }
 
+function diagramHtml(ex) {
+  if (typeof renderDiagram !== 'undefined' && ex.diagramId) {
+    return renderDiagram(ex.diagramId);
+  }
+  return '';
+}
+
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
 
 function showTab(tab) {
@@ -148,14 +143,12 @@ function showTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.style.display = p.id === 'panel-' + tab ? '' : 'none');
   if (tab === 'today') renderToday();
   if (tab === 'library') renderLibrary();
-  if (tab === 'add') { /* static form */ }
-  if (tab === 'hr') renderHR();
 }
 
 // ── TODAY TAB ─────────────────────────────────────────────────────────────────
 
 function renderToday() {
-  const dayOfWeek = getDayOfWeek(0);
+  const dayOfWeek = getDayOfWeek();
   const plan = WEEKLY_PLAN[dayOfWeek];
   const key = todayKey();
   const container = document.getElementById('today-content');
@@ -180,28 +173,24 @@ function renderToday() {
       <div class="today-progress-wrap">
         <div class="progress-ring-label">${done}/${exercises.length}</div>
         <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
-        <div class="progress-pct">${pct}% complete</div>
+        <div class="progress-pct">${pct}% done</div>
       </div>
     </div>
-    <div class="cardiac-notice">⚕️ <strong>Cardiac Safety:</strong> Max HR = 145 bpm. If HR exceeds 140 or you feel chest pain/dizziness — stop immediately and rest.</div>
+    <div class="cardiac-notice">⚕️ <strong>Cardiac Safety:</strong> Max HR = 145 bpm. Stop if chest pain, dizziness, or HR &gt; 140.</div>
   `;
 
   if (plan.cardio) {
     const ce = getExercise(plan.cardio);
     if (ce) {
-      html += `<div class="cardio-callout">
-        ${hrBadge(ce.hrZone)}
-        <span>Today's cardio: <strong>${esc(ce.name)}</strong> — ${esc(ce.setsReps)}</span>
-      </div>`;
+      html += `<div class="cardio-callout">${hrBadge(ce.hrZone)} <span>Today's cardio: <strong>${esc(ce.name)}</strong> — ${esc(ce.setsReps)}</span></div>`;
     }
   }
 
   html += '<div class="exercise-list">';
   exercises.forEach(ex => {
     const done = isCompleted(ex.id, key);
-    const cat = CATEGORIES[ex.category] || {};
     html += `
-      <div class="exercise-card ${done ? 'ex-done' : ''}" data-exid="${esc(ex.id)}">
+      <div class="exercise-card ${done ? 'ex-done' : ''}">
         <label class="ex-check-wrap">
           <input type="checkbox" class="ex-check" data-exid="${esc(ex.id)}" ${done ? 'checked' : ''}>
           <span class="ex-check-box"></span>
@@ -216,8 +205,8 @@ function renderToday() {
           ${ex.hrZone ? hrBadge(ex.hrZone) : ''}
           <details class="ex-details">
             <summary>Form cues &amp; video</summary>
+            ${diagramHtml(ex)}
             <ul class="cue-list">${(ex.formCues||[]).map(c=>`<li>${esc(c)}</li>`).join('')}</ul>
-            ${ex.description ? `<p class="ex-desc">${esc(ex.description)}</p>` : ''}
             ${ex.notes ? `<p class="ex-notes">💡 ${esc(ex.notes)}</p>` : ''}
             ${videoLink(ex.videoUrl)}
           </details>
@@ -225,19 +214,14 @@ function renderToday() {
       </div>`;
   });
   html += '</div>';
-
-  if (exercises.length === 0) {
-    html += '<p class="empty-state">Rest day — take it easy!</p>';
-  }
+  if (exercises.length === 0) html += '<p class="empty-state">Rest day — take it easy!</p>';
 
   container.innerHTML = html;
 
-  // Bind checkboxes
   container.querySelectorAll('.ex-check').forEach(cb => {
     cb.addEventListener('change', () => {
-      const id = cb.dataset.exid;
-      toggleCompletion(id, key);
-      renderToday(); // re-render to update progress + styling
+      toggleCompletion(cb.dataset.exid, key);
+      renderToday();
     });
   });
 }
@@ -249,8 +233,6 @@ function renderLibrary() {
   if (!container) return;
 
   let exercises = allExercises();
-
-  // Filter
   if (libCategory !== 'all') exercises = exercises.filter(e => e.category === libCategory);
   if (libComplexity !== 'all') exercises = exercises.filter(e => e.complexity === libComplexity);
   if (libSearch) {
@@ -262,23 +244,19 @@ function renderLibrary() {
     );
   }
 
-  let html = `<div class="lib-count">${exercises.length} exercise${exercises.length !== 1 ? 's' : ''}</div>`;
-  html += '<div class="lib-grid">';
+  let html = `<div class="lib-count">${exercises.length} exercise${exercises.length !== 1 ? 's' : ''}</div><div class="lib-grid">`;
 
   exercises.forEach(ex => {
-    const cat = CATEGORIES[ex.category] || {};
     html += `
-      <div class="lib-card" data-exid="${esc(ex.id)}">
+      <div class="lib-card">
         <div class="lib-card-top">
           <span class="lib-ex-name">${esc(ex.name)}</span>
           ${ex.custom ? '<span class="badge-custom">Custom</span>' : ''}
         </div>
-        <div class="lib-badges">
-          ${complexityBadge(ex.complexity)}
-          ${catBadge(ex.category)}
-        </div>
+        <div class="lib-badges">${complexityBadge(ex.complexity)}${catBadge(ex.category)}</div>
         <div class="lib-sets">${esc(ex.setsReps)}</div>
         ${ex.hrZone ? hrBadge(ex.hrZone) : ''}
+        ${diagramHtml(ex)}
         <p class="lib-desc">${esc(ex.description || '')}</p>
         <details class="ex-details">
           <summary>Form cues &amp; video</summary>
@@ -290,14 +268,10 @@ function renderLibrary() {
       </div>`;
   });
 
-  if (exercises.length === 0) {
-    html += '<p class="empty-state">No exercises match your filters.</p>';
-  }
-
+  html += exercises.length === 0 ? '<p class="empty-state">No exercises match your filters.</p>' : '';
   html += '</div>';
   container.innerHTML = html;
 
-  // Delete custom
   container.querySelectorAll('.btn-del-custom').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!confirm('Remove this custom exercise?')) return;
@@ -305,53 +279,6 @@ function renderLibrary() {
       renderLibrary();
     });
   });
-}
-
-// ── HR ZONES TAB ──────────────────────────────────────────────────────────────
-
-function renderHR() {
-  const container = document.getElementById('hr-content');
-  if (!container) return;
-
-  let html = `
-    <div class="hr-profile">
-      <h3>Your Heart Rate Profile</h3>
-      <div class="hr-stats">
-        <div class="hr-stat"><span class="hr-num">${HR_ZONES.rhr}</span><span class="hr-lbl">RHR (bpm)</span></div>
-        <div class="hr-stat"><span class="hr-num" style="color:#ef4444">${HR_ZONES.max}</span><span class="hr-lbl">Safe Max (bpm)</span></div>
-        <div class="hr-stat"><span class="hr-num" style="color:#10b981">76–100</span><span class="hr-lbl">Target Zone 2</span></div>
-      </div>
-    </div>
-    <div class="cardiac-notice">⚕️ Post-MI + stent: never exceed <strong>145 bpm</strong>. Stop if you feel chest pain, palpitations, or dizziness.</div>
-    <div class="hr-zones-list">`;
-
-  HR_ZONES.zones.forEach(z => {
-    const pct = Math.round((z.max - z.min) / (HR_ZONES.max - HR_ZONES.rhr) * 100);
-    html += `
-      <div class="hr-zone-row">
-        <div class="hz-label">
-          <span class="hz-name" style="color:${z.color}">Zone ${z.zone} — ${z.label}</span>
-          <span class="hz-range">${z.min}–${z.max} bpm</span>
-        </div>
-        <div class="hz-bar-wrap"><div class="hz-bar" style="background:${z.color};width:${Math.min(pct,100)}%"></div></div>
-        <div class="hz-desc">${z.desc}</div>
-      </div>`;
-  });
-
-  html += `</div>
-    <div class="hr-tips">
-      <h4>Training Guidelines</h4>
-      <ul>
-        <li><strong>80% of your cardio</strong> should be Zone 2 (conversational pace)</li>
-        <li>Zone 2 burns fat, improves mitochondrial density, and is cardiac-safe</li>
-        <li>Post-meal 10-min walks lower blood glucose significantly — do daily</li>
-        <li>Check HR every 5 min during cardio sessions</li>
-        <li>Cool down for 5 min before stopping — never stop suddenly</li>
-        <li>If HR doesn't drop 12+ bpm in first minute post-exercise, rest more</li>
-      </ul>
-    </div>`;
-
-  container.innerHTML = html;
 }
 
 // ── ADD EXERCISE FORM ─────────────────────────────────────────────────────────
@@ -363,11 +290,22 @@ function bindAddForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-save-ex');
+    const msgOk = document.getElementById('add-success');
+    const msgErr = document.getElementById('add-error');
+    if (msgOk) msgOk.style.display = 'none';
+    if (msgErr) msgErr.style.display = 'none';
+
+    const name = document.getElementById('ex-name').value.trim();
+    if (!name) {
+      document.getElementById('ex-name').focus();
+      return;
+    }
+
     btn.textContent = 'Saving…';
     btn.disabled = true;
 
     const data = {
-      name: document.getElementById('ex-name').value.trim(),
+      name,
       category: document.getElementById('ex-category').value,
       complexity: document.getElementById('ex-complexity').value,
       setsReps: document.getElementById('ex-setsreps').value.trim(),
@@ -377,16 +315,18 @@ function bindAddForm() {
       formCues: document.getElementById('ex-cues').value.split('\n').map(s=>s.trim()).filter(Boolean)
     };
 
-    if (!data.name) { btn.textContent = 'Save Exercise'; btn.disabled = false; return; }
-
-    await saveCustomExercise(data);
+    const result = await saveCustomExercise(data);
     form.reset();
     btn.textContent = 'Save Exercise';
     btn.disabled = false;
 
-    // Show success
-    const msg = document.getElementById('add-success');
-    if (msg) { msg.style.display = ''; setTimeout(() => msg.style.display = 'none', 3000); }
+    if (msgOk) {
+      msgOk.textContent = result.savedToFirestore
+        ? `✓ "${name}" saved! Go to Library to see it.`
+        : `✓ "${name}" saved locally (Firestore unavailable). Go to Library to see it.`;
+      msgOk.style.display = '';
+      setTimeout(() => msgOk.style.display = 'none', 5000);
+    }
   });
 }
 
@@ -396,24 +336,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   completions = loadCompletions();
   await loadCustomExercises();
 
-  // Nav tabs
   document.querySelectorAll('.nav-tab').forEach(btn => {
     btn.addEventListener('click', () => showTab(btn.dataset.tab));
   });
 
-  // Library filters
   const catFilter = document.getElementById('lib-cat-filter');
-  if (catFilter) {
-    catFilter.addEventListener('change', () => { libCategory = catFilter.value; renderLibrary(); });
-  }
+  if (catFilter) catFilter.addEventListener('change', () => { libCategory = catFilter.value; renderLibrary(); });
+
   const cxFilter = document.getElementById('lib-cx-filter');
-  if (cxFilter) {
-    cxFilter.addEventListener('change', () => { libComplexity = cxFilter.value; renderLibrary(); });
-  }
+  if (cxFilter) cxFilter.addEventListener('change', () => { libComplexity = cxFilter.value; renderLibrary(); });
+
   const libSearchEl = document.getElementById('lib-search');
-  if (libSearchEl) {
-    libSearchEl.addEventListener('input', () => { libSearch = libSearchEl.value.trim(); renderLibrary(); });
-  }
+  if (libSearchEl) libSearchEl.addEventListener('input', () => { libSearch = libSearchEl.value.trim(); renderLibrary(); });
 
   bindAddForm();
   showTab('today');
