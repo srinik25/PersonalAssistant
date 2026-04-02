@@ -89,5 +89,9 @@ service cloud.firestore {
     match /musings_items/{docId} {
       allow read, write: if true;
     }
+    // Fitness tracker - custom exercises (personal app)
+    match /fitness_custom_exercises/{docId} {
+      allow read, write: if true;
+    }
   }
 }

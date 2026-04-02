@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: #111;
+      border-bottom: 1px solid #222;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .topbar-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #22c55e, #10b981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .topbar-sub {
+      font-size: 0.75rem;
+      color: #666;
+      margin-left: auto;
+    }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #111;
+      border-top: 1px solid #222;
+      display: flex;
+      z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      color: #666;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 10px 4px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      transition: color 0.2s;
+    }
+    .nav-tab .tab-icon { font-size: 1.25rem; line-height: 1; }
+    .nav-tab:hover { color: #aaa; }
+    .nav-tab.active { color: #22c55e; }
+
+    /* ── PANELS ── */
+    .tab-panel {
+      padding: 16px 16px 100px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* ── CARDIAC NOTICE ── */
+    .cardiac-notice {
+      background: #1a0000;
+      border: 1px solid #7f1d1d;
+      border-left: 4px solid #ef4444;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: #fca5a5;
+      margin-bottom: 16px;
+      line-height: 1.55;
+    }
+    .cardiac-notice strong { color: #f87171; }
+
+    /* ── TODAY HEADER ── */
+    .today-header {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .today-date { font-size: 0.78rem; color: #666; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .today-plan-label { font-size: 1.25rem; font-weight: 800; color: #f0f0f0; line-height: 1.2; }
+    .today-focus { font-size: 0.8rem; color: #888; margin-top: 4px; }
+    .today-progress-wrap { text-align: right; flex-shrink: 0; }
+    .progress-ring-label { font-size: 1.4rem; font-weight: 800; color: #22c55e; }
+    .progress-bar-wrap {
+      width: 100px; height: 6px;
+      background: #2a2a2a; border-radius: 3px;
+      margin: 6px 0 4px;
+    }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #22c55e, #10b981); border-radius: 3px; transition: width 0.4s ease; }
+    .progress-pct { font-size: 0.7rem; color: #666; }
+
+    /* ── CARDIO CALLOUT ── */
+    .cardio-callout {
+      background: #0a1f0a;
+      border: 1px solid #166534;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: #86efac;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* ── EXERCISE LIST ── */
+    .exercise-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .exercise-card {
+      background: #1a1a1a;
+      border: 1px solid #252525;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      transition: border-color 0.2s, opacity 0.3s;
+    }
+    .exercise-card.ex-done {
+      opacity: 0.55;
+      border-color: #1a3a1a;
+    }
+    .exercise-card.ex-done .ex-name { text-decoration: line-through; color: #666; }
+
+    /* Checkbox */
+    .ex-check-wrap { cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+    .ex-check { display: none; }
+    .ex-check-box {
+      width: 22px; height: 22px;
+      border: 2px solid #333;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .ex-check:checked + .ex-check-box {
+      background: #22c55e;
+      border-color: #22c55e;
+    }
+    .ex-check:checked + .ex-check-box::after {
+      content: '✓';
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    /* Exercise body */
+    .ex-body { flex: 1; min-width: 0; }
+    .ex-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+    .ex-name { font-size: 0.95rem; font-weight: 700; color: #f0f0f0; }
+    .ex-sets { font-size: 0.8rem; color: #888; margin-bottom: 6px; }
+
+    /* ── BADGES ── */
+    .badge-complexity {
+      font-size: 0.62rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 50px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .badge-cat {
+      font-size: 0.62rem; font-weight: 600;
+      padding: 2px 8px; border-radius: 50px;
+      background: #222; color: #888;
+    }
+    .badge-hr {
+      font-size: 0.72rem; color: #fca5a5;
+      background: #1a0000; border: 1px solid #7f1d1d;
+      padding: 2px 10px; border-radius: 50px;
+      display: inline-block; margin-bottom: 6px;
+    }
+    .badge-custom {
+      font-size: 0.6rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 50px;
+      background: #1e3a5f; color: #60a5fa;
+      text-transform: uppercase;
+    }
+
+    /* ── DETAILS / FORM CUES ── */
+    .ex-details { margin-top: 8px; }
+    .ex-details summary {
+      font-size: 0.78rem; color: #22c55e;
+      cursor: pointer; list-style: none;
+      font-weight: 600;
+    }
+    .ex-details summary::-webkit-details-marker { display: none; }
+    .ex-details[open] summary::before { content: '▾ '; }
+    .ex-details summary::before { content: '▸ '; }
+    .cue-list { margin: 8px 0 8px 16px; }
+    .cue-list li { font-size: 0.8rem; color: #bbb; margin-bottom: 4px; line-height: 1.5; }
+    .ex-desc { font-size: 0.8rem; color: #999; margin-top: 6px; line-height: 1.5; }
+    .ex-notes { font-size: 0.78rem; color: #6ee7b7; margin-top: 6px; line-height: 1.5; }
+    .btn-video {
+      display: inline-block; margin-top: 10px;
+      background: #1a1a2e; color: #818cf8;
+      border: 1px solid #312e81;
+      border-radius: 8px; padding: 6px 14px;
+      font-size: 0.78rem; font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-video:hover { background: #25254a; }
+
+    /* ── LIBRARY ── */
+    .lib-filters {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .lib-filters select, .lib-search-input {
+      background: #1a1a1a; color: #f0f0f0;
+      border: 1px solid #2a2a2a; border-radius: 8px;
+      padding: 8px 12px; font-family: 'Inter', sans-serif;
+      font-size: 0.83rem; outline: none;
+    }
+    .lib-search-input { flex: 1; min-width: 140px; }
+    .lib-filters select:focus, .lib-search-input:focus { border-color: #22c55e; }
+    .lib-count { font-size: 0.75rem; color: #666; margin-bottom: 12px; }
+
+    .lib-grid { display: flex; flex-direction: column; gap: 10px; }
+    .lib-card {
+      background: #1a1a1a; border: 1px solid #252525;
+      border-radius: 14px; padding: 14px 16px;
+    }
+    .lib-card-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+    .lib-ex-name { font-size: 1rem; font-weight: 700; color: #f0f0f0; }
+    .lib-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+    .lib-sets { font-size: 0.8rem; color: #888; margin-bottom: 6px; }
+    .lib-desc { font-size: 0.82rem; color: #999; line-height: 1.5; margin-bottom: 6px; }
+    .btn-del-custom {
+      background: none; border: 1px solid #7f1d1d;
+      color: #f87171; border-radius: 8px; padding: 4px 12px;
+      font-size: 0.75rem; cursor: pointer; margin-top: 8px;
+      transition: background 0.15s;
+    }
+    .btn-del-custom:hover { background: #1a0000; }
+
+    /* ── ADD FORM ── */
+    .add-form-card {
+      background: #1a1a1a; border: 1px solid #252525;
+      border-radius: 16px; padding: 20px;
+    }
+    .add-form-card h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; color: #f0f0f0; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; font-weight: 600; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; background: #111; color: #f0f0f0;
+      border: 1px solid #2a2a2a; border-radius: 10px;
+      padding: 10px 14px; font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: #22c55e;
+    }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+    .form-group .hint { font-size: 0.72rem; color: #555; margin-top: 3px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .btn-save {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #22c55e, #10b981);
+      color: white; font-family: 'Inter', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      border: none; border-radius: 12px; cursor: pointer;
+      transition: opacity 0.2s; margin-top: 4px;
+    }
+    .btn-save:hover { opacity: 0.9; }
+    .btn-save:disabled { opacity: 0.5; }
+    .add-success {
+      background: #0a1f0a; border: 1px solid #166534;
+      color: #86efac; border-radius: 10px; padding: 10px 16px;
+      font-size: 0.85rem; text-align: center; margin-top: 12px;
+      display: none;
+    }
+
+    /* ── HR ZONES ── */
+    .hr-profile {
+      background: #1a1a1a; border-radius: 16px;
+      padding: 18px; margin-bottom: 16px;
+    }
+    .hr-profile h3 { font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
+    .hr-stats { display: flex; gap: 16px; }
+    .hr-stat { text-align: center; flex: 1; }
+    .hr-num { display: block; font-size: 1.8rem; font-weight: 800; }
+    .hr-lbl { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+
+    .hr-zones-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    .hr-zone-row { background: #1a1a1a; border-radius: 12px; padding: 14px 16px; }
+    .hz-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+    .hz-name { font-size: 0.88rem; font-weight: 700; }
+    .hz-range { font-size: 0.8rem; color: #888; }
+    .hz-bar-wrap { height: 6px; background: #2a2a2a; border-radius: 3px; margin-bottom: 6px; }
+    .hz-bar { height: 100%; border-radius: 3px; }
+    .hz-desc { font-size: 0.75rem; color: #888; }
+
+    .hr-tips {
+      background: #1a1a1a; border-radius: 16px; padding: 18px;
+    }
+    .hr-tips h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: #22c55e; }
+    .hr-tips ul { padding-left: 18px; }
+    .hr-tips li { font-size: 0.82rem; color: #bbb; margin-bottom: 8px; line-height: 1.5; }
+    .hr-tips strong { color: #f0f0f0; }
+
+    /* ── MISC ── */
+    .empty-state {
+      text-align: center; color: #555;
+      font-size: 0.95rem; padding: 40px 20px;
+      font-style: italic;
+    }
+    .section-title {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 2px;
+      color: #555; margin-bottom: 12px; margin-top: 20px;
+    }
+    .section-title:first-child { margin-top: 0; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 420px) {
+      .today-plan-label { font-size: 1.1rem; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-title">💪 FitTracker</div>
+  <div class="topbar-sub">Cardiac-safe · Knee-first · Strength</div>
+</header>
+
+<!-- ── TODAY PANEL ── -->
+<div id="panel-today" class="tab-panel">
+  <div id="today-content">
+    <p class="empty-state">Loading…</p>
+  </div>
+</div>
+
+<!-- ── LIBRARY PANEL ── -->
+<div id="panel-library" class="tab-panel" style="display:none">
+  <p class="section-title">Exercise Library</p>
+  <div class="lib-filters">
+    <input type="text" class="lib-search-input" id="lib-search" placeholder="Search exercises…">
+    <select id="lib-cat-filter">
+      <option value="all">All Categories</option>
+      <option value="cardio">❤️ Cardio</option>
+      <option value="upper">💪 Upper Body</option>
+      <option value="core">🔥 Core</option>
+      <option value="lower">🦵 Lower Body</option>
+      <option value="mobility">🧘 Mobility</option>
+      <option value="recovery">😌 Recovery</option>
+    </select>
+    <select id="lib-cx-filter">
+      <option value="all">All Levels</option>
+      <option value="simple">Simple</option>
+      <option value="moderate">Moderate</option>
+      <option value="complex">Complex</option>
+    </select>
+  </div>
+  <div id="library-content">
+    <p class="empty-state">Loading…</p>
+  </div>
+</div>
+
+<!-- ── ADD EXERCISE PANEL ── -->
+<div id="panel-add" class="tab-panel" style="display:none">
+  <div class="add-form-card">
+    <h2>Add Custom Exercise</h2>
+    <form id="add-ex-form" autocomplete="off">
+      <div class="form-group">
+        <label for="ex-name">Exercise Name *</label>
+        <input type="text" id="ex-name" placeholder="e.g. Resistance Band Row" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="ex-category">Category</label>
+          <select id="ex-category">
+            <option value="cardio">❤️ Cardio</option>
+            <option value="upper">💪 Upper Body</option>
+            <option value="core">🔥 Core</option>
+            <option value="lower" selected>🦵 Lower Body</option>
+            <option value="mobility">🧘 Mobility</option>
+            <option value="recovery">😌 Recovery</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="ex-complexity">Complexity</label>
+          <select id="ex-complexity">
+            <option value="simple" selected>Simple</option>
+            <option value="moderate">Moderate</option>
+            <option value="complex">Complex</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="ex-setsreps">Sets / Reps / Duration</label>
+        <input type="text" id="ex-setsreps" placeholder="e.g. 3 × 12  or  20 min">
+      </div>
+      <div class="form-group">
+        <label for="ex-desc">Description</label>
+        <textarea id="ex-desc" placeholder="What this exercise does and why it's useful…"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="ex-cues">Form Cues (one per line)</label>
+        <textarea id="ex-cues" placeholder="Keep back straight&#10;Squeeze at top&#10;3 sec lowering"></textarea>
+        <div class="hint">Each line becomes a bullet point</div>
+      </div>
+      <div class="form-group">
+        <label for="ex-video">YouTube / Video URL</label>
+        <input type="url" id="ex-video" placeholder="https://www.youtube.com/watch?v=…">
+      </div>
+      <div class="form-group">
+        <label for="ex-notes-field">Notes / Modifications</label>
+        <textarea id="ex-notes-field" placeholder="Modifications for knee pain, shoulder, etc."></textarea>
+      </div>
+      <button type="submit" class="btn-save" id="btn-save-ex">Save Exercise</button>
+      <div class="add-success" id="add-success">✓ Exercise saved! Find it in the Library tab.</div>
+    </form>
+  </div>
+</div>
+
+<!-- ── HEART RATE PANEL ── -->
+<div id="panel-hr" class="tab-panel" style="display:none">
+  <div id="hr-content">
+    <p class="empty-state">Loading…</p>
+  </div>
+</div>
+
+<!-- ── BOTTOM NAV ── -->
+<nav class="bottom-nav">
+  <button class="nav-tab active" data-tab="today">
+    <span class="tab-icon">📅</span>Today
+  </button>
+  <button class="nav-tab" data-tab="library">
+    <span class="tab-icon">📚</span>Library
+  </button>
+  <button class="nav-tab" data-tab="add">
+    <span class="tab-icon">➕</span>Add
+  </button>
+  <button class="nav-tab" data-tab="hr">
+    <span class="tab-icon">❤️</span>Heart Rate
+  </button>
+</nav>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyDovFuXnRsL8Drf0EMkUrHqwNE-DDhMvXM",
+    authDomain: "nutrition-198dd.firebaseapp.com",
+    projectId: "nutrition-198dd",
+    storageBucket: "nutrition-198dd.firebasestorage.app",
+    messagingSenderId: "851241392706",
+    appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
+  });
+</script>
+<script src="js/exercises.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

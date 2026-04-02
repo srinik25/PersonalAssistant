@@ -17,6 +17,7 @@ A multi-app personal productivity suite for Srini Katta. Six apps sharing a sing
 | `travel-places/` | Travel bucket list — continents → countries → cities → food/places | https://jovial-bugle-zkby.here.now/ |
 | `todo-site/` | Task manager — year → month → week hierarchy with types & backlog | https://witty-kayak-7n57.here.now/ |
 | `musings/` | Personal quotes, systems & guidelines | https://still-lagoon-tsp3.here.now/ |
+| `fitness-tracker/` | Cardiac-safe fitness plan: knee rehab, shoulder, Zone 2 cardio | https://spicy-lichen-9qbh.here.now/ |
 | `nutrition/` | Daily Python-generated nutrition profiles | Published daily via cron |
 
 ## Deploying
@@ -47,6 +48,9 @@ HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scr
 
 # Musings (Firebase config inlined — no secrets.js needed)
 HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh musings --slug still-lagoon-tsp3
+
+# Fitness Tracker (Firebase config inlined — no secrets.js needed)
+HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh fitness-tracker --slug spicy-lichen-9qbh
 ```
 
 **Firebase Cloud Functions (meal-planner/functions/):**
