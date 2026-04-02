@@ -19,6 +19,7 @@ A multi-app personal productivity suite for Srini Katta. Six apps sharing a sing
 | `musings/` | Personal quotes, systems & guidelines | https://still-lagoon-tsp3.here.now/ |
 | `fitness-tracker/` | Cardiac-safe fitness plan: knee rehab, shoulder, Zone 2 cardio | https://spicy-lichen-9qbh.here.now/ |
 | `nutrition/` | Daily Python-generated nutrition profiles | Published daily via cron |
+| `home/` | AD+SK homepage — links to all apps | https://centered-nirvana-wryg.here.now/ |
 
 ## Deploying
 
@@ -51,6 +52,9 @@ HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scr
 
 # Fitness Tracker (Firebase config inlined — no secrets.js needed)
 HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh fitness-tracker --slug spicy-lichen-9qbh
+
+# Home page (AD+SK — links to all apps)
+HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh home --slug centered-nirvana-wryg
 ```
 
 **Firebase Cloud Functions (meal-planner/functions/):**
