@@ -377,6 +377,62 @@ const DIAGRAMS = {
      <line x1="90" y1="44" x2="110" y2="50"/>
      <line x1="5" y1="60" x2="115" y2="60"/>`,
 
+  // ── NECK & UPPER TRAP ─────────────────────────────────────────────────────
+
+  neck_side_stretch:
+    `<circle cx="68" cy="14" r="8" fill="var(--accent)" opacity=".2" stroke="var(--accent)"/>
+     <line x1="64" y1="22" x2="60" y2="32"/>
+     <line x1="60" y1="32" x2="60" y2="56"/>
+     <line x1="60" y1="36" x2="42" y2="52"/>
+     <line x1="60" y1="36" x2="78" y2="44"/>
+     <line x1="42" y1="52" x2="42" y2="68"/>
+     <line x1="60" y1="56" x2="50" y2="82"/>
+     <line x1="60" y1="56" x2="70" y2="82"/>
+     <path d="M68,8 Q80,14 74,22" stroke-dasharray="3,2"/>`,
+
+  levator_scapulae_stretch:
+    `<circle cx="52" cy="14" r="8" fill="var(--accent)" opacity=".2" stroke="var(--accent)"/>
+     <line x1="56" y1="22" x2="60" y2="32"/>
+     <line x1="60" y1="32" x2="60" y2="56"/>
+     <line x1="60" y1="36" x2="42" y2="50"/>
+     <line x1="60" y1="36" x2="78" y2="52"/>
+     <line x1="60" y1="56" x2="50" y2="82"/>
+     <line x1="60" y1="56" x2="70" y2="82"/>
+     <path d="M50,9 Q38,18 44,28" stroke-dasharray="3,2"/>`,
+
+  chin_tuck:
+    `<circle cx="60" cy="16" r="8" fill="var(--accent)" opacity=".2" stroke="var(--accent)"/>
+     <circle cx="54" cy="20" r="4" fill="none" stroke="var(--accent)" opacity=".4" stroke-dasharray="2,2"/>
+     <line x1="60" y1="24" x2="60" y2="56"/>
+     <line x1="60" y1="34" x2="42" y2="48"/>
+     <line x1="60" y1="34" x2="78" y2="48"/>
+     <line x1="60" y1="56" x2="50" y2="82"/>
+     <line x1="60" y1="56" x2="70" y2="82"/>
+     <path d="M70,18 L56,22" stroke-width="1.5"/>`,
+
+  face_pull:
+    `<circle cx="60" cy="14" r="8" fill="var(--accent)" opacity=".2" stroke="var(--accent)"/>
+     <line x1="60" y1="22" x2="60" y2="54"/>
+     <line x1="60" y1="30" x2="38" y2="22"/>
+     <line x1="38" y1="22" x2="22" y2="30"/>
+     <line x1="60" y1="30" x2="82" y2="22"/>
+     <line x1="82" y1="22" x2="98" y2="30"/>
+     <line x1="60" y1="54" x2="50" y2="82"/>
+     <line x1="60" y1="54" x2="70" y2="82"/>
+     <rect x="6" y="26" width="6" height="28" rx="1" opacity=".4"/>`,
+
+  shrug_release:
+    `<circle cx="60" cy="12" r="8" fill="var(--accent)" opacity=".2" stroke="var(--accent)"/>
+     <line x1="60" y1="20" x2="60" y2="54"/>
+     <line x1="60" y1="28" x2="36" y2="22"/>
+     <line x1="60" y1="28" x2="84" y2="22"/>
+     <line x1="36" y1="22" x2="32" y2="36"/>
+     <line x1="84" y1="22" x2="88" y2="36"/>
+     <line x1="60" y1="54" x2="50" y2="82"/>
+     <line x1="60" y1="54" x2="70" y2="82"/>
+     <path d="M36,22 L40,14" stroke-dasharray="2,2"/>
+     <path d="M84,22 L80,14" stroke-dasharray="2,2"/>`,
+
 };
 
 function renderDiagram(diagramId) {

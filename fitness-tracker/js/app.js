@@ -115,17 +115,17 @@ function complexityBadge(c) {
 
 function hrBadge(hrZone) {
   if (!hrZone) return '';
-  return `<span class="badge-hr">❤️ ${hrZone.label} ${hrZone.min}–${hrZone.max} bpm</span>`;
+  return `<span class="badge-hr">${hrZone.label} ${hrZone.min}–${hrZone.max} bpm</span>`;
 }
 
 function catBadge(cat) {
-  const m = CATEGORIES[cat] || { icon: '⚡', label: cat };
-  return `<span class="badge-cat">${m.icon} ${m.label}</span>`;
+  const m = CATEGORIES[cat] || { label: cat };
+  return `<span class="badge-cat">${m.label}</span>`;
 }
 
 function videoLink(url) {
   if (!url) return '';
-  return `<a href="${url}" target="_blank" rel="noopener" class="btn-video">▶ Watch Form Video</a>`;
+  return `<a href="${url}" target="_blank" rel="noopener" class="btn-video">&#9654; Watch Form Video</a>`;
 }
 
 function diagramHtml(ex) {
@@ -176,7 +176,6 @@ function renderToday() {
         <div class="progress-pct">${pct}% done</div>
       </div>
     </div>
-    <div class="cardiac-notice">⚕️ <strong>Cardiac Safety:</strong> Max HR = 145 bpm. Stop if chest pain, dizziness, or HR &gt; 140.</div>
   `;
 
   if (plan.cardio) {
@@ -207,7 +206,7 @@ function renderToday() {
             <summary>Form cues &amp; video</summary>
             ${diagramHtml(ex)}
             <ul class="cue-list">${(ex.formCues||[]).map(c=>`<li>${esc(c)}</li>`).join('')}</ul>
-            ${ex.notes ? `<p class="ex-notes">💡 ${esc(ex.notes)}</p>` : ''}
+            ${ex.notes ? `<p class="ex-notes">${esc(ex.notes)}</p>` : ''}
             ${videoLink(ex.videoUrl)}
           </details>
         </div>
@@ -261,7 +260,7 @@ function renderLibrary() {
         <details class="ex-details">
           <summary>Form cues &amp; video</summary>
           <ul class="cue-list">${(ex.formCues||[]).map(c=>`<li>${esc(c)}</li>`).join('')}</ul>
-          ${ex.notes ? `<p class="ex-notes">💡 ${esc(ex.notes)}</p>` : ''}
+          ${ex.notes ? `<p class="ex-notes">${esc(ex.notes)}</p>` : ''}
           ${videoLink(ex.videoUrl)}
         </details>
         ${ex.custom ? `<button class="btn-del-custom" data-exid="${esc(ex.id)}">Remove</button>` : ''}
@@ -287,6 +286,21 @@ function bindAddForm() {
   const form = document.getElementById('add-ex-form');
   if (!form) return;
 
+  const diagramSel = document.getElementById('ex-diagram-id');
+  const preview = document.getElementById('diagram-preview');
+  if (diagramSel && preview) {
+    diagramSel.addEventListener('change', () => {
+      const id = diagramSel.value;
+      if (id && typeof renderDiagram !== 'undefined') {
+        preview.innerHTML = renderDiagram(id);
+        preview.style.display = '';
+      } else {
+        preview.innerHTML = '';
+        preview.style.display = 'none';
+      }
+    });
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-save-ex');
@@ -304,12 +318,15 @@ function bindAddForm() {
     btn.textContent = 'Saving…';
     btn.disabled = true;
 
+    const diagramId = document.getElementById('ex-diagram-id') ? document.getElementById('ex-diagram-id').value : '';
+
     const data = {
       name,
       category: document.getElementById('ex-category').value,
       complexity: document.getElementById('ex-complexity').value,
       setsReps: document.getElementById('ex-setsreps').value.trim(),
       description: document.getElementById('ex-desc').value.trim(),
+      diagramId,
       videoUrl: document.getElementById('ex-video').value.trim(),
       notes: document.getElementById('ex-notes-field').value.trim(),
       formCues: document.getElementById('ex-cues').value.split('\n').map(s=>s.trim()).filter(Boolean)
@@ -320,13 +337,22 @@ function bindAddForm() {
     btn.textContent = 'Save Exercise';
     btn.disabled = false;
 
+    // Reset diagram preview
+    if (preview) {
+      preview.innerHTML = '';
+      preview.style.display = 'none';
+    }
+    if (diagramSel) diagramSel.value = '';
+
     if (msgOk) {
       msgOk.textContent = result.savedToFirestore
-        ? `✓ "${name}" saved! Go to Library to see it.`
-        : `✓ "${name}" saved locally (Firestore unavailable). Go to Library to see it.`;
+        ? `Saved! "${name}" added to your library.`
+        : `"${name}" saved locally (Firestore unavailable). Check your library.`;
       msgOk.style.display = '';
-      setTimeout(() => msgOk.style.display = 'none', 5000);
+      setTimeout(() => { msgOk.style.display = 'none'; }, 5000);
     }
+
+    setTimeout(() => showTab('library'), 1500);
   });
 }
 

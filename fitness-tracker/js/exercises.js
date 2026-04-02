@@ -1,6 +1,6 @@
 // Fitness Tracker — Exercise Database + Weekly Plan
 // Profile: 53yo male, 147lb/5'11", cardiac rehab (stent+MI), knee pain, frozen shoulder, diabetes mgmt
-// Max HR: 145 bpm | RHR: 55-60 bpm | Zone 2 target: 76-100 bpm
+// Max HR: 145 bpm | RHR: 55-60 bpm | Zone 2 target: 87-105 bpm (60–72% of max HR 145)
 
 const EXERCISES = [
   // ── CARDIO ──────────────────────────────────────────────────────────────
@@ -11,7 +11,7 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '25–35 min',
     diagramId: 'elliptical',
-    hrZone: { label: 'Zone 2', min: 76, max: 100 },
+    hrZone: { label: 'Zone 2', min: 87, max: 105 },
     description: 'Low-impact, knee-friendly. Keep RPE ~5/10 — conversational pace. Arms active, slight forward lean.',
     formCues: ['Upright posture, slight forward lean', 'Push through heel not toe', 'Arm push-pull matches leg stride', 'If HR > 120 slow down'],
     videoUrl: 'https://www.youtube.com/results?search_query=elliptical+proper+form+technique',
@@ -24,9 +24,9 @@ const EXERCISES = [
     complexity: 'moderate',
     setsReps: '15–20 min',
     diagramId: 'rowing_machine',
-    hrZone: { label: 'Zone 2', min: 76, max: 100 },
+    hrZone: { label: 'Zone 2', min: 87, max: 105 },
     description: 'Full-body low-impact cardio. Excellent for upper body & core. Keep HR under 120.',
-    formCues: ['Drive with legs first, then lean back, then arms', 'Catch: shins vertical, arms straight', 'Finish: elbows past ribs, slight recline', 'Ratio: 75% effort on drive, 25% recovery'],
+    formCues: ['Drive with legs first, then lean back, then arms', 'Catch: shins vertical, arms straight', 'Finish: elbows past ribs, slight recline', 'Drive quick and powerful, return slow and controlled — 1:2 ratio'],
     videoUrl: 'https://www.youtube.com/results?search_query=rowing+machine+proper+form+beginners',
     notes: 'Avoid if shoulder flares. Modify grip if frozen shoulder limits reach.'
   },
@@ -37,7 +37,7 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '20–30 min, 3–5% incline',
     diagramId: 'walking',
-    hrZone: { label: 'Zone 2', min: 76, max: 100 },
+    hrZone: { label: 'Zone 2', min: 87, max: 105 },
     description: 'Gentle cardio that also activates glutes. Low knee stress at moderate incline.',
     formCues: ['Don\'t hold handrails — engage core', 'Heel strike, roll to toe', 'Arms swing naturally', 'Incline > 5% increases knee load — stay moderate'],
     videoUrl: 'https://www.youtube.com/results?search_query=incline+treadmill+walking+form+benefits',
@@ -50,7 +50,7 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '20–30 min',
     diagramId: 'seated',
-    hrZone: { label: 'Zone 2', min: 76, max: 100 },
+    hrZone: { label: 'Zone 2', min: 87, max: 105 },
     description: 'Excellent knee rehab cardio. Zero impact. Adjust seat so knee has slight bend at bottom.',
     formCues: ['Seat height: slight knee bend at bottom of pedal stroke', 'Don\'t lock out knee', 'Moderate resistance — not grinding', 'Cadence ~70-90 rpm'],
     videoUrl: 'https://www.youtube.com/results?search_query=stationary+bike+proper+seat+height+form',
@@ -90,7 +90,7 @@ const EXERCISES = [
     setsReps: '3 × 15–20',
     diagramId: 'standing_arms_wide',
     description: 'Shoulder rehab staple. Strengthens rear deltoids, improves posture, helps frozen shoulder.',
-    formCues: ['Arms straight out in front at shoulder height', 'Pull band apart to chest, squeeze shoulder blades', 'Control the return', 'Keep wrists neutral'],
+    formCues: ['Hold band in front at shoulder height, arms straight', 'Pull band apart until it reaches chest, squeezing shoulder blades', 'Control the return slowly', 'Keep wrists neutral throughout'],
     videoUrl: 'https://www.youtube.com/results?search_query=resistance+band+pull+apart+shoulder+rehab',
     notes: 'Excellent daily exercise for frozen shoulder. Use light band.'
   },
@@ -102,7 +102,7 @@ const EXERCISES = [
     setsReps: '3 × 15 each arm',
     diagramId: 'standing_arm_rotate',
     description: 'Rotator cuff rehab for frozen shoulder. Core exercise for shoulder health.',
-    formCues: ['Elbow at side, 90° bend', 'Rotate forearm away from body', 'Keep elbow pressed to side throughout', 'Small, controlled movement'],
+    formCues: ['Elbow at side, 90° bend', 'Rotate forearm away from body against band resistance', 'Keep elbow pressed to side throughout', 'Small, controlled movement — stop at discomfort'],
     videoUrl: 'https://www.youtube.com/results?search_query=band+external+rotation+shoulder+rehab+exercise',
     notes: 'Critical for frozen shoulder recovery. Do this daily if possible.'
   },
@@ -113,8 +113,8 @@ const EXERCISES = [
     complexity: 'moderate',
     setsReps: '3 × 10',
     diagramId: 'seated',
-    description: 'Overhead pressing builds shoulder strength. Modified range for frozen shoulder.',
-    formCues: ['Seated with back support', 'Start at ear height, press overhead', 'If shoulder limits: press to forehead level only', 'Don\'t arch lower back'],
+    description: 'Overhead pressing builds shoulder strength. Use modified range for frozen shoulder.',
+    formCues: ['Seated with back supported', 'Start at ear level, press upward', 'If shoulder restricts: press only to forehead level', 'Don\'t arch lower back'],
     videoUrl: 'https://www.youtube.com/results?search_query=seated+dumbbell+shoulder+press+form',
     notes: 'Reduce range of motion significantly if frozen shoulder limits overhead reach.'
   },
@@ -125,10 +125,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 12–15',
     diagramId: 'standing_arms_wide',
-    description: 'Side deltoid development. Keep weight light to protect shoulder.',
-    formCues: ['Slight forward lean', 'Raise arms to shoulder height (not higher)', 'Lead with elbow, not wrist', 'Slow lower — 3 seconds down'],
+    description: 'Side deltoid development. Keep weight very light to protect the shoulder.',
+    formCues: ['Slight forward lean from hips', 'Raise arms to shoulder height — no higher', 'Lead with elbow, not wrist', 'Lower slowly — 3 seconds down'],
     videoUrl: 'https://www.youtube.com/results?search_query=dumbbell+lateral+raise+proper+form',
-    notes: 'Use very light weight. Stop at shoulder height — going higher stresses the rotator cuff.'
+    notes: 'Use very light weight (5–8 lb). Raising above shoulder height stresses the rotator cuff — stop at shoulder level.'
   },
   {
     id: 'tricep_overhead_ext',
@@ -137,10 +137,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 12',
     diagramId: 'standing_arms_overhead',
-    description: 'Tricep isolation. Helps with pushing strength and arm mass.',
-    formCues: ['Hold one dumbbell with both hands above head', 'Lower behind head, elbows pointing up', 'Extend back up, squeeze at top', 'Keep upper arms still'],
+    description: 'Tricep isolation exercise that strengthens the long head of the tricep.',
+    formCues: ['Hold one dumbbell with both hands overhead', 'Lower behind head keeping elbows pointing up', 'Extend back to start, squeeze at top', 'Keep upper arms still — only forearms move'],
     videoUrl: 'https://www.youtube.com/results?search_query=overhead+tricep+extension+dumbbell+form',
-    notes: 'Skip if shoulder position is uncomfortable. Replace with band pushdown.'
+    notes: 'Skip if shoulder position is uncomfortable due to frozen shoulder. Replace with band pushdown.'
   },
   {
     id: 'band_pushdown',
@@ -149,22 +149,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 15',
     diagramId: 'standing',
-    description: 'Shoulder-friendly tricep exercise. Band anchored overhead.',
-    formCues: ['Elbows pinned to sides', 'Push down and squeeze at bottom', 'Slow controlled return', 'No swinging'],
+    description: 'Shoulder-friendly tricep isolation. Band anchored at head height or above.',
+    formCues: ['Elbows pinned to sides — don\'t let them flare', 'Push down and fully extend, squeeze at bottom', 'Slow controlled return — 2 seconds up', 'No swinging or leaning'],
     videoUrl: 'https://www.youtube.com/results?search_query=resistance+band+tricep+pushdown+form',
-    notes: 'Great frozen-shoulder-safe alternative to overhead tricep work.'
-  },
-  {
-    id: 'db_curl',
-    name: 'Dumbbell Bicep Curl',
-    category: 'upper',
-    complexity: 'simple',
-    setsReps: '3 × 12',
-    diagramId: 'standing_arm_curl',
-    description: 'Classic bicep builder. Supinate wrist at top for full contraction.',
-    formCues: ['Elbows at sides throughout', 'Rotate palm up as you curl', 'Squeeze at top', 'Lower fully — 2 second descent'],
-    videoUrl: 'https://www.youtube.com/results?search_query=dumbbell+bicep+curl+proper+form',
-    notes: 'Alternate arms for better mind-muscle connection.'
+    notes: 'Best frozen-shoulder-safe tricep option. Preferred over overhead extension if shoulder is a concern.'
   },
   {
     id: 'pushups',
@@ -173,10 +161,22 @@ const EXERCISES = [
     complexity: 'moderate',
     setsReps: '3 × 8–15',
     diagramId: 'push_up',
-    description: 'Bodyweight chest, shoulder, and tricep compound movement. Modify as needed for shoulder.',
-    formCues: ['Hands slightly wider than shoulder-width', 'Body straight — no sagging hips', 'Elbows at 45° from torso, not flared', 'Lower chest to 1 inch from floor', 'Exhale as you push up'],
+    description: 'Bodyweight compound movement for chest, shoulders, and triceps. Highly modifiable.',
+    formCues: ['Hands slightly wider than shoulders', 'Body forms a straight line — no sagging hips', 'Elbows at 45° from torso, not flared wide', 'Lower chest to 1 inch from floor', 'Exhale on the way up'],
     videoUrl: 'https://www.youtube.com/results?search_query=push+up+proper+form+tutorial',
-    notes: 'Wall push-ups or incline push-ups (hands on bench) if full push-up is too hard or shoulder flares. Reduce range if shoulder limits.'
+    notes: 'Start with wall or incline push-ups (hands on bench) if full push-ups are too hard or shoulder flares. Reduce range of motion if needed.'
+  },
+  {
+    id: 'db_curl',
+    name: 'Dumbbell Bicep Curl',
+    category: 'upper',
+    complexity: 'simple',
+    setsReps: '3 × 12',
+    diagramId: 'standing_arm_curl',
+    description: 'Classic bicep builder. Supinate the wrist at the top for full contraction.',
+    formCues: ['Elbows remain at sides throughout', 'Rotate palm upward as you curl', 'Squeeze bicep at top', 'Lower fully — 2 second descent'],
+    videoUrl: 'https://www.youtube.com/results?search_query=dumbbell+bicep+curl+proper+form',
+    notes: 'Alternate arms for better mind-muscle connection and control.'
   },
   {
     id: 'incline_db_press',
@@ -185,10 +185,10 @@ const EXERCISES = [
     complexity: 'moderate',
     setsReps: '3 × 10',
     diagramId: 'lying_back',
-    description: 'Upper chest emphasis. More shoulder-friendly than flat press for some.',
-    formCues: ['Bench at 30–45°', 'Press up and slightly together at top', 'Elbows at 45° from torso', 'Don\'t lock elbows at top'],
+    description: 'Upper chest emphasis. Often more shoulder-friendly than flat press at 30–45°.',
+    formCues: ['Bench at 30–45°', 'Press up and slightly inward at the top', 'Elbows at 45° from torso', 'Don\'t lock out elbows at top'],
     videoUrl: 'https://www.youtube.com/results?search_query=incline+dumbbell+press+form+technique',
-    notes: 'Adjust angle based on shoulder comfort.'
+    notes: 'Adjust bench angle based on shoulder comfort. Lower angle = more chest, higher = more shoulder.'
   },
 
   // ── CORE ─────────────────────────────────────────────────────────────────
@@ -199,10 +199,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 8–10 each side',
     diagramId: 'lying_back_dead_bug',
-    description: 'Safest core exercise — no spine flexion. Excellent for abs, obliques and stability.',
-    formCues: ['Lie on back, arms up, knees at 90° over hips', 'Press lower back INTO floor throughout', 'Lower opposite arm + leg slowly', 'Return and switch — breathe out on lower'],
+    description: 'One of the safest core exercises — no spinal flexion. Trains abs, obliques, and deep stabilizers.',
+    formCues: ['Lie on back, arms vertical, knees at 90° over hips', 'Press lower back firmly into floor — maintain throughout', 'Lower opposite arm and leg slowly (4 counts)', 'Return and switch sides — exhale on the way down'],
     videoUrl: 'https://www.youtube.com/results?search_query=dead+bug+exercise+form+tutorial',
-    notes: 'Start here for core work. No spinal flexion = safe for cardiac/diabetic patients.'
+    notes: 'No spinal flexion = no Valsalva risk = safe for post-cardiac patients. Start here before any crunch-based work.'
   },
   {
     id: 'plank',
@@ -211,10 +211,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 20–40 sec',
     diagramId: 'plank',
-    description: 'Full core activation without spinal flexion. Builds deep stabilizers.',
-    formCues: ['Elbows under shoulders', 'Neutral spine — no sagging hips, no raised butt', 'Squeeze glutes and abs simultaneously', 'Breathe normally throughout'],
+    description: 'Full core activation without spinal flexion. Strengthens deep stabilizing muscles.',
+    formCues: ['Elbows directly under shoulders', 'Neutral spine — no sagging hips, no raised glutes', 'Squeeze glutes and abs simultaneously', 'Breathe normally — don\'t hold your breath'],
     videoUrl: 'https://www.youtube.com/results?search_query=forearm+plank+proper+form+tutorial',
-    notes: 'Progress time gradually. Avoid if shoulder flares — use kneeling version.'
+    notes: 'Progress duration gradually. Use kneeling version if shoulder discomfort occurs.'
   },
   {
     id: 'side_plank',
@@ -223,10 +223,10 @@ const EXERCISES = [
     complexity: 'moderate',
     setsReps: '3 × 15–25 sec each side',
     diagramId: 'side_plank',
-    description: 'Oblique and lateral core strength. Helps with spine stability.',
-    formCues: ['Elbow under shoulder', 'Hips stacked and lifted', 'Top arm on hip or ceiling', 'Hold the straight line from head to heels'],
+    description: 'Oblique and lateral core strength. Important for spine and hip stability.',
+    formCues: ['Elbow directly under shoulder', 'Hips stacked and lifted — don\'t let them sag', 'Top arm rests on hip or reaches to ceiling', 'Body forms a straight diagonal line'],
     videoUrl: 'https://www.youtube.com/results?search_query=side+plank+form+tutorial+benefits',
-    notes: 'Kneeling version OK to start. Builds hip stability relevant to knee health.'
+    notes: 'Start with kneeling side plank if needed. Lateral stability directly supports knee health.'
   },
   {
     id: 'pallof_press',
@@ -235,10 +235,10 @@ const EXERCISES = [
     complexity: 'moderate',
     setsReps: '3 × 10 each side',
     diagramId: 'standing_press_forward',
-    description: 'Anti-rotation core stability. Excellent functional core exercise.',
-    formCues: ['Band anchored at chest height to your side', 'Press out straight in front, hold 2 sec', 'Return slowly — resist the rotation', 'Keep hips square'],
+    description: 'Anti-rotation core stability exercise. Trains the core to resist twisting forces.',
+    formCues: ['Band anchored at chest height beside you', 'Hold band at sternum, then press straight out in front', 'Hold 2 sec — resist the rotation pull', 'Return slowly to chest'],
     videoUrl: 'https://www.youtube.com/results?search_query=pallof+press+resistance+band+form',
-    notes: 'Excellent for building the deep core and obliques without any spinal flexion.'
+    notes: 'One of the best functional core exercises. No spinal flexion — safe for all fitness levels.'
   },
   {
     id: 'ab_wheel_kneeling',
@@ -247,10 +247,10 @@ const EXERCISES = [
     complexity: 'complex',
     setsReps: '3 × 6–8',
     diagramId: 'ab_wheel',
-    description: 'Advanced core. Very effective for abs. Knees on floor, limited range until strong.',
-    formCues: ['Start kneeling, ab wheel in front', 'Roll out ONLY until you feel lower back about to arch', 'Pull back using abs, not arms', 'Keep glutes squeezed throughout'],
+    description: 'Advanced core exercise. Highly effective for rectus abdominis when done with controlled range.',
+    formCues: ['Start kneeling, ab wheel directly below shoulders', 'Roll forward only until lower back is about to arch — then stop', 'Pull back using core and lats, not arms', 'Keep glutes squeezed throughout'],
     videoUrl: 'https://www.youtube.com/results?search_query=ab+wheel+rollout+proper+form+kneeling',
-    notes: 'Start with very short range of motion. Never let lower back arch — stop before that point.'
+    notes: 'Start with very short range (6–8 inches). Never allow lower back to arch — that is the hard stop.'
   },
   {
     id: 'bird_dog',
@@ -259,10 +259,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 10 each side',
     diagramId: 'bird_dog',
-    description: 'Core and glute stability. Safe on the back, excellent spine health exercise.',
-    formCues: ['On all fours, back flat (neutral spine)', 'Extend opposite arm + leg simultaneously', 'Hold 2 sec at top', 'Don\'t let hips rotate or sag'],
+    description: 'Core stability and glute activation. Excellent for spine health with no joint stress.',
+    formCues: ['On all fours — wrists under shoulders, knees under hips', 'Maintain neutral (flat) back throughout', 'Extend opposite arm and leg simultaneously', 'Hold 2 sec at top — don\'t let hips rotate'],
     videoUrl: 'https://www.youtube.com/results?search_query=bird+dog+exercise+form+tutorial',
-    notes: 'Great warm-up exercise. Also activates glutes which support the knee.'
+    notes: 'Excellent warm-up exercise. Glute activation from this exercise also protects the knee.'
   },
 
   // ── LOWER BODY / KNEE REHAB ──────────────────────────────────────────────
@@ -273,10 +273,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 20–40 sec',
     diagramId: 'wall_sit',
-    description: 'Isometric quad strengthening. Safe for knee pain — no movement, controlled load.',
-    formCues: ['Back flat against wall', 'Thighs parallel to floor (or higher if pain)', 'Feet shoulder-width, toes slightly out', 'Push back into wall throughout'],
+    description: 'Isometric quad strengthening with no joint movement — ideal for knee pain.',
+    formCues: ['Back fully flat against wall', 'Thighs at or above parallel to floor', 'Feet shoulder-width apart, toes slightly out', 'Weight in heels — push back into wall'],
     videoUrl: 'https://www.youtube.com/results?search_query=wall+sit+proper+form+knee+rehab',
-    notes: 'Higher thigh angle (less depth) = less knee stress. Progress depth slowly.'
+    notes: 'Higher thigh angle (less depth) = less knee stress. Increase depth only as pain allows.'
   },
   {
     id: 'straight_leg_raise',
@@ -285,10 +285,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 15 each leg',
     diagramId: 'lying_back_leg_raise',
-    description: 'Strengthens quads without bending the knee. Classic PT exercise for knee pain.',
-    formCues: ['Lie on back, one knee bent for support', 'Tighten quad of straight leg', 'Raise to 45°, hold 1 sec', 'Lower slowly'],
+    description: 'Strengthens quads without any knee bending. The foundational PT exercise for knee pain.',
+    formCues: ['Lie on back, bend non-working knee for lumbar support', 'Tighten quad of straight leg before lifting', 'Raise leg to ~45°, hold 1 sec at top', 'Lower slowly — 3 seconds down'],
     videoUrl: 'https://www.youtube.com/results?search_query=straight+leg+raise+exercise+knee+rehab+form',
-    notes: 'The foundation exercise for knee pain. Start here before any weighted leg work.'
+    notes: 'The most important starting point for knee rehab. Begin every lower body session with this.'
   },
   {
     id: 'clamshells',
@@ -297,10 +297,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 15–20 each side',
     diagramId: 'lying_side_clamshell',
-    description: 'Hip abductor + glute medius activation. Critical for knee tracking and IT band issues.',
-    formCues: ['Side-lying, knees bent 45°, hips stacked', 'Rotate top knee open like a clamshell', 'Keep hips from rolling back', 'Squeeze glute at top, hold 1 sec'],
+    description: 'Activates glute medius and hip abductors — critical for proper knee tracking.',
+    formCues: ['Side-lying, knees bent to 45°, hips stacked', 'Rotate top knee upward without rolling the pelvis back', 'Squeeze glute at top, hold 1 sec', 'Lower slowly and repeat'],
     videoUrl: 'https://www.youtube.com/results?search_query=clamshell+exercise+hip+abductor+form',
-    notes: 'Add a resistance band for progression. Essential if knee tracks inward during walking.'
+    notes: 'Add a light resistance band above the knee for progression. Weak glute medius is a primary cause of knee pain.'
   },
   {
     id: 'glute_bridge',
@@ -309,10 +309,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 15',
     diagramId: 'lying_back_bridge',
-    description: 'Hip extension to strengthen glutes + hamstrings. Takes load off the knee.',
-    formCues: ['Lie on back, knees bent, feet flat', 'Drive hips up by squeezing glutes', 'At top: straight line from knees to shoulders', 'Hold 2 sec, lower slowly'],
+    description: 'Hip extension that strengthens glutes and hamstrings — reduces knee load significantly.',
+    formCues: ['Lie on back, knees bent, feet flat and hip-width apart', 'Drive hips up by squeezing glutes — not by arching back', 'At top: straight line from knees to shoulders', 'Hold 2 sec, lower over 3 seconds'],
     videoUrl: 'https://www.youtube.com/results?search_query=glute+bridge+proper+form+tutorial',
-    notes: 'Progress to single-leg bridge. Strong glutes are the best knee protection.'
+    notes: 'Strong glutes are the single best protection for the knee. Progress to single-leg bridge when comfortable.'
   },
   {
     id: 'single_leg_bridge',
@@ -321,10 +321,10 @@ const EXERCISES = [
     complexity: 'moderate',
     setsReps: '3 × 10–12 each side',
     diagramId: 'lying_back_bridge',
-    description: 'Unilateral hip extension — more glute activation, exposes side-to-side imbalances.',
-    formCues: ['One foot lifted or extended', 'Drive through grounded heel', 'Don\'t let hips rotate or drop', 'Squeeze glute at top'],
+    description: 'Unilateral hip extension — greater glute activation and reveals strength asymmetries.',
+    formCues: ['One foot flat on floor, other leg extended or lifted', 'Drive through the planted heel to raise hips', 'Don\'t let hips rotate or drop to one side', 'Squeeze working glute at top'],
     videoUrl: 'https://www.youtube.com/results?search_query=single+leg+glute+bridge+form+tutorial',
-    notes: 'Key hip strengthener. Progress from bilateral bridge first.'
+    notes: 'Build bilateral glute bridge first. Side-to-side strength imbalances often contribute to knee pain.'
   },
   {
     id: 'step_up',
@@ -333,10 +333,10 @@ const EXERCISES = [
     complexity: 'moderate',
     setsReps: '3 × 10–12 each leg',
     diagramId: 'step_up',
-    description: 'Knee-friendly alternative to squats. Great for quad and glute strength + balance.',
-    formCues: ['Use a low step (6–8 inch) to start', 'Step fully onto box, drive through heel', 'Bring other foot up slowly', 'Step back down with control'],
+    description: 'Functional quad and glute strengthener. More knee-friendly than squats when done correctly.',
+    formCues: ['Use a 6–8 inch step to start — progress height over time', 'Step up, drive through heel of the raised foot', 'Don\'t push off the back foot — let the front leg do the work', 'Step down with control'],
     videoUrl: 'https://www.youtube.com/results?search_query=step+up+exercise+proper+form+knee+friendly',
-    notes: 'Don\'t push off the lower foot. Hold dumbbells for progression.'
+    notes: 'Hold dumbbells for added load once bodyweight is comfortable. Excellent for hiking preparation.'
   },
   {
     id: 'terminal_knee_ext',
@@ -345,10 +345,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 15 each leg',
     diagramId: 'standing_one_leg',
-    description: 'PT staple for knee pain. Activates VMO (inner quad) which stabilizes the kneecap.',
-    formCues: ['Band behind knee, anchored in front', 'Stand on one leg, slight bend in knee', 'Straighten (not hyperextend) against band resistance', 'Hold 1 sec'],
+    description: 'Activates the VMO (inner quad tear drop) which stabilizes and tracks the kneecap.',
+    formCues: ['Loop band behind knee, anchor point in front of you', 'Stand with slight knee bend, both feet on ground', 'Straighten the knee fully against band resistance — do not hyperextend', 'Hold 1 sec, release slowly'],
     videoUrl: 'https://www.youtube.com/results?search_query=terminal+knee+extension+band+VMO+exercise',
-    notes: 'Excellent for kneecap tracking issues (patellofemoral syndrome). Do this daily.'
+    notes: 'One of the most effective exercises for patellofemoral (kneecap) pain. Can be done daily.'
   },
   {
     id: 'hamstring_curl_band',
@@ -357,22 +357,22 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 12–15 each leg',
     diagramId: 'lying_prone',
-    description: 'Hamstring isolation exercise. Tight hamstrings contribute to knee pain — must address.',
-    formCues: ['Lying face down, band around ankle anchored in front', 'Curl heel toward glute', 'Slow and controlled — 3 sec up, 3 sec down', 'Don\'t let hips lift'],
+    description: 'Isolates the hamstrings — tight hamstrings are a direct contributor to knee pain.',
+    formCues: ['Lie face down, band looped around ankle anchored in front', 'Curl heel toward glute — controlled 2 seconds up', 'Hold 1 sec at top, lower over 3 seconds', 'Don\'t let hips lift off the floor'],
     videoUrl: 'https://www.youtube.com/results?search_query=lying+hamstring+curl+resistance+band+form',
-    notes: 'Also do standing calf stretches after — calves and hamstrings are connected chains.'
+    notes: 'Follow with a standing calf stretch — calves and hamstrings form a connected posterior chain.'
   },
   {
     id: 'hip_flexor_stretch',
-    name: 'Hip Flexor Stretch (Kneeling Lunge)',
+    name: 'Hip Flexor Stretch (Kneeling)',
     category: 'lower',
     complexity: 'simple',
     setsReps: '3 × 30–45 sec each side',
     diagramId: 'kneeling_lunge',
-    description: 'Tight hip flexors tilt pelvis forward and strain the knee. This stretch is essential.',
-    formCues: ['Back knee on padded surface, front foot forward', 'Tuck pelvis (posterior tilt)', 'Feel stretch in front of back hip', 'Keep torso upright — don\'t lean forward'],
+    description: 'Tight hip flexors anteriorly tilt the pelvis and increase knee stress. This stretch is essential.',
+    formCues: ['Back knee on padded surface, front foot forward', 'Posteriorly tilt pelvis (tuck tailbone under)', 'Feel the stretch at the front of the back hip — not the lower back', 'Keep torso upright — don\'t lean forward'],
     videoUrl: 'https://www.youtube.com/results?search_query=kneeling+hip+flexor+stretch+proper+form',
-    notes: 'Do this every session. Tight hip flexors are directly linked to knee pain.'
+    notes: 'Perform every session. Tight hip flexors (common from sitting) directly stress the knee joint.'
   },
   {
     id: 'calf_raise',
@@ -381,10 +381,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 15–20',
     diagramId: 'standing',
-    description: 'Strengthens calves and improves ankle stability. Tight calves affect knee mechanics.',
-    formCues: ['Stand on edge of step or flat ground', 'Rise up through big toe', 'Lower slowly — full range', 'Hold at top 1 sec'],
+    description: 'Strengthens gastrocnemius and soleus. Ankle stability and calf tightness both affect the knee.',
+    formCues: ['Stand on a step edge (or flat ground) with balls of feet', 'Rise up fully through the big toe side', 'Lower slowly past neutral — full range', 'Hold at top for 1 sec'],
     videoUrl: 'https://www.youtube.com/results?search_query=calf+raise+proper+form+tutorial',
-    notes: 'Use one leg for progression. Calf raises also aid blood sugar control (Type 2 DM).'
+    notes: 'Single-leg version for progression. Post-meal calf raises are clinically shown to reduce blood glucose spikes.'
   },
   {
     id: 'adductor_squeeze',
@@ -393,10 +393,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 15',
     diagramId: 'lying_back_knees_up',
-    description: 'Activates inner thighs (adductors) which support knee joint stability.',
-    formCues: ['Lie on back, knees bent', 'Place ball or folded towel between knees', 'Squeeze isometrically, hold 3 sec', 'Release slowly'],
+    description: 'Isometric inner thigh activation. Tight or weak adductors affect knee joint stability.',
+    formCues: ['Lie on back, knees bent, feet flat', 'Place a rolled towel or soft ball between knees', 'Squeeze inward isometrically — hold 3 sec', 'Release slowly and repeat'],
     videoUrl: 'https://www.youtube.com/results?search_query=adductor+squeeze+inner+thigh+knee+stability',
-    notes: 'Very gentle way to activate adductors without stress. Great for tight inner thighs.'
+    notes: 'Gentle and joint-friendly. Great for addressing inner thigh tightness that pulls the knee inward.'
   },
   {
     id: 'db_goblet_squat',
@@ -405,10 +405,10 @@ const EXERCISES = [
     complexity: 'moderate',
     setsReps: '3 × 10–12',
     diagramId: 'squat',
-    description: 'Knee-friendly squat variation. Dumbbell counterbalance helps posture + reduces knee stress.',
-    formCues: ['Hold dumbbell at chest', 'Feet shoulder-width, toes out 15–30°', 'Sit back and down', 'Knees track over toes — don\'t cave in', 'Go only as deep as pain-free'],
+    description: 'The most knee-friendly squat variation. Counterbalance weight improves depth and posture.',
+    formCues: ['Hold dumbbell at chest, elbows pointing down', 'Feet shoulder-width, toes angled out 30°', 'Sit back and down — weight stays in heels', 'Knees track over toes — don\'t let them cave inward', 'Go only as deep as pain-free allows'],
     videoUrl: 'https://www.youtube.com/results?search_query=goblet+squat+proper+form+tutorial',
-    notes: 'Only add after pain-free wall sits and step-ups. Depth = pain-free range only.'
+    notes: 'Earn this exercise first with pain-free wall sits and step-ups. Range of motion = pain-free range only.'
   },
 
   // ── FLEXIBILITY / MOBILITY ────────────────────────────────────────────────
@@ -417,12 +417,12 @@ const EXERCISES = [
     name: "World's Greatest Stretch",
     category: 'mobility',
     complexity: 'moderate',
-    setsReps: '5 each side',
+    setsReps: '5 reps each side',
     diagramId: 'worlds_greatest_stretch',
-    description: 'One move hits hip flexors, adductors, thoracic spine, and hamstrings. Perfect warm-up.',
-    formCues: ['Step into deep lunge', 'Place same-side hand inside front foot', 'Rotate top arm to ceiling', 'Then reach arm under body', 'Each position: 3-second hold'],
+    description: 'One movement addresses hip flexors, adductors, thoracic spine, and hamstrings simultaneously.',
+    formCues: ['Step into a deep lunge — front shin vertical', 'Place same-side hand inside the front foot on the floor', 'Rotate top arm open toward the ceiling, eyes follow', 'Then sweep that arm under body and reach through', 'Hold each position 2–3 sec'],
     videoUrl: 'https://www.youtube.com/results?search_query=worlds+greatest+stretch+form+tutorial',
-    notes: 'Great daily mobility routine. Addresses nearly all the tight areas from your profile.'
+    notes: 'Ideal daily warm-up. Addresses nearly every tight area relevant to your profile in one sequence.'
   },
   {
     id: 'hamstring_stretch',
@@ -431,22 +431,22 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '3 × 30 sec each leg',
     diagramId: 'hamstring_stretch_lying',
-    description: 'Tight hamstrings = knee pain and lower back tension. Stretch daily.',
-    formCues: ['Lie on back, pull leg straight up', 'Use a strap or towel if needed', 'Keep both hips on floor', 'Breathe out into the stretch'],
+    description: 'Tight hamstrings contribute directly to knee pain and lower back tension.',
+    formCues: ['Lie on back, keep non-stretched knee bent with foot flat', 'Pull straight leg upward — use a strap or towel if needed', 'Keep both hips firmly on the floor', 'Breathe out slowly into the stretch — no bouncing'],
     videoUrl: 'https://www.youtube.com/results?search_query=lying+hamstring+stretch+proper+form',
-    notes: 'Consistency matters more than intensity. Gentle, daily is better than aggressive, weekly.'
+    notes: 'Daily consistency matters more than intensity. A gentle daily stretch outperforms an aggressive weekly one.'
   },
   {
     id: 'thoracic_rotation',
     name: 'Thoracic Spine Rotation',
     category: 'mobility',
     complexity: 'simple',
-    setsReps: '10 each side, 2 sets',
+    setsReps: '2 × 10 each side',
     diagramId: 'thoracic_rotation',
-    description: 'Improves upper back rotation — directly helps frozen shoulder by taking load off the joint.',
-    formCues: ['Side-lying, knees bent 90°, arms stacked', 'Rotate top arm open to the other side', 'Follow with your eyes', 'Hold at end range 2 sec'],
+    description: 'Improves thoracic (upper back) rotation — reduces compensatory stress on the frozen shoulder.',
+    formCues: ['Side-lying, hips and knees at 90°, arms stacked in front', 'Slowly rotate top arm open to the opposite side', 'Let your eyes and head follow the moving arm', 'Hold at end range 2 sec — breathe out'],
     videoUrl: 'https://www.youtube.com/results?search_query=thoracic+rotation+mobility+exercise+form',
-    notes: 'One of the best frozen shoulder auxiliary exercises — improves shoulder ROM indirectly.'
+    notes: 'Upper back stiffness forces the shoulder to compensate — improving thoracic rotation takes load off the frozen shoulder.'
   },
   {
     id: 'pendulum_shoulder',
@@ -455,10 +455,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '2 min each direction',
     diagramId: 'lean_forward_pendulum',
-    description: 'Classic frozen shoulder exercise. Uses gravity to gently mobilize the joint.',
-    formCues: ['Lean forward, support with non-affected arm on table', 'Let affected arm hang freely', 'Allow it to swing gently in circles', 'Start small, gravity does the work'],
+    description: 'Codman\'s pendulum — classic frozen shoulder mobilization using gravity, not muscle force.',
+    formCues: ['Lean forward, support non-affected arm on a table or chair', 'Let the affected arm hang freely and relaxed', 'Allow the arm to gently swing in small circles — gravity does the work', 'Gradually increase circle size as tolerated'],
     videoUrl: 'https://www.youtube.com/results?search_query=pendulum+exercise+frozen+shoulder+form',
-    notes: 'Do this daily — morning and evening. The most important frozen shoulder exercise.'
+    notes: 'Do morning and evening. This is the #1 prescribed frozen shoulder exercise — muscle contraction is not the goal.'
   },
   {
     id: 'wall_slides',
@@ -467,10 +467,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '2 × 10',
     diagramId: 'wall_slides',
-    description: 'Shoulder blade control and upper back strengthening. Safe for frozen shoulder.',
-    formCues: ['Stand with back against wall', 'Arms up in "W" shape, elbows and wrists touching wall', 'Slide arms up toward "Y" shape', 'Keep contact with wall throughout'],
+    description: 'Trains shoulder blade control and serratus anterior. Improves posture and frozen shoulder.',
+    formCues: ['Stand with back flat against wall', 'Start with arms in "W" — elbows and wrists touching wall', 'Slide arms upward toward "Y" position', 'Maintain wall contact throughout — don\'t let elbows or wrists lift off'],
     videoUrl: 'https://www.youtube.com/results?search_query=wall+slides+shoulder+rehab+form+tutorial',
-    notes: 'Don\'t force the range — go as high as comfortable. Improves posture too.'
+    notes: 'Go only as high as wall contact can be maintained. Consistent improvement in range signals frozen shoulder progress.'
   },
   {
     id: 'it_band_foam_roll',
@@ -479,10 +479,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '60–90 sec each leg',
     diagramId: 'foam_roller',
-    description: 'Reduces tightness in IT band and quad that contributes to knee pain.',
-    formCues: ['Lie on side, foam roller at mid-thigh', 'Roll slowly from hip to just above knee', 'Pause on tight spots for 5–10 sec', 'Breathe out on tender spots'],
+    description: 'Self-myofascial release for IT band and quad tightness — both contributors to knee pain.',
+    formCues: ['Lie on side with foam roller under mid-thigh', 'Roll slowly from hip to just above the knee', 'Pause on tender spots for 5–10 sec — breathe through it', 'Keep core slightly engaged for control'],
     videoUrl: 'https://www.youtube.com/results?search_query=IT+band+foam+rolling+technique+knee+pain',
-    notes: 'Do before and after cardio sessions. Reduces post-workout soreness significantly.'
+    notes: 'Roll before cardio to loosen tissue, and after to aid recovery. Avoid rolling directly over the knee joint.'
   },
 
   // ── ACTIVE RECOVERY ───────────────────────────────────────────────────────
@@ -493,10 +493,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '15–20 min',
     diagramId: 'yoga_child',
-    description: 'Reduces stiffness, improves flexibility, promotes parasympathetic recovery.',
-    formCues: ['Focus on breathing', 'Cat-cow for spine', 'Child\'s pose for hip flexors', 'Downward dog for hamstrings + calves'],
+    description: 'Gentle movement to reduce stiffness, improve flexibility, and activate parasympathetic recovery.',
+    formCues: ['Cat-cow: inhale to arch, exhale to round — 10 reps', 'Child\'s pose: arms forward, hold 30 sec', 'Downward dog: pedal heels, hold 20 sec', 'Thread-the-needle for thoracic rotation'],
     videoUrl: 'https://www.youtube.com/results?search_query=beginner+yoga+flow+morning+15+minutes',
-    notes: 'Modified cat-cow avoids shoulder stress. Use blocks if wrist/shoulder limits.'
+    notes: 'Use blocks or a chair for wrist modifications. Avoid full downward dog if shoulder is very restricted.'
   },
   {
     id: 'walking_easy',
@@ -505,10 +505,10 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '20–30 min, flat ground',
     diagramId: 'walking',
-    description: 'Active recovery, blood sugar control, mental health. Keep HR under 100.',
-    formCues: ['Natural pace', 'Arm swing relaxed', 'Even terrain preferred', 'No pace pressure'],
+    description: 'Active recovery that serves triple duty: joint mobility, blood sugar control, and mental health.',
+    formCues: ['Comfortable, conversational pace — no HR pressure', 'Relaxed arm swing', 'Flat or gently rolling terrain preferred', 'Stay well within Zone 1 (under 90 bpm)'],
     videoUrl: 'https://www.youtube.com/results?search_query=benefits+of+walking+daily+health',
-    notes: 'Post-meal walks of 10+ min significantly lower blood glucose. Very important for diabetes management.'
+    notes: 'Post-meal walks of 10+ min are clinically proven to significantly reduce blood glucose spikes. Do this daily after meals.'
   },
   {
     id: 'breathing_exercise',
@@ -517,21 +517,83 @@ const EXERCISES = [
     complexity: 'simple',
     setsReps: '5–8 cycles',
     diagramId: 'sitting_breathing',
-    description: 'Activates parasympathetic system. Reduces cardiac workload and cortisol.',
-    formCues: ['Inhale for 4 counts', 'Hold for 7 counts', 'Exhale slowly for 8 counts', 'After exercise to bring HR down'],
+    description: 'Diaphragmatic breathing technique that activates the parasympathetic nervous system and lowers resting heart rate.',
+    formCues: ['Inhale through nose for 4 counts', 'Hold breath for 7 counts', 'Exhale through mouth slowly for 8 counts', 'Repeat — use after cardio to bring HR down'],
     videoUrl: 'https://www.youtube.com/results?search_query=4-7-8+breathing+technique+tutorial+benefits',
-    notes: 'Excellent post-cardio cool-down. Also aids blood glucose regulation via stress reduction.'
+    notes: 'Post-cardio cool-down. If 7-count hold is uncomfortable, try 4-4-8. Aids blood glucose regulation via stress reduction.'
+  },
+
+  // ── NECK / UPPER TRAP / LEVATOR SCAPULAE ─────────────────────────────────
+  {
+    id: 'upper_trap_stretch',
+    name: 'Upper Trapezius Stretch',
+    category: 'mobility',
+    complexity: 'simple',
+    setsReps: '3 × 30–45 sec each side',
+    diagramId: 'neck_side_stretch',
+    description: 'Lengthens the upper trapezius — the thick muscle running from base of skull across the shoulder. Chronic tension here causes neck pain, headaches, and restricted shoulder mobility.',
+    formCues: ['Sit or stand tall, shoulders relaxed and level', 'Tilt ear slowly toward same-side shoulder', 'Gently place that hand on the opposite temple — add only mild overpressure', 'Keep far shoulder actively pressed down', 'Hold — breathe out into the stretch'],
+    videoUrl: 'https://www.youtube.com/results?search_query=upper+trapezius+stretch+neck+shoulder+relief',
+    notes: 'Never pull the head — just let gravity and light hand contact do the work. Opposite shoulder must stay down to isolate the trap.'
+  },
+  {
+    id: 'levator_scapulae_stretch',
+    name: 'Levator Scapulae Stretch',
+    category: 'mobility',
+    complexity: 'simple',
+    setsReps: '3 × 30 sec each side',
+    diagramId: 'levator_scapulae_stretch',
+    description: 'Targets the levator scapulae — the muscle lifting the shoulder blade, commonly the source of that deep ache between neck and shoulder.',
+    formCues: ['Sit tall, rotate head 45° toward the side you\'re stretching', 'Nod chin down toward that armpit', 'Place hand on back of head and let weight add gentle overpressure', 'Keep opposite shoulder pinned down', 'Hold and breathe — you\'ll feel it deep behind the neck'],
+    videoUrl: 'https://www.youtube.com/results?search_query=levator+scapulae+stretch+neck+shoulder+blade',
+    notes: 'This is different from a trap stretch — the rotation angle matters. Used by PTs specifically for the "computer shoulder" ache between neck and shoulder blade.'
+  },
+  {
+    id: 'chin_tuck',
+    name: 'Chin Tuck (Cervical Retraction)',
+    category: 'mobility',
+    complexity: 'simple',
+    setsReps: '3 × 10 reps, hold 5 sec',
+    diagramId: 'chin_tuck',
+    description: 'Retracts the cervical spine to counteract forward head posture. Stretches the suboccipitals and strengthens deep neck flexors — addressing the root cause of upper trap overload.',
+    formCues: ['Stand or sit against a wall', 'Draw chin straight back — make a "double chin"', 'Think: slide head back on a shelf, not tuck down', 'Hold 5 sec, then release fully', 'Repeat — keep jaw relaxed throughout'],
+    videoUrl: 'https://www.youtube.com/results?search_query=chin+tuck+exercise+cervical+retraction+form',
+    notes: 'Forward head posture increases upper trap tension. Daily chin tucks address the postural cause, not just the symptom. Do them at your desk.'
+  },
+  {
+    id: 'face_pull',
+    name: 'Face Pull (Band)',
+    category: 'upper',
+    complexity: 'simple',
+    setsReps: '3 × 15',
+    diagramId: 'face_pull',
+    description: 'Strengthens the mid and lower trapezius plus rear deltoids — the muscles that counterbalance upper trap dominance and pull the shoulders back into alignment.',
+    formCues: ['Band anchored at face height, hold with both hands', 'Pull toward face, elbows flaring wide and high', 'At the finish, elbows are behind ears — like a "W"', 'Squeeze shoulder blades together at the end', 'Return slowly — 3 seconds'],
+    videoUrl: 'https://www.youtube.com/results?search_query=face+pull+exercise+proper+form+band',
+    notes: 'The single best exercise for shoulder posture and rotator cuff health. Works mid/lower trap which is typically weak when upper trap is tight.'
+  },
+  {
+    id: 'shrug_release',
+    name: 'Shoulder Shrug & Release',
+    category: 'mobility',
+    complexity: 'simple',
+    setsReps: '2 × 10 reps',
+    diagramId: 'shrug_release',
+    description: 'Contract-and-release technique for the upper trapezius. Intentional shrug followed by complete drop creates neuromuscular relaxation that passive stretching alone cannot achieve.',
+    formCues: ['Stand tall, arms at sides', 'Shrug both shoulders up toward ears as high as possible — hold 5 sec', 'Drop them completely — let gravity take over', 'Take a breath, feel the release', 'Repeat slowly — do not rush'],
+    videoUrl: 'https://www.youtube.com/results?search_query=shoulder+shrug+release+trap+tension+relief',
+    notes: 'This works via post-isometric relaxation (PIR) — the muscle releases more deeply after a contraction than during passive stretching alone.'
   }
 ];
 
 // Category metadata
 const CATEGORIES = {
-  cardio:   { label: 'Cardio', icon: '❤️', color: '#ef4444' },
-  upper:    { label: 'Upper Body', icon: '💪', color: '#3b82f6' },
-  core:     { label: 'Core', icon: '🔥', color: '#f59e0b' },
-  lower:    { label: 'Lower Body', icon: '🦵', color: '#10b981' },
-  mobility: { label: 'Mobility', icon: '🧘', color: '#8b5cf6' },
-  recovery: { label: 'Recovery', icon: '😌', color: '#6b7280' }
+  cardio:   { label: 'Cardio',    icon: 'Cardio',    color: '#ef4444' },
+  upper:    { label: 'Upper Body', icon: 'Upper',     color: '#3b82f6' },
+  core:     { label: 'Core',       icon: 'Core',      color: '#f59e0b' },
+  lower:    { label: 'Lower Body', icon: 'Lower',     color: '#10b981' },
+  mobility: { label: 'Mobility',   icon: 'Mobility',  color: '#8b5cf6' },
+  recovery: { label: 'Recovery',   icon: 'Recovery',  color: '#6b7280' }
 };
 
 // Complexity metadata
@@ -553,7 +615,7 @@ const WEEKLY_PLAN = {
   1: { // Monday
     label: 'Upper Body',
     focus: 'Chest, back, shoulder rehab',
-    exercises: ['pendulum_shoulder', 'band_pull_apart', 'band_external_rotation', 'db_chest_press', 'db_row', 'lateral_raise', 'band_pushdown', 'db_curl', 'wall_slides'],
+    exercises: ['pendulum_shoulder', 'shrug_release', 'chin_tuck', 'band_pull_apart', 'face_pull', 'band_external_rotation', 'db_chest_press', 'pushups', 'db_row', 'db_curl', 'wall_slides'],
     duration: '45 min',
     cardio: null
   },
@@ -573,15 +635,15 @@ const WEEKLY_PLAN = {
   },
   4: { // Thursday
     label: 'Active Recovery',
-    focus: 'Mobility, shoulder, blood sugar',
-    exercises: ['pendulum_shoulder', 'thoracic_rotation', 'wall_slides', 'hamstring_stretch', 'walking_easy', 'breathing_exercise', 'yoga_flow', 'it_band_foam_roll'],
-    duration: '30 min',
+    focus: 'Neck, shoulder, mobility',
+    exercises: ['shrug_release', 'chin_tuck', 'upper_trap_stretch', 'levator_scapulae_stretch', 'pendulum_shoulder', 'thoracic_rotation', 'wall_slides', 'hamstring_stretch', 'breathing_exercise'],
+    duration: '35 min',
     cardio: null
   },
   5: { // Friday
     label: 'Upper Body Volume',
     focus: 'Muscle building, shoulder health',
-    exercises: ['band_external_rotation', 'incline_db_press', 'db_row', 'db_shoulder_press', 'band_pull_apart', 'db_curl', 'tricep_overhead_ext', 'wall_slides'],
+    exercises: ['band_external_rotation', 'incline_db_press', 'pushups', 'db_row', 'db_shoulder_press', 'band_pull_apart', 'db_curl', 'wall_slides'],
     duration: '45 min',
     cardio: null
   },
