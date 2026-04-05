@@ -1,7 +1,8 @@
 // Reading List app — 8 categories + archive
 // Firestore: reading_links | classify via Cloud Function (no key in browser)
 
-var CLASSIFY_URL = 'https://us-central1-nutrition-198dd.cloudfunctions.net/classifyArticle';
+var CLASSIFY_URL    = 'https://us-central1-nutrition-198dd.cloudfunctions.net/classifyArticle';
+var SUGGEST_URL     = 'https://us-central1-nutrition-198dd.cloudfunctions.net/suggestArticles';
 
 var TABS = [
   'physics_cosmos','biology_life','technology','artificial_intelligence',
@@ -56,9 +57,19 @@ function renderAll() {
     byTab[tab].sort(function(a, b) { return (b.addedAt || '') > (a.addedAt || '') ? 1 : -1; });
     document.getElementById('cnt-' + tab).textContent = byTab[tab].length;
     var panel = document.getElementById('panel-' + tab);
-    panel.innerHTML = byTab[tab].length === 0
+    var content = byTab[tab].length === 0
       ? '<p class="empty">Nothing here yet.</p>'
       : byTab[tab].map(renderCard).join('');
+    if (tab === 'suggested') {
+      panel.innerHTML =
+        '<div class="suggest-bar">' +
+          '<button class="btn-refresh" id="btn-suggest-refresh">↻ Refresh Suggestions</button>' +
+          '<span class="suggest-status" id="suggest-status"></span>' +
+        '</div>' + content;
+      document.getElementById('btn-suggest-refresh').onclick = fetchSuggestions;
+    } else {
+      panel.innerHTML = content;
+    }
   });
 
   bindActions();
@@ -247,6 +258,35 @@ document.addEventListener('click', function() {
   var p = document.querySelector('.move-picker');
   if (p) p.remove();
 });
+
+// ── Suggest Articles ───────────────────────────────────────────────────────
+
+function fetchSuggestions() {
+  var btn = document.getElementById('btn-suggest-refresh');
+  var status = document.getElementById('suggest-status');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = '↻ Fetching…';
+  if (status) { status.textContent = 'Scanning RSS feeds and asking AI…'; status.className = 'suggest-status'; }
+
+  fetch(SUGGEST_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) throw new Error(d.error);
+      if (status) {
+        status.textContent = d.added > 0
+          ? '✓ Added ' + d.added + ' new suggestion' + (d.added !== 1 ? 's' : '')
+          : (d.message || 'No new articles found');
+        status.className = 'suggest-status ok';
+      }
+    })
+    .catch(function(err) {
+      if (status) { status.textContent = 'Error: ' + err.message; status.className = 'suggest-status err'; }
+    })
+    .finally(function() {
+      if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh Suggestions'; }
+    });
+}
 
 // ── Init ───────────────────────────────────────────────────────────────────
 

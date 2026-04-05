@@ -145,6 +145,14 @@
     .archive-year-title { font-family: 'Playfair Display', serif; font-size: 1rem; color: #94a3b8; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
     .btn-unarchive { background: none; border: 1px solid #e2e8f0; color: #94a3b8; font-size: 0.68rem; padding: 2px 8px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
     .btn-unarchive:hover { border-color: #6366f1; color: #6366f1; }
+    .archive-section-label { font-size: 0.72rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin: 12px 0 4px; }
+    .archive-month-details { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+    .archive-month-summary { padding: 8px 12px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px; list-style: none; }
+    .archive-month-summary::-webkit-details-marker { display: none; }
+    .archive-month-summary::before { content: '▶'; font-size: 0.6rem; color: #94a3b8; transition: transform 0.15s; }
+    .archive-month-details[open] .archive-month-summary::before { transform: rotate(90deg); }
+    .archive-month-details[open] { background: #f8fafc; }
+    .archive-month-details .type-group, .archive-month-details .task-list { padding: 0 12px; }
 
     /* ── Backlog ── */
     .backlog-section { margin-bottom: 20px; }

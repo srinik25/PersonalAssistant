@@ -50,6 +50,45 @@ function toggleCompletion(exId, dateKey) {
   saveCompletions();
 }
 
+// ── AI ENRICHMENT ─────────────────────────────────────────────────────────────
+
+async function enrichExercise(ex) {
+  if (!window.OPENAI_API_KEY) return ex;
+  const needsDesc = !ex.description;
+  const needsCues = !ex.formCues || ex.formCues.length === 0;
+  const needsVideo = !ex.videoUrl;
+  if (!needsDesc && !needsCues && !needsVideo) return ex;
+
+  if (needsVideo) {
+    const q = encodeURIComponent(ex.name + ' proper form technique');
+    ex.videoUrl = `https://www.youtube.com/results?search_query=${q}`;
+  }
+
+  if (!needsDesc && !needsCues) return ex;
+
+  const prompt = `You are a fitness expert. For the exercise "${ex.name}" (category: ${ex.category}, complexity: ${ex.complexity}):
+${needsDesc ? '- Write a 1-2 sentence description: what muscles it targets and why it\'s useful.' : ''}
+${needsCues ? '- List exactly 4 form cues: short, actionable instructions (under 10 words each).' : ''}
+
+Respond ONLY with valid JSON, no markdown: {"description": "...", "formCues": ["...", "...", "...", "..."]}`;
+
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.3 })
+    });
+    const data = await resp.json();
+    const raw = data.choices[0].message.content.trim().replace(/^```json\n?|\n?```$/g, '');
+    const parsed = JSON.parse(raw);
+    if (needsDesc && parsed.description) ex.description = parsed.description;
+    if (needsCues && parsed.formCues && parsed.formCues.length > 0) ex.formCues = parsed.formCues;
+  } catch(e) {
+    console.warn('AI enrichment failed for', ex.name, e);
+  }
+  return ex;
+}
+
 // ── CUSTOM EXERCISES ──────────────────────────────────────────────────────────
 
 async function loadCustomExercises() {
@@ -58,12 +97,69 @@ async function loadCustomExercises() {
     try {
       const snap = await db.collection('fitness_custom_exercises').orderBy('createdAt','desc').get();
       customExercises = [];
-      snap.forEach(doc => customExercises.push({ id: doc.id, ...doc.data(), custom: true }));
+      const backfills = [];
+      snap.forEach(doc => {
+        const ex = { id: doc.id, ...doc.data(), custom: true };
+        if (ex.name && !ex.diagramId) {
+          const detected = autoDetectExercise(ex.name).diagramId;
+          if (detected) {
+            ex.diagramId = detected;
+            backfills.push({ id: doc.id, diagramId: detected });
+          }
+        }
+        customExercises.push(ex);
+      });
+      // Save backfilled diagramIds to Firestore silently
+      backfills.forEach(({ id, diagramId }) => {
+        db.collection('fitness_custom_exercises').doc(id).update({ diagramId }).catch(() => {});
+      });
       localStorage.setItem('ft_custom', JSON.stringify(customExercises));
+
+      // Enrich exercises missing description or formCues (runs async in background)
+      const needsEnrich = customExercises.filter(ex => !ex.description || !ex.formCues || ex.formCues.length === 0 || !ex.videoUrl);
+      if (needsEnrich.length > 0) {
+        (async () => {
+          for (const ex of needsEnrich) {
+            await enrichExercise(ex);
+            const update = {};
+            if (ex.description) update.description = ex.description;
+            if (ex.formCues && ex.formCues.length > 0) update.formCues = ex.formCues;
+            if (ex.videoUrl) update.videoUrl = ex.videoUrl;
+            if (Object.keys(update).length > 0) {
+              db.collection('fitness_custom_exercises').doc(ex.id).update(update).catch(() => {});
+            }
+          }
+          localStorage.setItem('ft_custom', JSON.stringify(customExercises));
+          if (activeTab === 'library') renderLibrary();
+        })();
+      }
       return;
     } catch(e) { console.warn('Firestore load failed:', e); }
   }
   customExercises = JSON.parse(localStorage.getItem('ft_custom') || '[]');
+  // Backfill localStorage entries missing diagramId, description, formCues, or videoUrl
+  let changed = false;
+  customExercises.forEach(ex => {
+    if (ex.name && !ex.diagramId) {
+      const detected = autoDetectExercise(ex.name).diagramId;
+      if (detected) { ex.diagramId = detected; changed = true; }
+    }
+    if (ex.name && !ex.videoUrl) {
+      const q = encodeURIComponent(ex.name + ' proper form technique');
+      ex.videoUrl = `https://www.youtube.com/results?search_query=${q}`;
+      changed = true;
+    }
+  });
+  if (changed) localStorage.setItem('ft_custom', JSON.stringify(customExercises));
+  // AI enrichment for missing description/formCues (best-effort, no Firestore to write back)
+  const needsEnrich = customExercises.filter(ex => !ex.description || !ex.formCues || ex.formCues.length === 0);
+  if (needsEnrich.length > 0) {
+    (async () => {
+      for (const ex of needsEnrich) await enrichExercise(ex);
+      localStorage.setItem('ft_custom', JSON.stringify(customExercises));
+      if (activeTab === 'library') renderLibrary();
+    })();
+  }
 }
 
 async function saveCustomExercise(data) {
@@ -280,24 +376,116 @@ function renderLibrary() {
   });
 }
 
+// ── AUTO-DETECT EXERCISE ATTRIBUTES ──────────────────────────────────────────
+
+function autoDetectExercise(name) {
+  const n = name.toLowerCase();
+
+  // Category
+  let category = 'core';
+  if (/walk|run|bike|elliptical|row.*machine|cycling|jog|treadmill|cardio|swimming/.test(n)) category = 'cardio';
+  else if (/press|push.?up|pull|shoulder|chest|tricep|bicep|lat|fly|raise|curl|row(?!.*machine)|face.?pull|shrug/.test(n)) category = 'upper';
+  else if (/squat|lunge|leg|glute|hip|calf|step.?up|bridge|deadlift|hamstring|quad|clamshell/.test(n)) category = 'lower';
+  else if (/stretch|foam|yoga|rotation|thoracic|mobility|pendulum/.test(n)) category = 'mobility';
+  else if (/breath|meditat|rest|recover/.test(n)) category = 'recovery';
+  else if (/plank|crunch|sit.?up|mountain|dead.?bug|ab|bird.?dog|core|climb/.test(n)) category = 'core';
+
+  // Complexity
+  let complexity = 'moderate';
+  if (/walk|bike|stretch|foam|breath|elliptical|stationary|chin.?tuck|shrug|neck/.test(n)) complexity = 'simple';
+  else if (/mountain.?climb|burpee|clean|snatch|turkish|olympic|plyometric/.test(n)) complexity = 'complex';
+
+  // Diagram
+  let diagramId = '';
+  if (/mountain.?climb/.test(n)) diagramId = 'plank';
+  else if (/push.?up/.test(n)) diagramId = 'push_up';
+  else if (/side.?plank|copenhagen/.test(n)) diagramId = 'side_plank';
+  else if (/plank/.test(n)) diagramId = 'plank';
+  else if (/bird.?dog/.test(n)) diagramId = 'bird_dog';
+  else if (/dead.?bug/.test(n)) diagramId = 'lying_back_dead_bug';
+  else if (/glute.?bridge|hip.?bridge|bridge/.test(n)) diagramId = 'lying_back_bridge';
+  else if (/leg.?raise/.test(n)) diagramId = 'lying_back_leg_raise';
+  else if (/squat/.test(n)) diagramId = 'squat';
+  else if (/lunge/.test(n)) diagramId = 'kneeling_lunge';
+  else if (/step.?up/.test(n)) diagramId = 'step_up';
+  else if (/wall.?sit/.test(n)) diagramId = 'wall_sit';
+  else if (/wall.?slide/.test(n)) diagramId = 'wall_slides';
+  else if (/clamshell/.test(n)) diagramId = 'lying_side_clamshell';
+  else if (/ab.?wheel/.test(n)) diagramId = 'ab_wheel';
+  else if (/all.?four/.test(n)) diagramId = 'all_fours';
+  else if (/row(?!.*machine)/.test(n)) diagramId = 'bent_over_row';
+  else if (/overhead.?press|shoulder.?press/.test(n)) diagramId = 'standing_arms_overhead';
+  else if (/press.?forward|chest.?press/.test(n)) diagramId = 'standing_press_forward';
+  else if (/curl/.test(n)) diagramId = 'standing_arm_curl';
+  else if (/elliptical/.test(n)) diagramId = 'elliptical';
+  else if (/rowing.?machine|row.*machine/.test(n)) diagramId = 'rowing_machine';
+  else if (/walk|treadmill/.test(n)) diagramId = 'walking';
+  else if (/breath/.test(n)) diagramId = 'sitting_breathing';
+  else if (/child|yoga/.test(n)) diagramId = 'yoga_child';
+  else if (/foam.?roll/.test(n)) diagramId = 'foam_roller';
+  else if (/neck/.test(n)) diagramId = 'neck_side_stretch';
+  else if (/chin.?tuck/.test(n)) diagramId = 'chin_tuck';
+  else if (/face.?pull/.test(n)) diagramId = 'face_pull';
+  else if (/shrug/.test(n)) diagramId = 'shrug_release';
+  else if (/thoracic/.test(n)) diagramId = 'thoracic_rotation';
+  else if (/hamstring/.test(n)) diagramId = 'hamstring_stretch_lying';
+  else if (/world.*greatest/.test(n)) diagramId = 'worlds_greatest_stretch';
+  else if (category === 'cardio') diagramId = 'walking';
+  else if (category === 'core') diagramId = 'plank';
+  else if (category === 'lower') diagramId = 'standing';
+  else if (category === 'upper') diagramId = 'standing';
+  else if (category === 'mobility') diagramId = 'standing';
+  else if (category === 'recovery') diagramId = 'sitting_breathing';
+
+  return { category, complexity, diagramId };
+}
+
 // ── ADD EXERCISE FORM ─────────────────────────────────────────────────────────
 
 function bindAddForm() {
   const form = document.getElementById('add-ex-form');
   if (!form) return;
 
-  const diagramSel = document.getElementById('ex-diagram-id');
   const preview = document.getElementById('diagram-preview');
-  if (diagramSel && preview) {
-    diagramSel.addEventListener('change', () => {
-      const id = diagramSel.value;
-      if (id && typeof renderDiagram !== 'undefined') {
-        preview.innerHTML = renderDiagram(id);
-        preview.style.display = '';
-      } else {
-        preview.innerHTML = '';
-        preview.style.display = 'none';
-      }
+  const hiddenDiagram = document.getElementById('ex-diagram-id');
+  const overrideSel = document.getElementById('ex-diagram-override');
+
+  function updateDiagramPreview(id) {
+    if (!preview) return;
+    if (id && typeof renderDiagram !== 'undefined') {
+      preview.innerHTML = renderDiagram(id);
+      preview.style.display = '';
+    } else {
+      preview.innerHTML = '';
+      preview.style.display = 'none';
+    }
+  }
+
+  // Auto-detect on name input
+  const nameInput = document.getElementById('ex-name');
+  if (nameInput) {
+    let detectTimer;
+    nameInput.addEventListener('input', () => {
+      clearTimeout(detectTimer);
+      detectTimer = setTimeout(() => {
+        const name = nameInput.value.trim();
+        if (!name) return;
+        const { category, complexity, diagramId } = autoDetectExercise(name);
+        document.getElementById('ex-category').value = category;
+        document.getElementById('ex-complexity').value = complexity;
+        if (hiddenDiagram) hiddenDiagram.value = diagramId;
+        if (overrideSel) overrideSel.value = diagramId;
+        updateDiagramPreview(diagramId);
+      }, 400);
+    });
+  }
+
+  // Override diagram picker
+  if (overrideSel) {
+    overrideSel.addEventListener('change', () => {
+      const id = overrideSel.value;
+      if (hiddenDiagram) hiddenDiagram.value = id;
+      updateDiagramPreview(id);
     });
   }
 
@@ -332,17 +520,20 @@ function bindAddForm() {
       formCues: document.getElementById('ex-cues').value.split('\n').map(s=>s.trim()).filter(Boolean)
     };
 
+    if (!data.description || data.formCues.length === 0 || !data.videoUrl) {
+      btn.textContent = 'Analyzing…';
+      await enrichExercise(data);
+    }
+
     const result = await saveCustomExercise(data);
     form.reset();
     btn.textContent = 'Save Exercise';
     btn.disabled = false;
 
     // Reset diagram preview
-    if (preview) {
-      preview.innerHTML = '';
-      preview.style.display = 'none';
-    }
-    if (diagramSel) diagramSel.value = '';
+    updateDiagramPreview('');
+    if (hiddenDiagram) hiddenDiagram.value = '';
+    if (overrideSel) overrideSel.value = '';
 
     if (msgOk) {
       msgOk.textContent = result.savedToFirestore

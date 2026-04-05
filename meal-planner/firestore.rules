@@ -93,5 +93,9 @@ service cloud.firestore {
     match /fitness_custom_exercises/{docId} {
       allow read, write: if true;
     }
+    // Restaurants directory - open access (personal app)
+    match /restaurants/{docId} {
+      allow read, write: if true;
+    }
   }
 }

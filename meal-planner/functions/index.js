@@ -632,3 +632,205 @@ exports.classifyArticle = onRequest(
         }
     }
 );
+
+// ── Shared RSS + OpenAI helpers ──────────────────────────────────────────────
+
+function fetchRaw(url) {
+    return new Promise((resolve, reject) => {
+        const r = https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, res => {
+            let body = '';
+            res.on('data', c => { body += c; });
+            res.on('end', () => resolve(body));
+        });
+        r.on('error', reject);
+        r.setTimeout(12000, () => { r.destroy(); reject(new Error('timeout: ' + url)); });
+    });
+}
+
+function parseRss(xml, sourceName) {
+    const items = [];
+    const re = /<(item|entry)[^>]*>([\s\S]*?)<\/(item|entry)>/gi;
+    let m;
+    while ((m = re.exec(xml)) !== null) {
+        const chunk = m[2];
+        const get = tag => {
+            const rx = new RegExp('<' + tag + '[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/' + tag + '>', 'i');
+            return ((rx.exec(chunk) || [])[1] || '').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#039;/g,"'").trim();
+        };
+        const title = get('title');
+        let link = get('link');
+        if (!link) link = (/<link[^>]+href=["']([^"']+)["']/i.exec(chunk) || [])[1] || '';
+        link = link.trim();
+        const rawDesc = get('description') || get('summary') || get('content');
+        const desc = rawDesc.replace(/<[^>]+>/g, '').trim().slice(0, 300);
+        if (title && link && link.startsWith('http')) {
+            items.push({ source: sourceName, title, url: link, description: desc });
+        }
+    }
+    return items;
+}
+
+async function callOpenAIJson(apiKey, prompt) {
+    const body = JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' },
+        temperature: 0.4,
+    });
+    const response = await new Promise((resolve, reject) => {
+        const req = https.request({ hostname: 'api.openai.com', path: '/v1/chat/completions', method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+        }, resolve);
+        req.on('error', reject);
+        req.setTimeout(60000, () => { req.destroy(); reject(new Error('OpenAI timeout')); });
+        req.write(body);
+        req.end();
+    });
+    let raw = '';
+    for await (const chunk of response) raw += chunk;
+    const data = JSON.parse(raw);
+    return JSON.parse(data.choices[0].message.content);
+}
+
+// ── Suggest Articles (on-demand reading list suggestions) ────────────────────
+
+const ARTICLE_SOURCES = [
+    { name: 'Quanta Magazine', url: 'https://www.quantamagazine.org/feed/' },
+    { name: 'Aeon', url: 'https://aeon.co/feed.rss' },
+    { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
+    { name: 'Wired', url: 'https://www.wired.com/feed/rss' },
+    { name: 'Nautilus', url: 'https://nautil.us/feed/' },
+    { name: 'The Atlantic', url: 'https://feeds.feedburner.com/TheAtlantic' },
+    { name: 'Knowable Magazine', url: 'https://knowablemagazine.org/feed' },
+];
+const ARTICLE_PAYWALL = ['ft.com','newyorker.com','nytimes.com','theatlantic.com','nautil.us','wsj.com','bloomberg.com','lrb.co.uk','hbr.org','washingtonpost.com','harpers.org'];
+const VALID_ARTICLE_CATEGORIES = ['physics_cosmos','biology_life','technology','artificial_intelligence','human_stories','health_wellness','exercises','philosophy','personal_growth','economics_society','travel','personal_finance','links','other'];
+
+function archiveUrl(url) {
+    if (ARTICLE_PAYWALL.some(d => url.includes(d))) return 'https://archive.ph/newest/' + url.split('?')[0];
+    return url;
+}
+
+exports.suggestArticles = onRequest(
+    { secrets: [openaiKey], timeoutSeconds: 120, memory: "512MiB", cors: true },
+    async (req, res) => {
+        // Fetch RSS feeds in parallel
+        const results = await Promise.allSettled(
+            ARTICLE_SOURCES.map(s => fetchRaw(s.url).then(xml => parseRss(xml, s.name)))
+        );
+        const candidates = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+        if (candidates.length === 0) { res.status(502).json({ error: 'Could not fetch RSS feeds' }); return; }
+
+        // Get existing URLs to deduplicate
+        const snap = await db.collection('reading_links').get();
+        const existingUrls = new Set();
+        snap.forEach(doc => { const u = doc.data().url; if (u) existingUrls.add(u); });
+        const fresh = candidates.filter(c => !existingUrls.has(c.url) && !existingUrls.has(archiveUrl(c.url)));
+        if (fresh.length === 0) { res.json({ added: 0, message: 'All current articles already saved' }); return; }
+
+        const today = new Date().toISOString().split('T')[0];
+        const prompt =
+            `Today is ${today}. Curate a reading list for Srini who loves: science (physics, biology, space), AI & technology, philosophy, human stories & longform journalism, health, and economics.\n\n` +
+            `Pick the 4–5 most interesting, high-quality articles. Prefer deep long-form pieces over news briefs or listicles.\n\n` +
+            `Return JSON: {"suggestions": [{title, url, description (2 sentences), category}]}\n` +
+            `category must be one of: ${VALID_ARTICLE_CATEGORIES.join(', ')}\n\n` +
+            `Articles:\n` +
+            fresh.slice(0, 50).map((c, i) => `${i+1}. [${c.source}] ${c.title} — ${c.url}\n   ${c.description}`).join('\n');
+
+        const aiResult = await callOpenAIJson(openaiKey.value(), prompt);
+        const suggestions = (aiResult.suggestions || []).slice(0, 8);
+
+        await Promise.all(suggestions.map(s =>
+            db.collection('reading_links').add({
+                url: archiveUrl(s.url), title: s.title, description: s.description || '',
+                category: VALID_ARTICLE_CATEGORIES.includes(s.category) ? s.category : 'other',
+                status: 'suggested', addedAt: new Date().toISOString(),
+            })
+        ));
+
+        res.json({ added: suggestions.length });
+    }
+);
+
+// ── Suggest Events (on-demand What's Happening events) ───────────────────────
+
+const EVENT_SOURCES = [
+    { name: 'Montgomery Parks', url: 'https://montgomeryparks.org/feed/' },
+    { name: 'Loudoun PRCS', url: 'https://prcsinfo.loudoun.gov/feed/' },
+    { name: 'The Burn (NoVA)', url: 'https://theburn.com/feed/' },
+    { name: 'Bethesda Magazine', url: 'https://bethesdamagazine.com/feed/' },
+];
+
+exports.suggestEvents = onRequest(
+    { secrets: [openaiKey], timeoutSeconds: 120, memory: "512MiB", cors: true },
+    async (req, res) => {
+        const results = await Promise.allSettled(
+            EVENT_SOURCES.map(s => fetchRaw(s.url).then(xml => parseRss(xml, s.name)))
+        );
+        const candidates = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+        if (candidates.length === 0) { res.status(502).json({ error: 'Could not fetch event feeds' }); return; }
+
+        // Deduplicate against existing Firestore items
+        const snap = await db.collection('whatshappening_items').get();
+        const existingTitles = new Set();
+        snap.forEach(doc => { const t = (doc.data().title || '').toLowerCase().trim(); if (t) existingTitles.add(t); });
+        const fresh = candidates.filter(c => !existingTitles.has(c.title.toLowerCase().trim()));
+        if (fresh.length === 0) { res.json({ added: 0, message: 'No new events found' }); return; }
+
+        const today = new Date().toISOString().split('T')[0];
+        const prompt =
+            `Today is ${today}. You are curating local events for Srini & Ananya in the DC Metro area (Loudoun County VA, Montgomery County MD, Fairfax VA, DC).\n\n` +
+            `From the items below, pick 5–7 relevant upcoming events. Prefer: nature, outdoor, family, arts, community, food, fitness, educational. Skip generic park announcements without a specific event date.\n\n` +
+            `Return JSON: {"events": [{title, date (YYYY-MM-DD), time (e.g. "10:00 AM" or ""), location, cost ("Free" or price), description (1-2 sentences), url, source}]}\n\n` +
+            `Items:\n` +
+            fresh.slice(0, 40).map((c, i) => `${i+1}. [${c.source}] ${c.title} — ${c.url}\n   ${c.description}`).join('\n');
+
+        const aiResult = await callOpenAIJson(openaiKey.value(), prompt);
+        const events = (aiResult.events || []).slice(0, 10);
+
+        const now = new Date().toISOString();
+        await Promise.all(events.map(e => {
+            const id = 'on-demand-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+            return db.collection('whatshappening_items').doc(id).set({
+                id, type: 'event', title: e.title || '', date: e.date || today,
+                time: e.time || '', location: e.location || '', cost: e.cost || '',
+                description: e.description || '', url: e.url || '', source: e.source || '',
+                tags: [], addedAt: now,
+            });
+        }));
+
+        res.json({ added: events.length });
+    }
+);
+
+// ── S&P 500 proxy (bypasses browser CORS — server-side fetch with User-Agent) ──
+let _sp500Cache = null;
+let _sp500CacheTs = 0;
+
+exports.sp500 = onRequest(
+    { timeoutSeconds: 10, memory: "128MiB", cors: true },
+    async (req, res) => {
+        const now = Date.now();
+        if (_sp500Cache && now - _sp500CacheTs < 5 * 60 * 1000) {
+            res.json(_sp500Cache);
+            return;
+        }
+        try {
+            const url = "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=ytd";
+            const response = await new Promise((resolve, reject) => {
+                const r = https.get(url, { headers: { "User-Agent": "Mozilla/5.0" } }, resolve);
+                r.on("error", reject);
+                r.setTimeout(8000, () => { r.destroy(); reject(new Error("timeout")); });
+            });
+            let raw = "";
+            for await (const chunk of response) raw += chunk;
+            const data = JSON.parse(raw);
+            const meta = data.chart.result[0].meta;
+            _sp500Cache = { price: meta.regularMarketPrice, prev: meta.chartPreviousClose || meta.regularMarketPreviousClose };
+            _sp500CacheTs = now;
+            res.json(_sp500Cache);
+        } catch (err) {
+            res.status(502).json({ error: err.message });
+        }
+    }
+);

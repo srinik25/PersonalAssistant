@@ -49,6 +49,13 @@
     .btn-restore:hover { background: #555; color: white; }
     .btn-keep { background: #eaf4ee; color: #2d7a4f; border: 1px solid #b5dfc5; padding: 4px 10px; border-radius: 50px; font-size: 0.72rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .btn-keep:hover { background: #2d7a4f; color: white; }
+    .suggest-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .btn-refresh { background: #eaf4ee; color: #2d7a4f; border: 1px solid #b5dfc5; padding: 7px 16px; border-radius: 50px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .btn-refresh:hover:not(:disabled) { background: #2d7a4f; color: white; }
+    .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+    .suggest-status { font-size: 0.75rem; color: #888; }
+    .suggest-status.ok  { color: #2d7a4f; }
+    .suggest-status.err { color: #b94040; }
     .btn-fav { background: none; border: 1px solid #e0dcd6; color: #bbb; padding: 4px 8px; border-radius: 50px; font-size: 0.78rem; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
     .btn-fav:hover, .btn-fav.active { background: #fff3cd; color: #b8860b; border-color: #f0d080; }
     .btn-edit { background: none; border: 1px solid #e0dcd6; color: #bbb; padding: 4px 8px; border-radius: 50px; font-size: 0.78rem; cursor: pointer; white-space: nowrap; transition: all 0.15s; }

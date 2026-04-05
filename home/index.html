@@ -76,7 +76,7 @@
     /* ── Hero ── */
     .hero {
       text-align: center;
-      padding: 90px 0 60px;
+      padding: 90px 0 28px;
       position: relative;
     }
 
@@ -386,7 +386,99 @@
       letter-spacing: 0.2em;
     }
 
+    /* ── Live Bar ── */
+    .live-bar {
+      display: flex;
+      align-items: stretch;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 28px;
+      margin: 16px 0 0;
+      backdrop-filter: blur(12px);
+      gap: 0;
+      overflow: hidden;
+    }
+
+    .live-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 0 28px;
+      flex: 1;
+    }
+
+    .live-section:first-child { padding-left: 0; }
+    .live-section:last-child  { padding-right: 0; flex: 3; }
+
+.live-divider {
+      width: 1px;
+      background: var(--border);
+      flex-shrink: 0;
+      align-self: stretch;
+    }
+
+    .live-label {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .live-val {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .live-val.positive { color: #4a9e5c; }
+    .live-val.negative { color: #c0392b; }
+    .live-change { font-size: 12px; margin-left: 4px; }
+
+    .live-weather {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .wx-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .wx-name {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .wx-icon { font-size: 24px; line-height: 1.2; }
+
+    .wx-temp {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .wx-hi { color: var(--text); }
+    .wx-lo { color: var(--muted); }
+
     /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .live-bar { flex-direction: column; gap: 16px; }
+      .live-section { padding: 0; }
+      .live-divider { width: 100%; height: 1px; align-self: auto; }
+    }
+
     @media (max-width: 600px) {
       .hero { padding: 60px 0 40px; }
       .monogram-letter { width: 56px; height: 56px; font-size: 22px; }
@@ -399,9 +491,10 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .hero   { animation: fadeUp 0.8s ease both; }
-    .filter-bar { animation: fadeUp 0.8s 0.15s ease both; }
-    .grid   { animation: fadeUp 0.8s 0.25s ease both; }
+    .hero       { animation: fadeUp 0.8s ease both; }
+    .live-bar   { animation: fadeUp 0.8s 0.12s ease both; }
+    .filter-bar { animation: fadeUp 0.8s 0.22s ease both; }
+    .grid       { animation: fadeUp 0.8s 0.32s ease both; }
   </style>
 </head>
 <body>
@@ -422,6 +515,24 @@
     <p class="hero-subtitle">A collection of our custom apps</p>
     <div class="hero-divider"></div>
   </header>
+
+  <!-- Live Bar -->
+  <div class="live-bar" id="live-bar">
+    <div class="live-section">
+      <span class="live-label">Today</span>
+      <span class="live-val" id="live-date">—</span>
+    </div>
+    <div class="live-divider"></div>
+    <div class="live-section">
+      <span class="live-label">S&amp;P 500</span>
+      <span class="live-val" id="live-sp500">Loading…</span>
+    </div>
+    <div class="live-divider"></div>
+    <div class="live-section">
+      <span class="live-label">20152 · 7-Day Forecast</span>
+      <div class="live-weather" id="live-weather"><span style="font-family:sans-serif;font-size:13px;color:var(--muted)">Loading…</span></div>
+    </div>
+  </div>
 
   <!-- Filter -->
   <nav class="filter-bar" role="navigation" aria-label="Filter apps">
@@ -500,7 +611,7 @@
       <div class="card-header">
         <div class="card-icon">✅</div>
         <div>
-          <div class="card-title">Todo</div>
+          <div class="card-title">Things To Do</div>
           <span class="card-tag">Life</span>
         </div>
       </div>
@@ -519,7 +630,7 @@
       <div class="card-header">
         <div class="card-icon">🧭</div>
         <div>
-          <div class="card-title">What's Happening</div>
+          <div class="card-title">Local Events &amp; Food</div>
           <span class="card-tag">Travel</span>
         </div>
       </div>
@@ -538,7 +649,7 @@
       <div class="card-header">
         <div class="card-icon">🌍</div>
         <div>
-          <div class="card-title">Travel Places</div>
+          <div class="card-title">Travel Bucket List</div>
           <span class="card-tag">Travel</span>
         </div>
       </div>
@@ -557,7 +668,7 @@
       <div class="card-header">
         <div class="card-icon">✈️</div>
         <div>
-          <div class="card-title">Travel Inspiration</div>
+          <div class="card-title">Travel Planner</div>
           <span class="card-tag">Travel</span>
         </div>
       </div>
@@ -636,6 +747,64 @@
       ].join(';');
       field.appendChild(s);
     }
+  })();
+
+  // ── Live Bar ──
+  (function() {
+    // Date
+    const now = new Date();
+    const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('live-date').textContent =
+      days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+
+    // S&P 500 via Firebase Cloud Function (server-side Yahoo Finance fetch, bypasses CORS)
+    fetch('https://us-central1-nutrition-198dd.cloudfunctions.net/sp500')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var chg  = d.price - d.prev;
+        var pct  = (chg / d.prev) * 100;
+        var sign = chg >= 0 ? '▲' : '▼';
+        var el   = document.getElementById('live-sp500');
+        el.innerHTML = d.price.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})
+                     + '<span class="live-change">' + sign + ' ' + Math.abs(pct).toFixed(2) + '%</span>';
+        el.className = 'live-val ' + (chg >= 0 ? 'positive' : 'negative');
+      })
+      .catch(function() { document.getElementById('live-sp500').textContent = '—'; });
+
+    // 7-day weather via Open-Meteo (zip 20152 ≈ 38.9073, -77.5571)
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=38.9073&longitude=-77.5571&daily=weathercode,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FNew_York&forecast_days=7')
+      .then(r => r.json())
+      .then(data => {
+        const { time, weathercode, temperature_2m_max, temperature_2m_min } = data.daily;
+        function wxEmoji(c) {
+          if (c === 0)          return '☀️';
+          if (c <= 3)           return '⛅';
+          if (c <= 48)          return '🌫️';
+          if (c <= 55)          return '🌦️';
+          if (c <= 67)          return '🌧️';
+          if (c <= 77)          return '🌨️';
+          if (c <= 82)          return '🌦️';
+          return '⛈️';
+        }
+        const abbr = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const container = document.getElementById('live-weather');
+        container.innerHTML = '';
+        time.forEach(function(dateStr, i) {
+          const d    = new Date(dateStr + 'T12:00:00');
+          const name = i === 0 ? 'Today' : abbr[d.getDay()];
+          const hi   = Math.round(temperature_2m_max[i]);
+          const lo   = Math.round(temperature_2m_min[i]);
+          const div  = document.createElement('div');
+          div.className = 'wx-day';
+          div.innerHTML = '<span class="wx-name">' + name + '</span>'
+                        + '<span class="wx-icon">' + wxEmoji(weathercode[i]) + '</span>'
+                        + '<span class="wx-temp"><span class="wx-hi">' + hi + '°</span>'
+                        + '<span class="wx-lo">/' + lo + '°</span></span>';
+          container.appendChild(div);
+        });
+      })
+      .catch(() => { document.getElementById('live-weather').innerHTML = '<span style="font-family:sans-serif;font-size:13px;color:var(--muted)">—</span>'; });
   })();
 
   // ── Filter ──

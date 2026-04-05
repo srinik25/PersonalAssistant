@@ -12,9 +12,10 @@ var CONT_LABELS = {
   'middle_east':   'Middle East',
   'oceania':       'Oceania'
 };
-var activeTab = 'europe';
-var allItems  = {};
-var filters   = {};
+var activeTab    = 'europe';
+var allItems     = {};
+var filters      = {};
+var collapseState = {}; // key → true=collapsed, false=expanded; default collapsed
 
 var NA_STRICT     = new Set(['usa','canada','united states','united states of america','u.s.','u.s.a.','us']);
 var MEXICO_CA     = new Set(['mexico','guatemala','belize','honduras','el salvador','nicaragua','costa rica','panama']);
@@ -167,7 +168,9 @@ function renderAll() {
       Object.values(byCountry[country]).forEach(function(sm) {
         Object.values(sm).forEach(function(arr) { countryTotal += arr.length; });
       });
-      html += '<div class="country-section">' +
+      var ckCountry = 'c:' + tab + ':' + country;
+      var countryCls = collapseState[ckCountry] === false ? '' : ' collapsed';
+      html += '<div class="country-section' + countryCls + '" data-ckey="' + esc(ckCountry) + '">' +
         '<div class="country-header">' + esc(country) +
         ' <span class="section-cnt">' + countryTotal + '</span>' +
         '<button class="btn-quick-add" data-cont="' + esc(tab) + '" data-country="' + esc(country) + '" data-state="" data-city="" data-focus="state" title="Add city / place">+</button>' +
@@ -184,14 +187,18 @@ function renderAll() {
         var hasState = state !== '';
         if (hasState) {
           var stateTotal = Object.values(byCountry[country][state]).reduce(function(n,a){ return n+a.length; },0);
-          html += '<div class="state-section"><div class="state-header">' + esc(state) +
+          var ckState = 's:' + tab + ':' + country + ':' + state;
+          var stateCls = collapseState[ckState] === false ? '' : ' collapsed';
+          html += '<div class="state-section' + stateCls + '" data-ckey="' + esc(ckState) + '"><div class="state-header">' + esc(state) +
             ' <span class="section-cnt">' + stateTotal + '</span>' +
             '<button class="btn-quick-add" data-cont="' + esc(tab) + '" data-country="' + esc(country) + '" data-state="' + esc(state) + '" data-city="" data-focus="city" title="Add city / place">+</button>' +
             '</div>';
         }
         Object.keys(byCountry[country][state]).sort().forEach(function(city) {
           var cityItems = byCountry[country][state][city];
-          html += '<div class="city-section"><div class="city-header">' +
+          var ckCity = 'v:' + tab + ':' + country + ':' + state + ':' + city;
+          var cityCls = collapseState[ckCity] === false ? '' : ' collapsed';
+          html += '<div class="city-section' + cityCls + '" data-ckey="' + esc(ckCity) + '"><div class="city-header">' +
             '<span class="city-name-text" data-city="' + esc(city) + '" data-country="' + esc(country) + '" data-state="' + esc(state) + '">' + esc(city) + '</span>' +
             ' <span class="section-cnt">' + cityItems.length + '</span>' +
             '<button class="btn-quick-add" data-cont="' + esc(tab) + '" data-country="' + esc(country) + '" data-state="' + esc(state) + '" data-city="' + esc(city) + '" data-focus="name" title="Add place">+</button>' +
@@ -278,21 +285,32 @@ function bindActions() {
   document.querySelectorAll('.country-header').forEach(function(h) {
     h.onclick = function(e) {
       if (e.target.closest('.btn-quick-add, .btn-del-country, .btn-export-country')) return;
-      this.parentElement.classList.toggle('collapsed');
+      var sec = this.parentElement;
+      collapseState[sec.dataset.ckey] = sec.classList.toggle('collapsed');
+    };
+  });
+
+  // State collapse
+  document.querySelectorAll('.state-header').forEach(function(h) {
+    h.onclick = function(e) {
+      if (e.target.closest('.btn-quick-add')) return;
+      var sec = this.parentElement;
+      collapseState[sec.dataset.ckey] = sec.classList.toggle('collapsed');
     };
   });
 
   // City collapse
   document.querySelectorAll('.city-header').forEach(function(h) {
     h.onclick = function(e) {
-      if (e.target.closest('.btn-quick-add, .city-name-text')) return;
-      this.parentElement.classList.toggle('collapsed');
+      if (e.target.closest('.btn-quick-add')) return;
+      var sec = this.parentElement;
+      collapseState[sec.dataset.ckey] = sec.classList.toggle('collapsed');
     };
   });
 
-  // Inline city rename
+  // Inline city rename (double-click)
   document.querySelectorAll('.city-name-text').forEach(function(span) {
-    span.onclick = function(e) {
+    span.ondblclick = function(e) {
       e.stopPropagation();
       var oldCity = this.dataset.city;
       var country = this.dataset.country;
@@ -335,7 +353,7 @@ function bindActions() {
       fCity.value      = d.city;
       fName.value      = '';
       fDesc.value      = '';
-      fType.value      = 'place';
+      fType.value      = 'food';
       statusEl.textContent = '';
       confirmBtn.disabled  = false;
       updateCityDatalist(d.country);
@@ -504,7 +522,7 @@ document.getElementById('open-modal').onclick = function() {
   var tab = activeTab;
   fContinent.value = CONTINENTS.includes(tab) ? tab : 'europe';
   fCountry.value = ''; fState.value = ''; fCity.value = ''; fName.value = ''; fDesc.value = '';
-  fType.value = 'place';
+  fType.value = 'food';
   statusEl.textContent = ''; confirmBtn.disabled = false;
   modal.classList.add('open');
   setTimeout(function() { fCountry.focus(); }, 80);
@@ -859,6 +877,19 @@ var CITY_GEO = {
   'auckland':       {country:'New Zealand', state:'',           continent:'oceania'},
 };
 
+// US state names (lowercase) for bulk-parse detection
+var US_STATES = new Set([
+  'alabama','alaska','arizona','arkansas','california','colorado','connecticut',
+  'delaware','florida','georgia','hawaii','idaho','illinois','indiana','iowa',
+  'kansas','kentucky','louisiana','maine','maryland','massachusetts','michigan',
+  'minnesota','mississippi','missouri','montana','nebraska','nevada',
+  'new hampshire','new jersey','new mexico','new york','north carolina',
+  'north dakota','ohio','oklahoma','oregon','pennsylvania','rhode island',
+  'south carolina','south dakota','tennessee','texas','utah','vermont',
+  'virginia','washington','west virginia','wisconsin','wyoming',
+  'district of columbia'
+]);
+
 // Country name → geo (for "Birding in Colombia" style entries with no city)
 var COUNTRY_GEO = {
   // Americas
@@ -977,13 +1008,18 @@ function parseBulkLine(line) {
   }
 
   var parts = line.split(',').map(function(p){ return p.trim(); });
-  var name, city, countryOverride;
+  var name, city, countryOverride, stateOverride;
 
   if (parts.length >= 3) {
-    // Work from the right: last token is country or city, second-to-last may be city
+    // Work from the right: last token is country, state, or city
     var last   = parts[parts.length - 1];
     var second = parts[parts.length - 2];
-    if (COUNTRY_GEO[last.toLowerCase()]) {
+    if (US_STATES.has(last.toLowerCase())) {
+      // Last is a US state — e.g. "Zu Bakery, Portland, Maine"
+      stateOverride = last;
+      city = second;
+      name = parts.slice(0, parts.length - 2).join(', ');
+    } else if (COUNTRY_GEO[last.toLowerCase()]) {
       // Last is a known country — use it; second-to-last is city; rest is name
       countryOverride = last;
       city = second;
@@ -991,7 +1027,6 @@ function parseBulkLine(line) {
     } else if (CITY_GEO[last.toLowerCase()]) {
       // Last is a known city — everything before is the name
       city = last;
-      countryOverride = '';
       name = parts.slice(0, parts.length - 1).join(', ');
     } else {
       // Fallback: original behavior
@@ -1002,7 +1037,26 @@ function parseBulkLine(line) {
   } else {
     name = parts[0];
     city = parts[1] || '';
-    countryOverride = '';
+  }
+
+  // Handle "Portland Maine" (no comma) — split off trailing state name
+  if (city && !stateOverride) {
+    var cityWords = city.split(' ');
+    if (cityWords.length >= 2) {
+      // Check single last word as state
+      var lastWord = cityWords[cityWords.length - 1].toLowerCase();
+      if (US_STATES.has(lastWord)) {
+        stateOverride = cityWords[cityWords.length - 1];
+        city = cityWords.slice(0, -1).join(' ');
+      } else if (cityWords.length >= 3) {
+        // Check last two words as state (e.g. "New Hampshire")
+        var lastTwo = cityWords.slice(-2).join(' ').toLowerCase();
+        if (US_STATES.has(lastTwo)) {
+          stateOverride = cityWords.slice(-2).join(' ');
+          city = cityWords.slice(0, -2).join(' ');
+        }
+      }
+    }
   }
 
   var geo = city ? (CITY_GEO[city.toLowerCase()] || {}) : {};
@@ -1017,14 +1071,16 @@ function parseBulkLine(line) {
   }
 
   // Try to find country name in the item name itself (no city or country given)
-  if (!geo.country && !city) {
+  if (!geo.country && !city && !stateOverride) {
     var nl = name.toLowerCase();
     for (var ck in COUNTRY_GEO) {
       if (nl.includes(ck)) { geo = COUNTRY_GEO[ck]; break; }
     }
   }
 
-  if (countryOverride) { geo = Object.assign({}, geo, {country: countryOverride}); }
+  // State override always wins (implies USA)
+  if (stateOverride) { geo = Object.assign({}, geo, {country: 'USA', state: stateOverride, continent: 'north-america'}); }
+  else if (countryOverride) { geo = Object.assign({}, geo, {country: countryOverride}); }
 
   return {
     name: name,
@@ -1077,6 +1133,7 @@ function renderBulkPreview() {
     return '<tr>' +
       '<td><input class="bulk-name" data-i="' + i + '" value="' + esc(item.name) + '"></td>' +
       '<td><input class="bulk-city" data-i="' + i + '" value="' + esc(item.city) + '" placeholder="City"></td>' +
+      '<td><input class="bulk-state" data-i="' + i + '" value="' + esc(item.state) + '" placeholder="State"></td>' +
       '<td><input class="bulk-country" data-i="' + i + '" value="' + esc(item.country) + '" placeholder="Country"></td>' +
       '<td>' + typeSelect(item.type, i, 'bulk-type') + '</td>' +
       '<td>' + contSelect(item.continent, i, 'bulk-cont') + '</td>' +
@@ -1086,13 +1143,14 @@ function renderBulkPreview() {
 
   el.innerHTML = '<p class="bulk-count">' + bulkParsed.length + ' items parsed</p>' +
     '<div style="overflow-x:auto">' +
-    '<table class="bulk-table"><thead><tr><th>Name</th><th>City</th><th>Country</th><th>Type</th><th>Region</th><th></th></tr></thead>' +
+    '<table class="bulk-table"><thead><tr><th>Name</th><th>City</th><th>State</th><th>Country</th><th>Type</th><th>Region</th><th></th></tr></thead>' +
     '<tbody>' + rows + '</tbody></table></div>' +
     '<button id="bulk-import" class="bulk-import-btn">Import ' + bulkParsed.length + ' items →</button>' +
     '<div id="bulk-status" class="bulk-status"></div>';
 
   el.querySelectorAll('.bulk-name').forEach(function(inp) { inp.oninput = function() { bulkParsed[+this.dataset.i].name = this.value; }; });
   el.querySelectorAll('.bulk-city').forEach(function(inp) { inp.oninput = function() { bulkParsed[+this.dataset.i].city = this.value; }; });
+  el.querySelectorAll('.bulk-state').forEach(function(inp) { inp.oninput = function() { bulkParsed[+this.dataset.i].state = this.value; }; });
   el.querySelectorAll('.bulk-country').forEach(function(inp) { inp.oninput = function() { bulkParsed[+this.dataset.i].country = this.value; }; });
   el.querySelectorAll('.bulk-type').forEach(function(sel) { sel.onchange = function() { bulkParsed[+this.dataset.i].type = this.value; }; });
   el.querySelectorAll('.bulk-cont').forEach(function(sel) { sel.onchange = function() { bulkParsed[+this.dataset.i].continent = this.value; }; });
@@ -1312,6 +1370,97 @@ function exportCountry(country, tab) {
   a.click();
   URL.revokeObjectURL(a.href);
 }
+
+// ── Global Export ──────────────────────────────────────────────────────────
+
+var exportModal  = document.getElementById('export-modal');
+var exCountryInp = document.getElementById('ex-country');
+var exStateInp   = document.getElementById('ex-state');
+var exCityInp    = document.getElementById('ex-city');
+
+document.getElementById('open-export').onclick = function() {
+  exCountryInp.value = ''; exStateInp.value = ''; exCityInp.value = '';
+  exportModal.classList.add('open');
+  setTimeout(function() { exCountryInp.focus(); }, 80);
+};
+document.getElementById('export-close').onclick = function() { exportModal.classList.remove('open'); };
+exportModal.addEventListener('click', function(e) { if (e.target === exportModal) exportModal.classList.remove('open'); });
+
+document.getElementById('export-confirm').onclick = function() {
+  var filterCountry = exCountryInp.value.trim().toLowerCase();
+  var filterState   = exStateInp.value.trim().toLowerCase();
+  var filterCity    = exCityInp.value.trim().toLowerCase();
+
+  var items = Object.values(allItems).filter(function(i) {
+    if (filterCountry && (i.country || '').toLowerCase() !== filterCountry) return false;
+    if (filterState   && (i.state   || '').toLowerCase() !== filterState)   return false;
+    if (filterCity    && (i.city    || '').toLowerCase() !== filterCity)     return false;
+    return true;
+  });
+
+  if (!items.length) { alert('No items match that filter.'); return; }
+
+  var lines = [];
+  var titleParts = [];
+  if (exCountryInp.value.trim()) titleParts.push(exCountryInp.value.trim());
+  if (exStateInp.value.trim())   titleParts.push(exStateInp.value.trim());
+  if (exCityInp.value.trim())    titleParts.push(exCityInp.value.trim());
+  var title = titleParts.length ? titleParts.join(', ') : 'All Places';
+
+  lines.push('TRAVEL PLACES: ' + title);
+  lines.push('Generated: ' + new Date().toLocaleDateString());
+  lines.push('Total items: ' + items.length);
+  lines.push('');
+
+  // Group by continent → country → state → city
+  var byCont = {};
+  items.forEach(function(i) {
+    var cont    = CONT_LABELS[itemTab(i)] || itemTab(i);
+    var country = i.country || 'Unknown';
+    var state   = i.state || '';
+    var city    = i.city || 'General';
+    if (!byCont[cont]) byCont[cont] = {};
+    if (!byCont[cont][country]) byCont[cont][country] = {};
+    if (!byCont[cont][country][state]) byCont[cont][country][state] = {};
+    if (!byCont[cont][country][state][city]) byCont[cont][country][state][city] = [];
+    byCont[cont][country][state][city].push(i);
+  });
+
+  Object.keys(byCont).sort().forEach(function(cont) {
+    lines.push('══════════════════════════════');
+    lines.push(cont.toUpperCase());
+    lines.push('══════════════════════════════');
+    Object.keys(byCont[cont]).sort().forEach(function(country) {
+      lines.push('\n▶ ' + country);
+      Object.keys(byCont[cont][country]).sort(function(a,b){
+        if (a==='' && b!=='') return -1; if (a!=='' && b==='') return 1; return a.localeCompare(b);
+      }).forEach(function(state) {
+        if (state) lines.push('  — ' + state + ' —');
+        Object.keys(byCont[cont][country][state]).sort().forEach(function(city) {
+          lines.push('  ' + (state ? '  ' : '') + city);
+          byCont[cont][country][state][city]
+            .sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); })
+            .forEach(function(item) {
+              var label = TYPE_LABEL[item.type] || '📍';
+              var visited = item.visited ? ' [visited]' : '';
+              var desc = item.description ? ' — ' + item.description : '';
+              lines.push('  ' + (state ? '  ' : '') + '  • ' + label + ' ' + (item.name||'') + visited + desc);
+            });
+        });
+      });
+    });
+    lines.push('');
+  });
+
+  var filename = (titleParts.join('_') || 'all_places').replace(/[^a-z0-9_]/gi, '_').toLowerCase() + '_travel.txt';
+  var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  exportModal.classList.remove('open');
+};
 
 // ── Init ───────────────────────────────────────────────────────────────────
 

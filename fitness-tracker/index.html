@@ -294,6 +294,7 @@
     }
     .form-group textarea { min-height: 76px; resize: vertical; }
     .form-group .hint { font-size: 0.7rem; color: var(--text2); margin-top: 3px; }
+    .hint-inline { font-size: 0.7rem; color: var(--text2); font-weight: 400; margin-left: 4px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .btn-save {
@@ -380,21 +381,21 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="ex-category">Category</label>
+          <label for="ex-category">Category <span class="hint-inline">auto-detected</span></label>
           <select id="ex-category">
             <option value="cardio">Cardio</option>
             <option value="upper">Upper Body</option>
             <option value="core">Core</option>
-            <option value="lower" selected>Lower Body</option>
+            <option value="lower">Lower Body</option>
             <option value="mobility">Mobility</option>
             <option value="recovery">Recovery</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="ex-complexity">Complexity</label>
+          <label for="ex-complexity">Complexity <span class="hint-inline">auto-detected</span></label>
           <select id="ex-complexity">
-            <option value="simple" selected>Simple</option>
-            <option value="moderate">Moderate</option>
+            <option value="simple">Simple</option>
+            <option value="moderate" selected>Moderate</option>
             <option value="complex">Complex</option>
           </select>
         </div>
@@ -413,61 +414,65 @@
         <div class="hint">Each line becomes a bullet point</div>
       </div>
       <div class="form-group">
-        <label for="ex-diagram-id">Diagram Style</label>
-        <select id="ex-diagram-id">
-          <option value="">— None —</option>
-          <optgroup label="Standing positions">
-            <option value="standing">Standing</option>
-            <option value="standing_arms_wide">Arms wide</option>
-            <option value="standing_arms_overhead">Arms overhead</option>
-            <option value="standing_arm_curl">Arm curl</option>
-            <option value="standing_arm_rotate">Arm rotation</option>
-            <option value="standing_press_forward">Press forward</option>
-            <option value="standing_one_leg">Single leg</option>
-          </optgroup>
-          <optgroup label="Lying on back">
-            <option value="lying_back">Flat</option>
-            <option value="lying_back_bridge">Glute bridge</option>
-            <option value="lying_back_leg_raise">Leg raise</option>
-            <option value="lying_back_dead_bug">Dead bug</option>
-            <option value="lying_back_knees_up">Knees up</option>
-          </optgroup>
-          <optgroup label="Other">
-            <option value="lying_prone">Face down</option>
-            <option value="lying_side_clamshell">Side-lying</option>
-            <option value="side_plank">Side plank</option>
-            <option value="all_fours">All fours</option>
-            <option value="bird_dog">Bird dog</option>
-            <option value="plank">Plank</option>
-            <option value="push_up">Push-up</option>
-            <option value="ab_wheel">Ab wheel</option>
-          </optgroup>
-          <optgroup label="Seated/Bent">
-            <option value="seated">Seated</option>
-            <option value="bent_over_row">Bent over row</option>
-            <option value="lean_forward_pendulum">Leaning forward</option>
-          </optgroup>
-          <optgroup label="Wall">
-            <option value="wall_sit">Wall sit</option>
-            <option value="wall_slides">Wall slides</option>
-          </optgroup>
-          <optgroup label="Kneeling/Squat">
-            <option value="kneeling_lunge">Kneeling lunge</option>
-            <option value="squat">Squat</option>
-            <option value="step_up">Step up</option>
-          </optgroup>
-          <optgroup label="Mobility">
-            <option value="thoracic_rotation">Thoracic rotation</option>
-            <option value="hamstring_stretch_lying">Hamstring stretch</option>
-            <option value="worlds_greatest_stretch">World's greatest stretch</option>
-            <option value="foam_roller">Foam roller</option>
-          </optgroup>
-          <optgroup label="Cardio/Recovery">
-            <option value="elliptical">Elliptical</option>
-            <option value="rowing_machine">Rowing</option>
-            <option value="walking">Walking</option>
-            <option value="sitting_breathing">Breathing</option>
-            <option value="yoga_child">Child's pose</option>
+        <label>Diagram <span class="hint-inline">auto-assigned from name</span></label>
+        <input type="hidden" id="ex-diagram-id" value="">
+        <div id="diagram-preview" style="text-align:center;min-height:60px;margin-top:8px;padding:8px;background:#f5f3f0;border-radius:10px;display:none"></div>
+        <details style="margin-top:6px">
+          <summary style="font-size:0.78rem;color:var(--text2);cursor:pointer;user-select:none">Override diagram</summary>
+          <select id="ex-diagram-override" style="margin-top:6px">
+            <option value="">— None —</option>
+            <optgroup label="Standing positions">
+              <option value="standing">Standing</option>
+              <option value="standing_arms_wide">Arms wide</option>
+              <option value="standing_arms_overhead">Arms overhead</option>
+              <option value="standing_arm_curl">Arm curl</option>
+              <option value="standing_arm_rotate">Arm rotation</option>
+              <option value="standing_press_forward">Press forward</option>
+              <option value="standing_one_leg">Single leg</option>
+            </optgroup>
+            <optgroup label="Lying on back">
+              <option value="lying_back">Flat</option>
+              <option value="lying_back_bridge">Glute bridge</option>
+              <option value="lying_back_leg_raise">Leg raise</option>
+              <option value="lying_back_dead_bug">Dead bug</option>
+              <option value="lying_back_knees_up">Knees up</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option value="lying_prone">Face down</option>
+              <option value="lying_side_clamshell">Side-lying</option>
+              <option value="side_plank">Side plank</option>
+              <option value="all_fours">All fours</option>
+              <option value="bird_dog">Bird dog</option>
+              <option value="plank">Plank</option>
+              <option value="push_up">Push-up</option>
+              <option value="ab_wheel">Ab wheel</option>
+            </optgroup>
+            <optgroup label="Seated/Bent">
+              <option value="seated">Seated</option>
+              <option value="bent_over_row">Bent over row</option>
+              <option value="lean_forward_pendulum">Leaning forward</option>
+            </optgroup>
+            <optgroup label="Wall">
+              <option value="wall_sit">Wall sit</option>
+              <option value="wall_slides">Wall slides</option>
+            </optgroup>
+            <optgroup label="Kneeling/Squat">
+              <option value="kneeling_lunge">Kneeling lunge</option>
+              <option value="squat">Squat</option>
+              <option value="step_up">Step up</option>
+            </optgroup>
+            <optgroup label="Mobility">
+              <option value="thoracic_rotation">Thoracic rotation</option>
+              <option value="hamstring_stretch_lying">Hamstring stretch</option>
+              <option value="worlds_greatest_stretch">World's greatest stretch</option>
+              <option value="foam_roller">Foam roller</option>
+            </optgroup>
+            <optgroup label="Cardio/Recovery">
+              <option value="elliptical">Elliptical</option>
+              <option value="rowing_machine">Rowing</option>
+              <option value="walking">Walking</option>
+              <option value="sitting_breathing">Breathing</option>
+              <option value="yoga_child">Child's pose</option>
             </optgroup>
             <optgroup label="Neck &amp; Upper Trap">
               <option value="neck_side_stretch">Neck side stretch</option>
@@ -475,9 +480,9 @@
               <option value="chin_tuck">Chin tuck</option>
               <option value="face_pull">Face pull</option>
               <option value="shrug_release">Shrug &amp; release</option>
-          </optgroup>
-        </select>
-        <div id="diagram-preview" style="text-align:center;min-height:60px;margin-top:8px;padding:8px;background:#f5f3f0;border-radius:10px;display:none"></div>
+            </optgroup>
+          </select>
+        </details>
       </div>
       <div class="form-group">
         <label for="ex-video">YouTube / Video URL</label>
@@ -535,6 +540,7 @@
     appId: "1:851241392706:web:0738d4ac6e001e83a36bdb"
   });
 </script>
+<script src="secrets.js"></script>
 <script src="js/diagrams.js?v=3"></script>
 <script src="js/exercises.js?v=3"></script>
 <script src="js/app.js?v=3"></script>

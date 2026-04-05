@@ -174,9 +174,7 @@ function renderYearTabs() {
   }).join('');
   html += '<button class="ytab backlog-tab' + (activeTab === 'backlog' ? ' active' : '') + '" data-year="backlog">📋 Backlog</button>';
   html += '<button class="ytab goals-tab' + (activeTab === 'goals' ? ' active' : '') + '" data-year="goals">🎯 Goals</button>';
-  if (archivedYears.size > 0) {
-    html += '<button class="ytab archive-tab' + (activeTab === 'archive' ? ' active' : '') + '" data-year="archive">🗄 Archive</button>';
-  }
+  html += '<button class="ytab archive-tab' + (activeTab === 'archive' ? ' active' : '') + '" data-year="archive">🗄 Archive</button>';
   document.getElementById('year-tabs').innerHTML = html;
   document.querySelectorAll('.ytab').forEach(function(b) {
     b.onclick = function() {
@@ -236,18 +234,60 @@ function renderYearHTML(year) {
 
 // ── Archive view ───────────────────────────────────────────────────────────
 function renderArchiveHTML() {
-  if (archivedYears.size === 0) return '<p class="empty" style="padding:20px">No archived years.</p>';
   var html = '<div class="section-title"><span>Archive</span></div>';
+  if (archivedYears.size === 0) {
+    html += '<p class="empty" style="padding:20px">No archived years yet.</p>';
+    return html;
+  }
   Array.from(archivedYears).sort().forEach(function(year) {
-    var list = Object.values(tasks).filter(function(t) { return t.year === Number(year); });
-    var prog = progress(list);
+    var allYearTasks = Object.values(tasks).filter(function(t) { return t.year === Number(year); });
+    var prog = progress(allYearTasks);
     html += '<div class="archive-year-section">' +
       '<div class="archive-year-title">' + year +
         (prog ? ' <span class="cnt" style="font-family:Inter;font-size:0.72rem;background:#fef3c7;color:#d97706;padding:2px 7px;border-radius:8px;">' + prog.done + '/' + prog.total + ' done</span>' : '') +
         ' <button class="btn-unarchive" data-year="' + year + '">↩ Restore</button>' +
       '</div>' +
-      (prog ? progressBarHTML(prog.pct) : '') +
-    '</div>';
+      (prog ? progressBarHTML(prog.pct) : '');
+
+    // Year-level tasks
+    var yearTasks = tasksFor('year', Number(year));
+    if (yearTasks.length) {
+      html += '<div class="archive-section-label">Year Tasks</div>';
+      html += renderGroupedTasks(groupByType(yearTasks), 'year', Number(year), null, null);
+    }
+
+    // Month breakdown
+    yearMonths(Number(year)).forEach(function(month) {
+      var monthTasks = tasksFor('month', Number(year), month);
+      var allWeekTasks = [];
+      weekRanges(Number(year), month).forEach(function(w) {
+        allWeekTasks = allWeekTasks.concat(tasksFor('week', Number(year), month, w.num));
+      });
+      if (!monthTasks.length && !allWeekTasks.length) return;
+
+      var allMonthItems = monthTasks.concat(allWeekTasks);
+      var mp = progress(allMonthItems);
+      html += '<details class="archive-month-details">' +
+        '<summary class="archive-month-summary">' + MONTHS[month-1] + ' ' + year +
+          (mp ? ' <span class="cnt" style="font-family:Inter;font-size:0.72rem;background:#e0f2fe;color:#0369a1;padding:2px 7px;border-radius:8px;">' + mp.done + '/' + mp.total + '</span>' : '') +
+        '</summary>';
+
+      if (monthTasks.length) {
+        html += '<div class="archive-section-label">Monthly</div>';
+        html += renderGroupedTasks(groupByType(monthTasks), 'month', Number(year), month, null);
+      }
+
+      weekRanges(Number(year), month).forEach(function(w) {
+        var wt = tasksFor('week', Number(year), month, w.num);
+        if (!wt.length) return;
+        html += '<div class="archive-section-label">' + esc(w.label) + '</div>';
+        html += renderGroupedTasks(groupByType(wt), 'week', Number(year), month, w.num);
+      });
+
+      html += '</details>';
+    });
+
+    html += '</div>';
   });
   return html;
 }

@@ -50,8 +50,10 @@ HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scr
 # Musings (Firebase config inlined — no secrets.js needed)
 HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh musings --slug still-lagoon-tsp3
 
-# Fitness Tracker (Firebase config inlined — no secrets.js needed)
-HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh fitness-tracker --slug spicy-lichen-9qbh
+# Fitness Tracker (secrets.js must be included for AI enrichment)
+rm -rf /tmp/ft-deploy && mkdir /tmp/ft-deploy
+cp -r fitness-tracker/* /tmp/ft-deploy/ && cp secrets.js /tmp/ft-deploy/
+HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh /tmp/ft-deploy --slug spicy-lichen-9qbh
 
 # Home page (AD+SK — links to all apps)
 HERENOW_API_KEY=$(cat ~/.herenow/credentials) bash ~/.claude/skills/here-now/scripts/publish.sh home --slug centered-nirvana-wryg
