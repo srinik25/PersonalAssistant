@@ -361,6 +361,10 @@ function reviewDay() {
             resultEl.innerHTML = '<div class="nutrition-card"><div class="nutrition-text">Analysis returned empty. Please try again.</div></div>';
             return;
         }
+        if (result.trim() === 'INVALID_INPUT') {
+            resultEl.innerHTML = '<div class="nutrition-card"><div class="nutrition-text">Please enter real food items to get a nutrition analysis.</div></div>';
+            return;
+        }
         day.nutritionReview = result;
         renderNutritionResult(result);
         // Auto-save so nutrition review isn't lost if user navigates away
@@ -430,7 +434,7 @@ function streamLLM(messages, targetEl, onDone, action, maxTokens) {
 }
 
 function callNutritionLLM(mealsText, dayName) {
-    var systemPrompt = 'You are a nutrition expert. Be concise and accurate. Use standard USDA data. Assume normal portions for one person. Use plain text only — no markdown, no asterisks, no bold formatting.';
+    var systemPrompt = 'You are a nutrition expert. Be concise and accurate. Use standard USDA data. Assume normal portions for one person. Use plain text only — no markdown, no asterisks, no bold formatting. If the meals listed do not contain recognizable food or drink items (e.g., random letters, nonsense words, or clearly non-food text), respond with only: INVALID_INPUT';
     var profileCtx = buildProfileContext();
     var userPrompt = 'Review this meal plan for ' + dayName + ':\n\n' + mealsText + profileCtx + '\n\n' +
         'Provide (be concise):\n' +
@@ -847,3 +851,4 @@ function esc(str) {
 
 // Init progress
 updateProgress(0);
+
